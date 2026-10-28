@@ -12,7 +12,8 @@ Aplicação para o streamer Pitchula e seus moderadores receberem pedidos de ban
 | Arquitetura | Aprovada em 27/10/2026 |
 | 1. Fundação (estrutura, Supabase local, migrations, RLS) | **Concluída em 27/10/2026.** CI verde |
 | 2. Autenticação do painel (login, MFA, convites, sessões, revogação) | **Concluída em 27/10/2026.** CI verde: lint, typecheck, 57 testes Vitest (19 de integração contra Supabase + Redis reais), 122 testes pgTAP, build e `pnpm audit` sem vulnerabilidades |
-| 3 a 7 | Não iniciadas |
+| 3. Bancas, página pública e pedido do espectador | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 105 testes Vitest (35 de integração), 149 testes pgTAP, build, **10 testes E2E no Chromium** (desktop e celular) e `pnpm audit` sem vulnerabilidades |
+| 4 a 7 | Não iniciadas |
 
 O que a Etapa 1 entrega:
 
@@ -32,7 +33,16 @@ A Etapa 2 entrega:
 - Cadastro público barrado no banco.
 - CSP com nonce e proteção CSRF em todas as mutações.
 
-Ainda **não há** bancas, formulário do espectador, fila nem tempo real (etapas 3 a 5).
+A Etapa 3 entrega:
+
+- **Painel:** criar banca com prévia do valor por pessoa e da sobra, editar (valor e vagas travam depois do primeiro pedido), pausar e reabrir. Clique duplo não cria duas bancas.
+- **Página pública** `/{código}-banca`: foto do streamer, valor em destaque, vagas restantes e link de cadastro na plataforma (configurável).
+- **Formulário do espectador** com máscaras e validação igual no navegador e no servidor (CPF com dígito verificador, Pix por tipo), Turnstile verificado no servidor e declaração de maioridade.
+- **Bloqueio de pedidos indevidos** com a mesma mensagem genérica: CPF repetido, IP repetido (opcional), banido e fila cheia.
+- **Criptografia dos dados pessoais** (AES-256-GCM, chave só no servidor) e HMAC para duplicidade e banimentos.
+- **Política de privacidade** (texto a validar com advogado).
+
+Ainda **não há** a página do pedido (`/pedido`), o chat nem o tempo real (Etapa 4). O link de pedido gerado hoje só passa a abrir na Etapa 4.
 
 ## Pré-requisitos (desenvolvimento local)
 
@@ -91,7 +101,7 @@ Depois do primeiro deploy, rode `pnpm seed:owner` com as variáveis de produçã
 pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm build
 ```
 
-A partir da Etapa 3, também `pnpm test:e2e`. O mesmo conjunto roda no GitHub Actions (`.github/workflows/ci.yml`), que também sobe o Supabase local e roda `pnpm audit --audit-level high`.
+A partir da Etapa 3, também `pnpm test:e2e` (Playwright contra o build de produção; antes, rode `pnpm exec playwright install chromium`). O mesmo conjunto roda no GitHub Actions (`.github/workflows/ci.yml`), que também sobe o Supabase local e roda `pnpm audit --audit-level high`.
 
 | Comando | O que faz |
 |---|---|
@@ -100,6 +110,7 @@ A partir da Etapa 3, também `pnpm test:e2e`. O mesmo conjunto roda no GitHub Ac
 | `pnpm test` | Vitest (unitários) |
 | `pnpm test:db` | pgTAP contra o Supabase local (`supabase test db`): RLS, privilégios, constraints e auditoria |
 | `pnpm build` | Build de produção (`.next/standalone`) |
+| `pnpm test:e2e` | Playwright no Chromium, desktop e celular: login com MFA pela tela, criação de banca, pedido, acessibilidade (axe), teclado e ausência de violações de CSP |
 | `pnpm seed:owner` | Cria a conta do streamer (uma vez) |
 
 ## Estrutura

@@ -475,6 +475,30 @@ Testado na integração (sem token, outra origem, cross-site).
 
 **Status:** Implementada (Etapa 2). A rotina de 12 meses apaga o trecho **inicial contínuo** de registros antigos da cadeia, nunca um registro recente. A cadeia continua verificável a partir da âncora. Teste dedicado no pgTAP 06.
 
+## D-063 · Limites de pedido configuráveis
+
+**Status:** Implementada (Etapa 3). Os limites por IP (5 pedidos a cada 10 min e 1 a cada 30 s) e o teto do valor da banca (R$ 100 mil) vêm de variáveis de ambiente com padrões seguros e faixas validadas. Os testes usam rajada de 1 s para não esperar 30 s entre pedidos. Em produção, os padrões valem se nada for configurado.
+
+## D-064 · Build standalone com os arquivos estáticos
+
+**Status:** Implementada (Etapa 3). `next build` com `output: "standalone"` não copia `public/` nem `.next/static/`. O `pnpm build` roda `scripts/standalone.mjs` em seguida, e `node .next/standalone/server.js` serve tudo (foto inclusive). Os testes E2E rodam contra esse mesmo build de produção.
+
+## D-065 · `upgrade-insecure-requests` só com HTTPS
+
+**Status:** Implementada (Etapa 3). A diretiva só entra na CSP quando `SITE_URL` é `https://`. Em `http://localhost` ela forçava os recursos para `https://localhost` e quebrava a página (visto nos testes E2E).
+
+## D-066 · O que o pedido guarda e como compara
+
+**Status:** Implementada (Etapa 3).
+- **Cifrados (AES-GCM, AAD por pedido e coluna):** nome normalizado (espaços), CPF (só dígitos), chave Pix normalizada e ID na plataforma como digitado.
+- **HMAC com domínio separado:**
+  - `cpf`: dígitos do CPF.
+  - `pix`: tipo + chave normalizada.
+  - `pid`: ID em minúsculas.
+  - `ip`: forma canônica, com IPv6 agrupado no /64.
+- Duplicidade e banimento comparam com o HMAC em todas as versões de chave aceitas (D-013).
+- O banco recusa texto não cifrado nos campos `*_enc` (check `is_ciphertext`, testado).
+
 ---
 
 ## Registro de mudanças
@@ -485,3 +509,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 27/10/2026 | Aprovação de todas as recomendações; foto recebida e paleta definida (D-025); novos requisitos: prazo de 5 min (D-043), encerrar apaga tudo e leva para "Aguardando banca..." (D-044), moderador pode encerrar (D-045), beep ao assumir (D-046), tela inicial (D-047) |
 | 27/10/2026 | Etapa 1: cadastro/anônimo no Auth (D-048), fixação de versões via CI (D-049), RLS sem FORCE (D-050), tsconfig (D-051), pasta de tema (D-052) |
 | 27/10/2026 | Etapa 2: D-048 revisada (trigger no banco), D-053 a D-062 |
+| 28/10/2026 | Etapa 3: D-063 a D-066 |
