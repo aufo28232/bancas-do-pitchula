@@ -57,7 +57,7 @@ test("streamer entra com MFA pela tela e cria uma banca", async ({ page }) => {
   await expect(page.getByText("Banca criada")).toBeVisible();
   const link = ((await page.locator("code").first().textContent()) ?? "").trim();
   expect(link).toMatch(/\/[a-z0-9]{8}-[0-9]{4}-banca$/);
-  salvarEstado({ link: new URL(link).pathname });
+  salvarEstado({ link: new URL(link).pathname, email, senha, segredo });
 
   // A banca aparece na lista do painel
   await page.goto("/painel");

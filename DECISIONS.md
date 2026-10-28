@@ -515,6 +515,22 @@ Testado na integração (sem token, outra origem, cross-site).
 
 **Status:** Implementada (Etapa 4). Assumir o pedido, mandar a mensagem que inicia o prazo e encerrar a banca ainda não têm tela (Etapa 5). O E2E faz essas mudanças direto no Postgres local, e todo o resto passa pelo caminho real: os triggers emitem o Broadcast, o Realtime entrega e a página reage. Na Etapa 5 esses passos passam a ser feitos pela tela do painel.
 
+## D-071 · Concorrência testada com requisições simultâneas, não com dblink
+
+**Status:** Implementada (Etapa 5). O plano previa pgTAP com duas conexões via `dblink`. Isso não funciona dentro do pgTAP: cada arquivo roda numa transação que nunca é confirmada, e uma conexão `dblink` não enxerga os dados dessa transação. Os testes de concorrência ficaram na integração (Vitest): dois moderadores reais disparam a mesma ação **ao mesmo tempo** pelo PostgREST (última vaga paga por dois, dois assumindo o mesmo pedido, pagamento duplo com a mesma chave). As regras sequenciais (transições, travas, prazo, idempotência) continuam no pgTAP 10.
+
+## D-072 · Tempo real do painel com o access token do staff
+
+**Status:** Implementada (Etapa 5), conforme D-027. `POST /api/painel/realtime` devolve o access token atual do staff (vale até 5 min; o proxy renova no servidor) só para entrar no canal `staff:{banca}`. Os eventos desse canal levam só id e estado; o painel busca os dados no servidor, que aplica o modo live.
+
+## D-073 · Streamer paga ou recusa sem assumir
+
+**Status:** Implementada (Etapa 5). A tabela de §5.6 dizia "trava pelo próprio moderador (ou owner)". Ficou assim: moderador precisa estar com a trava; o streamer pode pagar ou recusar direto **se ninguém estiver com o pedido**. Se um moderador estiver atendendo, nem o streamer passa por cima sem antes "forçar assumir" (que é auditado).
+
+## D-074 · Mensagens do espectador: 30 por hora
+
+**Status:** Implementada (Etapa 5), conforme D-021. Além de 10 por minuto e 1 a cada 2 s, o chat do espectador aceita no máximo 30 mensagens por hora por pedido (Redis fora = bloqueia). O limite de 5 comprovantes chega com os uploads (Etapa 6).
+
 ---
 
 ## Registro de mudanças
@@ -527,3 +543,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 27/10/2026 | Etapa 2: D-048 revisada (trigger no banco), D-053 a D-062 |
 | 28/10/2026 | Etapa 3: D-063 a D-066 |
 | 28/10/2026 | Etapa 4: D-008 verificada, D-067 a D-070 |
+| 28/10/2026 | Etapa 5: D-071 a D-074 |

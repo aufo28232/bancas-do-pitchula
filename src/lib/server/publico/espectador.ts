@@ -220,13 +220,16 @@ const corpoMensagem = z.object({
 
 export const postMensagemPedido = mutacao("pedido/mensagem", async (ctx) => {
   const s = exigirSessao(ctx.req);
-  const [porMin, rajada] = await Promise.all([
+  // 10 por minuto, 1 a cada 2 s e 30 por hora (D-021). Redis fora = bloqueia.
+  const limites = await Promise.all([
     contarOuFalhar("pedido-msg", s.idRl, 10, 60),
     contarOuFalhar("pedido-msg-rajada", s.idRl, 1, 2),
+    contarOuFalhar("pedido-msg-hora", s.idRl, 30, 3600),
   ]);
-  if (!porMin.permitido || !rajada.permitido) {
+  const estourados = limites.filter((l) => !l.permitido);
+  if (estourados.length > 0) {
     throw new HttpError(429, "Você está mandando mensagens rápido demais. Espere um pouco.", "rate_limit", {
-      "Retry-After": String(Math.max(porMin.permitido ? 0 : porMin.tentarEmSeg, rajada.permitido ? 0 : rajada.tentarEmSeg)),
+      "Retry-After": String(Math.max(...estourados.map((l) => l.tentarEmSeg))),
     });
   }
   const d = await lerCorpo(ctx.req, corpoMensagem, 6000);

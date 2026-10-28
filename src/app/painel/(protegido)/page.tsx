@@ -56,6 +56,14 @@ export default async function InicioPainel() {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                {b.status !== "encerrada" ? (
+                  <Link
+                    href={`/painel/bancas/${b.id}/atendimento`}
+                    className="bg-accent px-3 py-1.5 text-sm font-medium text-accent-fg"
+                  >
+                    Atender{b.pendentes > 0 ? ` (${b.pendentes})` : ""}
+                  </Link>
+                ) : null}
                 {b.code ? <CopiarTexto texto={`${origem}/${b.code}-banca`} rotulo="Copiar link" /> : null}
                 {dono && b.status !== "encerrada" ? (
                   <>

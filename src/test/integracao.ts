@@ -6,6 +6,7 @@ import postgres from "postgres";
 import { expect } from "vitest";
 import { fatoresDoUsuario } from "@/lib/server/gotrue";
 import { postEntrar, postMfaInscrever, postMfaVerificar } from "@/lib/server/painel/auth";
+import { postAceitarConvite, postCriarConvite } from "@/lib/server/painel/convites";
 import { criarStreamer } from "@/lib/server/seed";
 import { COOKIE_ACCESS, COOKIE_REFRESH } from "@/lib/server/sessao-staff";
 import { ateProximoPeriodoTotp, totp } from "./util";
@@ -116,4 +117,19 @@ export async function novoStreamerLogado(sql: ReturnType<typeof conectarBanco>) 
   const nav = new Navegador();
   const segredo = await entrarCadastrandoMfa(nav, email, senha);
   return { id, email, senha, segredo, nav };
+}
+
+/** Convida um moderador pelo streamer, aceita o convite e entra com MFA. */
+export async function novoModeradorLogado(sql: ReturnType<typeof conectarBanco>, dono: Navegador, apelido: string) {
+  const convite = await dono.post(postCriarConvite, { apelido });
+  expect(convite.status).toBe(201);
+  const token = String(convite.dados.link).split("#")[1];
+  const email = emailNovo("mod");
+  const senha = senhaForte();
+  const aceite = await new Navegador().post(postAceitarConvite, { token, email, senha, apelido, turnstile: TURNSTILE_TESTE });
+  expect(aceite.status).toBe(201);
+  const [linha] = await sql<{ id: string }[]>`select id from auth.users where email = ${email}`;
+  const nav = new Navegador();
+  const segredo = await entrarCadastrandoMfa(nav, email, senha);
+  return { id: linha?.id ?? "", email, senha, segredo, nav };
 }

@@ -40,3 +40,19 @@ describe("máscaras da página do pedido (D-023)", () => {
     expect(mascararPlataformaId("ab")).toBe("**");
   });
 });
+
+describe("modo live do painel (máscara total)", () => {
+  it("nome vira só as iniciais com asteriscos", async () => {
+    const { mascararNomeLive } = await import("./mascara");
+    expect(mascararNomeLive("João Pedro Silva")).toBe("J*** P*** S***");
+  });
+
+  it("chat: e-mail e sequências de 8+ dígitos somem; números curtos ficam (D-015)", async () => {
+    const { mascararTextoLive } = await import("./mascara");
+    expect(mascararTextoLive("meu cpf é 529.982.247-25 ok")).toBe("meu cpf é ***.***.***-** ok");
+    expect(mascararTextoLive("pix maria@exemplo.com")).toBe("pix ***@***");
+    expect(mascararTextoLive("zap (21) 98765-4321")).toBe("zap (**) *****-****");
+    expect(mascararTextoLive("depositei 50 reais às 21:30")).toBe("depositei 50 reais às 21:30");
+    expect(mascararTextoLive("+5521987654321")).toBe("+*************");
+  });
+});

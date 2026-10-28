@@ -61,3 +61,46 @@ export function mascararPlataformaId(id: string): string {
   if (id.length <= 3) return ast(id.length);
   return ast(Math.min(8, id.length - 3)) + id.slice(-3);
 }
+
+// ---------------------------------------------------------------------------
+// Modo live do painel (ARCHITECTURE §5.8): máscara TOTAL, aplicada no servidor.
+// O valor real nunca chega ao navegador enquanto o modo live estiver ligado.
+// ---------------------------------------------------------------------------
+
+/** "João Pedro Silva" -> "J*** P*** S***" */
+export function mascararNomeLive(nome: string): string {
+  return nome
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => `${[...p][0] ?? ""}***`)
+    .join(" ");
+}
+
+export function mascararPixLive(tipo: TipoPix): string {
+  switch (tipo) {
+    case "cpf":
+      return "***.***.***-**";
+    case "email":
+      return "***@***";
+    case "telefone":
+      return "(**) *****-****";
+    case "aleatoria":
+      return "********-****-****-****-************";
+  }
+}
+
+export const CPF_LIVE = "***.***.***-**";
+export const ID_LIVE = "********";
+
+/**
+ * Texto digitado pelo espectador no chat (D-015): e-mails e qualquer sequência
+ * com 8 ou mais dígitos (CPF, telefone, conta), com ou sem pontuação.
+ */
+export function mascararTextoLive(texto: string): string {
+  return texto
+    .replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g, "***@***")
+    .replace(/\+?\d[\d.\-\s/()]{6,}\d/g, (trecho) =>
+      trecho.replace(/\D/g, "").length >= 8 ? trecho.replace(/\d/g, "*") : trecho,
+    );
+}

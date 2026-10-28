@@ -74,7 +74,11 @@ select set_eq(
     'api.staff_whoami', 'api.preauth_whoami', 'api.preauth_end_session', 'api.staff_list_sessions', 'api.staff_revoke_session',
     'api.owner_list_alerts', 'api.owner_ack_alert', 'api.owner_list_staff', 'api.owner_deactivate_staff',
     'api.owner_prepare_mfa_reset', 'api.owner_create_invite', 'api.owner_revoke_invite', 'api.owner_list_invites',
-    'api.owner_create_banca', 'api.owner_update_banca', 'api.owner_set_banca_status', 'api.staff_list_bancas'
+    'api.owner_create_banca', 'api.owner_update_banca', 'api.owner_set_banca_status', 'api.staff_list_bancas',
+    'api.staff_list_queue', 'api.staff_get_order', 'api.staff_claim', 'api.owner_force_claim', 'api.staff_release',
+    'api.staff_send_message', 'api.staff_mark_paid', 'api.staff_refuse', 'api.staff_ban', 'api.staff_list_bans',
+    'api.staff_lift_ban', 'api.staff_reveal', 'api.staff_set_live_mode', 'api.staff_list_quick_replies',
+    'api.owner_save_quick_reply', 'api.owner_delete_quick_reply'
   ],
   'authenticated só executa as funções das políticas e as funções staff_/owner_/preauth_ (que conferem o papel por dentro)'
 );

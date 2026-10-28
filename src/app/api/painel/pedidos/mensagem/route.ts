@@ -1,0 +1,3 @@
+import { postMensagemStaff } from "@/lib/server/painel/atendimento";
+
+export const POST = postMensagemStaff;

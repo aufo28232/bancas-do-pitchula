@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const ARQUIVO_ESTADO = fileURLToPath(new URL("./.estado.json", import.meta.url));
 
-export type Estado = { link: string };
+export type Estado = { link: string; email: string; senha: string; segredo: string };
 
 export function salvarEstado(e: Estado): void {
   writeFileSync(ARQUIVO_ESTADO, JSON.stringify(e));

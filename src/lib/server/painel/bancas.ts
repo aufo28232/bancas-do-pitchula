@@ -15,7 +15,7 @@ export function tetoBancaCents(): number {
   return Number.isSafeInteger(v) && v > 0 && v <= 100_000_000 ? v : 10_000_000;
 }
 
-async function limitePainel(userId: string): Promise<void> {
+export async function limitePainel(userId: string): Promise<void> {
   const r = await contarOuPermitir("painel", hmac(getKeyring(), "rl-staff", userId).toString("hex"), 120, 60);
   if (!r.permitido) throw new HttpError(429, MSG.muitasTentativas, "rate_limit", { "Retry-After": String(r.tentarEmSeg) });
 }
