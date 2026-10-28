@@ -29,6 +29,7 @@ test("streamer entra com MFA pela tela e cria uma banca", async ({ page }) => {
   await expect(page).toHaveURL(/\/painel\/mfa$/);
 
   // Cadastro do autenticador (lendo a chave manual, como faria quem não consegue escanear)
+  await page.screenshot({ path: "test-results/capturas/painel-mfa.png" });
   await page.getByRole("button", { name: "Gerar QR code" }).click();
   await expect(page.getByRole("img", { name: /QR code/ })).toBeVisible();
   await page.getByText("Não consegue escanear?").click();
@@ -61,6 +62,7 @@ test("streamer entra com MFA pela tela e cria uma banca", async ({ page }) => {
   // A banca aparece na lista do painel
   await page.goto("/painel");
   await expect(page.getByText("Banca E2E")).toBeVisible();
+  await page.screenshot({ path: "test-results/capturas/painel-bancas.png" });
 
   expect(violacoes).toEqual([]);
 });

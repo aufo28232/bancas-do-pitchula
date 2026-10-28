@@ -171,6 +171,7 @@ jobs:
             echo "status=${{ job.status }}"
             date -u +"quando=%Y-%m-%dT%H:%M:%SZ"
           } > "$LOGS/00-resumo.txt"
+          if [ -d test-results/capturas ]; then cp -r test-results/capturas "$LOGS/capturas"; fi
           cd "$LOGS"
           git init -q -b ci-logs
           git config user.name "github-actions[bot]"

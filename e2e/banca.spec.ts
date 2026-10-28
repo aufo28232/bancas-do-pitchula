@@ -17,7 +17,7 @@ async function preencher(page: Page, cpf: string): Promise<void> {
   await esperarTurnstile(page);
 }
 
-test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genérica", async ({ page }) => {
+test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genérica", async ({ page }, info) => {
   const { link } = lerEstado();
   const violacoes = observarCsp(page);
   await page.goto(link);
@@ -41,10 +41,15 @@ test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genéric
   const graves = axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
 
+  // Capturas para revisão visual (publicadas junto com os logs do CI).
+  await page.waitForLoadState("networkidle");
+  await page.screenshot({ path: `test-results/capturas/banca-${info.project.name}.png`, fullPage: info.project.name === "celular" });
+
   const cpf = gerarCpf();
   await preencher(page, cpf);
   await page.getByRole("button", { name: "Enviar pedido" }).click();
   await expect(page.getByText("Pedido enviado!")).toBeVisible();
+  await page.screenshot({ path: `test-results/capturas/pedido-enviado-${info.project.name}.png` });
   await expect(page.getByText("Não mostre na live nem mande print dele.")).toBeVisible();
   await expect(page.locator("code")).toContainText("/pedido#");
 
