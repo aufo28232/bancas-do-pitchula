@@ -69,7 +69,7 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
   const [erroMsg, setErroMsg] = useState("");
   const ultimoAlerta = useRef(0);
   const atendimentoAnterior = useRef<boolean | null>(null);
-  const fimDaLista = useRef<HTMLLIElement>(null);
+  const fimDaLista = useRef<HTMLDivElement>(null);
 
   const alertar = useCallback((atendente: string | null) => {
     if (Date.now() - ultimoAlerta.current < 3000) return;
@@ -420,7 +420,8 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
         <h2 id="t-chat" className="border-b border-line px-4 py-3 font-display text-lg font-extrabold uppercase tracking-wide">
           Chat com a equipe
         </h2>
-        <ol role="log" aria-live="polite" aria-label="Mensagens" className="flex-1 space-y-3 overflow-y-auto px-4 py-4 lg:max-h-[60svh]">
+        <div role="log" aria-live="polite" aria-label="Mensagens" className="flex-1 overflow-y-auto px-4 py-4 lg:max-h-[60svh]">
+          <ol className="space-y-3">
           {estado.mensagens.map((m) => (
             <li
               key={m.id}
@@ -441,8 +442,9 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
               {m.tem_anexo ? <p className="text-xs text-fg-muted">[imagem enviada]</p> : null}
             </li>
           ))}
-          <li ref={fimDaLista} aria-hidden="true" />
-        </ol>
+          </ol>
+          <div ref={fimDaLista} aria-hidden="true" />
+        </div>
 
         {aberto ? (
           <form onSubmit={(e) => void aoMandar(e)} className="border-t border-line p-3">
