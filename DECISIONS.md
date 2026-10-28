@@ -373,6 +373,40 @@ Pontos para o advogado:
 - `/` mostra só "Aguardando banca..." com animação: fundo escuro com grain, título em Big Shoulders Display, três pontos pulsando no laranja e uma linha de varredura lenta. A animação para com `prefers-reduced-motion`. Também aparecem os links da Twitch e do Instagram e o aviso de site oficial.
 - A tela inicial **não lista** a banca aberta: o link continua vindo da live. Se quiser um botão "Banca aberta, entrar" quando houver banca, é uma mudança pequena.
 
+## D-048 · Cadastro público desligado, login anônimo ligado
+
+**Status:** Proposta técnica, **não verificada** (Etapa 1)
+
+- **Conflito:** o enunciado pede "signups desativados", mas no Supabase Auth o login anônimo (D-003) depende do interruptor geral de cadastro (`enable_signup`).
+- **Decisão:** `enable_signup = true` (necessário para o anônimo), com `[auth.email] enable_signup = false` e `[auth.sms] enable_signup = false`. Ninguém consegue criar conta com e-mail ou telefone. As contas do staff só nascem pelo seed e pelos convites (`auth.admin.createUser` no servidor).
+- **Risco residual:** alguém com a anon key pode criar usuários **anônimos** diretamente na API do Auth. Mitigações: captcha Turnstile obrigatório no Auth, rate limit do próprio Supabase, e usuários anônimos não acessam nenhuma tabela (provado no pgTAP 04) nem canal que não seja de um pedido vinculado a eles.
+- **Verificação pendente (Etapa 2):** teste de integração tentando `signUp` com e-mail e com telefone contra o Supabase local. Precisa ser recusado.
+
+## D-049 · Como as versões exatas são fixadas
+
+**Status:** Proposta (Etapa 1)
+
+- **Problema:** o ambiente onde o código é escrito não alcança o registro do npm. O GitHub Actions alcança.
+- **Decisão:** `scripts/deps.intent.json` declara a faixa pretendida de cada pacote. Na **primeira** execução do CI, `scripts/pin-deps.mjs` resolve cada faixa para a maior versão estável, grava a versão **exata** no `package.json` (sem `^`/`~`) e o `packageManager` do pnpm, gera o `pnpm-lock.yaml`, roda todas as verificações e devolve esses arquivos ao repositório. Dali em diante, o CI usa `--frozen-lockfile`.
+- **Faixas escolhidas:** Next 16.4+ (contém o patch de 14/10/2026), React 19, Zod 4, TypeScript 5.9–6.x (fica de fora o TS 7 nativo, por compatibilidade com o plugin do Next), ESLint 9 (o `eslint-config-next` acompanha a versão do Next), Tailwind 4, Vitest 3–4.
+- A tabela final de versões entra aqui depois da primeira execução, copiada de `scripts/pinned-versions.md`.
+- **Pendente (Etapa 7):** fixar as GitHub Actions por SHA de commit, em vez de tag de versão.
+
+## D-050 · RLS sem FORCE
+
+**Status:** Proposta (Etapa 1). Substitui o "ENABLE + FORCE" da proposta inicial.
+
+- Com `FORCE ROW LEVEL SECURITY`, o próprio dono das tabelas passaria a ser filtrado pela RLS. As funções `SECURITY DEFINER` (pagar, recusar, encerrar...) rodam como o dono, e a função que as políticas chamam (`current_staff_role`) também, o que causaria recursão e bloqueio.
+- O dono (`postgres`) nunca é usado pela aplicação: o servidor usa o JWT do staff (`authenticated`) ou a `service_role`, que não têm privilégio direto nas tabelas (provado no pgTAP 02).
+
+## D-051 · `exactOptionalPropertyTypes` desligado
+
+**Status:** Proposta (Etapa 1). O `tsconfig` usa `strict` + `noUncheckedIndexedAccess` + `noImplicitOverride`. `exactOptionalPropertyTypes` (citado em D-001) ficou de fora porque costuma conflitar com os tipos gerados pelo Next em `.next/types`. Pode voltar se o CI mostrar que não há conflito.
+
+## D-052 · Pasta de tema
+
+**Status:** Proposta (Etapa 1). O "arquivo de tema central" é a pasta `src/theme/`: `theme.ts` (cores, foto, logo, raios), lido pelo Tailwind, e `fonts.ts` (as fontes ficam separadas porque o `next/font` exige chamadas literais no módulo). Um teste confere o contraste AA de todos os pares de cor usados como texto.
+
 ---
 
 ## Registro de mudanças
@@ -381,3 +415,4 @@ Pontos para o advogado:
 |---|---|
 | 27/10/2026 | Proposta inicial (D-001 a D-042) |
 | 27/10/2026 | Aprovação de todas as recomendações; foto recebida e paleta definida (D-025); novos requisitos: prazo de 5 min (D-043), encerrar apaga tudo e leva para "Aguardando banca..." (D-044), moderador pode encerrar (D-045), beep ao assumir (D-046), tela inicial (D-047) |
+| 27/10/2026 | Etapa 1: cadastro/anônimo no Auth (D-048), fixação de versões via CI (D-049), RLS sem FORCE (D-050), tsconfig (D-051), pasta de tema (D-052) |

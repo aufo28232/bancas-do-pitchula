@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: lint · typecheck · test · test:db · build · audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      # Só para gravar package.json/lockfile fixados na PRIMEIRA execução (DECISIONS D-049).
+      contents: write
+    env:
+      # Chave de TESTE pública da Cloudflare (sempre aprova). Nunca usar em produção.
+      SUPABASE_AUTH_CAPTCHA_SECRET: 1x0000000000000000000000000000000AA
+      PLATFORM_NAME: 4fly
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Instalar pnpm (versão do packageManager, ou a mais recente na primeira execução)
+        run: |
+          PM=$(node -p "require('./package.json').packageManager || ''")
+          if [ -n "$PM" ]; then npm install -g "$PM"; else npm install -g pnpm@latest; fi
+          node --version
+          pnpm --version
+
+      - name: Fixar versões exatas (só se ainda não houver lockfile)
+        id: pin
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "novo=0" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/pin-deps.mjs
+            echo "novo=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar dependências
+        run: |
+          if [ "${{ steps.pin.outputs.novo }}" = "1" ]; then
+            pnpm install --no-frozen-lockfile
+          else
+            pnpm install --frozen-lockfile
+          fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Subir Supabase local
+        run: |
+          supabase --version
+          supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,postgres-meta
+
+      - name: pnpm lint
+        run: pnpm lint
+
+      - name: pnpm typecheck
+        run: pnpm typecheck
+
+      - name: pnpm test
+        run: pnpm test
+
+      - name: pnpm test:db
+        run: pnpm test:db
+
+      - name: pnpm build
+        run: pnpm build
+
+      - name: pnpm audit (sem vulnerabilidades altas)
+        run: pnpm audit --audit-level high
+
+      - name: Gravar versões fixadas no repositório
+        if: always() && steps.pin.outputs.novo == '1' && github.event_name != 'pull_request' && hashFiles('pnpm-lock.yaml') != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json pnpm-lock.yaml scripts/pinned-versions.md
+          git commit -m "chore: fixar versões exatas das dependências e lockfile"
+          git push
+
+      - name: Parar Supabase
+        if: always()
+        run: supabase stop --no-backup || true

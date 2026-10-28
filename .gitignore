@@ -1,0 +1,25 @@
+# dependências
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# testes
+/coverage
+/test-results
+/playwright-report
+
+# ambiente: NUNCA versionar segredos
+.env
+.env.*
+!.env.example
+
+# sistema / editores
+.DS_Store
+Thumbs.db
+*.log
+*.tsbuildinfo
+.vscode/*
+!.vscode/extensions.json
