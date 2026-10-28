@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/standalone.mjs",
     "start": "node .next/standalone/server.js",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
@@ -16,7 +16,8 @@
     "test:db": "supabase test db",
     "deps:pin": "node scripts/pin-deps.mjs",
     "audit:deps": "pnpm audit --audit-level high",
-    "seed:owner": "tsx scripts/seed-owner.ts"
+    "seed:owner": "tsx scripts/seed-owner.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "next": "16.4.3",

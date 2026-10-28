@@ -18,7 +18,7 @@ import {
  * 4. Referrer-Policy no-referrer nas páginas com token no fragmento.
  * Nenhuma decisão de AUTORIZAÇÃO acontece aqui: isso fica no banco e nas rotas.
  */
-function politicaCsp(nonce: string, dev: boolean, supabaseUrl: string | undefined): string {
+function politicaCsp(nonce: string, dev: boolean, supabaseUrl: string | undefined, siteHttps: boolean): string {
   let supabase = "";
   if (supabaseUrl) {
     try {
@@ -44,7 +44,8 @@ function politicaCsp(nonce: string, dev: boolean, supabaseUrl: string | undefine
     "form-action 'self'",
     "object-src 'none'",
   ];
-  if (!dev) diretivas.push("upgrade-insecure-requests");
+  // Só faz sentido (e só funciona) quando o site é servido por HTTPS.
+  if (!dev && siteHttps) diretivas.push("upgrade-insecure-requests");
   return diretivas.join("; ");
 }
 
@@ -52,7 +53,7 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
   const caminho = req.nextUrl.pathname;
   const dev = process.env.NODE_ENV !== "production";
   const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64");
-  const csp = politicaCsp(nonce, dev, process.env.SUPABASE_URL);
+  const csp = politicaCsp(nonce, dev, process.env.SUPABASE_URL, (process.env.SITE_URL ?? "").startsWith("https://"));
 
   const cookies = new Map(req.cookies.getAll().map((c) => [c.name, c.value]));
   const setCookies: string[] = [];

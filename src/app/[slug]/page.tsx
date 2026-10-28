@@ -1,0 +1,139 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
+import { FormPedido } from "@/components/banca/form-pedido";
+import { SiteFooter } from "@/components/site-footer";
+import { site } from "@/config/site";
+import { formatarReais } from "@/lib/dinheiro";
+import { getSecurityEnv, getServerEnv } from "@/lib/env";
+import { codigoDoSlug } from "@/lib/server/codigo-banca";
+import { bancaPublica } from "@/lib/server/publico/banca";
+import { theme } from "@/theme/theme";
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const codigo = codigoDoSlug((await params).slug);
+  const banca = codigo ? await bancaPublica(codigo) : null;
+  const titulo = banca ? `Banca do ${site.streamer} · ${banca.name}` : `Bancas do ${site.streamer}`;
+  const descricao = banca
+    ? `${formatarReais(banca.per_person_cents)} por pessoa · ${banca.restantes} de ${banca.slots} vagas. Site oficial.`
+    : site.description;
+  let base: URL | undefined;
+  try {
+    base = new URL(getSecurityEnv().SITE_URL);
+  } catch {
+    base = undefined;
+  }
+  return {
+    title: { absolute: titulo },
+    description: descricao,
+    metadataBase: base,
+    // O link circula na live; não precisa (nem deve) aparecer em buscadores.
+    robots: { index: false, follow: false },
+    openGraph: {
+      title: titulo,
+      description: descricao,
+      type: "website",
+      locale: "pt_BR",
+      siteName: site.name,
+      images: [{ url: theme.photo.src, width: theme.photo.width, height: theme.photo.height, alt: theme.photo.alt }],
+    },
+    twitter: { card: "summary_large_image", title: titulo, description: descricao, images: [theme.photo.src] },
+  };
+}
+
+const AVISO_STATUS = {
+  fechada: { titulo: "Banca pausada", texto: "O streamer pausou esta banca. Fica de olho na live." },
+  esgotada: { titulo: "Vagas esgotadas", texto: "Todas as vagas desta banca foram preenchidas." },
+} as const;
+
+export default async function PaginaBanca({ params }: Props) {
+  const codigo = codigoDoSlug((await params).slug);
+  if (!codigo) notFound();
+  const banca = await bancaPublica(codigo);
+  // Banca encerrada ou inexistente: o link deixou de existir (D-044).
+  if (!banca) redirect("/");
+
+  const { PLATFORM_NAME, PLATFORM_SIGNUP_URL } = getServerEnv();
+  const { TURNSTILE_SITE_KEY } = getSecurityEnv();
+  const pagas = banca.slots - banca.restantes;
+
+  return (
+    <main className="relative z-[1] min-h-svh lg:grid lg:grid-cols-[45fr_55fr]">
+      {/* Foto: banner no celular, metade direita sangrando no desktop */}
+      <div className="relative h-[40svh] w-full lg:sticky lg:top-0 lg:order-2 lg:h-svh">
+        <Image
+          src={theme.photo.src}
+          alt={theme.photo.alt}
+          fill
+          priority
+          sizes="(min-width: 1024px) 55vw, 100vw"
+          className="object-cover object-foto"
+        />
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-bg to-transparent lg:hidden" />
+        <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-48 bg-linear-to-r from-bg to-transparent lg:block" />
+      </div>
+
+      <section
+        aria-labelledby="nome-banca"
+        className="relative -mt-24 px-4 pb-10 lg:order-1 lg:mt-0 lg:flex lg:min-h-svh lg:items-center lg:px-12 lg:py-16"
+      >
+        <div className="mx-auto w-full max-w-[420px] lg:mx-0">
+          <p className="font-display text-sm font-extrabold uppercase tracking-[0.35em] text-fg-muted">
+            Banca do {site.streamer}
+          </p>
+          <h1 id="nome-banca" className="mt-2 text-xl font-medium">
+            {banca.name}
+          </h1>
+
+          <p className="mt-4 font-display font-black leading-[0.82] tracking-tight">
+            <span className="block text-[clamp(4.5rem,21vw,8.5rem)]">{formatarReais(banca.per_person_cents)}</span>
+            <span className="mt-2 block text-base font-extrabold uppercase tracking-[0.2em] text-fg-muted">por pessoa</span>
+          </p>
+
+          <div className="mt-8">
+            <p className="flex items-baseline justify-between text-sm">
+              <span>
+                <strong className="font-mono text-lg">{banca.restantes}</strong> vagas restantes
+              </span>
+              <span className="font-mono text-fg-muted">de {banca.slots}</span>
+            </p>
+            <progress
+              value={pagas}
+              max={banca.slots}
+              aria-label={`${banca.restantes} de ${banca.slots} vagas restantes`}
+              className="mt-2 block h-1 w-full appearance-none overflow-hidden rounded-none bg-line [&::-moz-progress-bar]:bg-accent [&::-webkit-progress-bar]:bg-line [&::-webkit-progress-value]:bg-accent"
+            />
+          </div>
+
+          {banca.status === "aberta" ? (
+            <div className="mt-10">
+              {PLATFORM_SIGNUP_URL ? (
+                <p className="mb-6 text-sm text-fg-muted">
+                  <a
+                    href={PLATFORM_SIGNUP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow sponsored"
+                    className="underline decoration-line underline-offset-4 hover:text-fg"
+                  >
+                    Ainda não tem conta na {PLATFORM_NAME}? Cadastre-se aqui
+                    <span className="sr-only"> (abre em nova aba)</span>
+                  </a>
+                </p>
+              ) : null}
+              <FormPedido codigo={codigo} siteKey={TURNSTILE_SITE_KEY} plataforma={PLATFORM_NAME} />
+            </div>
+          ) : (
+            <div role="status" className="mt-10 border-l-2 border-accent pl-4">
+              <p className="font-display text-2xl font-black uppercase">{AVISO_STATUS[banca.status].titulo}</p>
+              <p className="mt-1 text-fg-muted">{AVISO_STATUS[banca.status].texto}</p>
+            </div>
+          )}
+
+          <SiteFooter />
+        </div>
+      </section>
+    </main>
+  );
+}

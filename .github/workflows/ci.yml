@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verificar:
-    name: lint · typecheck · test · test:db · build · audit
+    name: lint · typecheck · test · test:db · build · test:e2e · audit
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
@@ -44,6 +44,7 @@ jobs:
       SITE_URL: http://localhost:3000
       DEPLOY_MODE: managed
       PLATFORM_NAME: 4fly
+      PLATFORM_SIGNUP_URL: https://go.aff.4fly.game/3kxqo488
       NEXT_TELEMETRY_DISABLED: "1"
       LOGS: ${{ github.workspace }}/.ci-logs
     defaults:
@@ -112,6 +113,8 @@ jobs:
             echo "DB_URL=${DB_URL}"
             echo "HMAC_KEYS={\"1\":\"$(openssl rand -base64 32)\"}"
             echo "HMAC_ACTIVE=1"
+            echo "DATA_ENC_KEYS={\"1\":\"$(openssl rand -base64 32)\"}"
+            echo "DATA_ENC_ACTIVE=1"
           } >> "$GITHUB_ENV"
           echo "variáveis exportadas (valores não são exibidos)"
 
@@ -130,8 +133,14 @@ jobs:
       - name: pnpm build
         run: set -o pipefail; pnpm build 2>&1 | tee "$LOGS/09-build.log"
 
+      - name: Instalar o Chromium do Playwright
+        run: set -o pipefail; pnpm exec playwright install --with-deps chromium 2>&1 | tail -5 | tee "$LOGS/10-playwright-install.log"
+
+      - name: pnpm test:e2e
+        run: set -o pipefail; pnpm test:e2e 2>&1 | tee "$LOGS/10-test-e2e.log"
+
       - name: pnpm audit (sem vulnerabilidades altas)
-        run: set -o pipefail; pnpm audit --audit-level high 2>&1 | tee "$LOGS/10-audit.log"
+        run: set -o pipefail; pnpm audit --audit-level high 2>&1 | tee "$LOGS/11-audit.log"
 
       - name: Gravar versões fixadas no repositório
         if: always() && steps.pin.outputs.novo == '1' && github.event_name != 'pull_request' && hashFiles('pnpm-lock.yaml') != ''

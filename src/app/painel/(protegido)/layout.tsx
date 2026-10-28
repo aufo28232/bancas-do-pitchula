@@ -19,6 +19,9 @@ export default async function LayoutProtegido({ children }: { children: ReactNod
           <Link href="/painel" className="font-display text-lg font-extrabold uppercase tracking-wide">
             Painel
           </Link>
+          <Link href="/painel" className="text-fg-muted hover:text-fg">
+            Bancas
+          </Link>
           <Link href="/painel/sessoes" className="text-fg-muted hover:text-fg">
             Sessões
           </Link>

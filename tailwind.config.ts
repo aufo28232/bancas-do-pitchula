@@ -14,6 +14,8 @@ const config = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       borderRadius: { ...theme.radius },
+      // Enquadramento da foto vem do tema (classe `object-foto`).
+      objectPosition: { foto: theme.photo.objectPosition },
     },
   },
 } satisfies Config;

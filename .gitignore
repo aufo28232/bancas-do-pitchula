@@ -23,3 +23,6 @@ Thumbs.db
 *.tsbuildinfo
 .vscode/*
 !.vscode/extensions.json
+
+# estado temporário dos testes E2E
+/e2e/.estado.json

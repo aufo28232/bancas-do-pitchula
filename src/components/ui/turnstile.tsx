@@ -74,5 +74,5 @@ export function Turnstile({ siteKey, acao, aoMudar }: { siteKey: string; acao: s
     };
   }, [siteKey, acao]);
 
-  return <div ref={ref} className="min-h-[65px]" />;
+  return <div ref={ref} data-turnstile="" className="min-h-[65px]" />;
 }
