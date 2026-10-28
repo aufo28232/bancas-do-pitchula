@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { FormPedido } from "@/components/banca/form-pedido";
-import { VagasAoVivo } from "@/components/banca/vagas-ao-vivo";
+import { EstadoAoVivo } from "@/components/banca/estado-ao-vivo";
 import { RetomarPedido } from "@/components/pedido/retomar-pedido";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const banca = codigo ? await bancaPublica(codigo) : null;
   const titulo = banca ? `Banca do ${site.streamer} · ${banca.name}` : `Bancas do ${site.streamer}`;
   const descricao = banca
-    ? `${formatarReais(banca.per_person_cents)} por pessoa · ${banca.restantes} de ${banca.slots} vagas. Site oficial.`
+    ? `${formatarReais(banca.per_person_cents)} por pessoa. Site oficial.`
     : site.description;
   let base: URL | undefined;
   try {
@@ -59,7 +59,7 @@ export default async function PaginaBanca({ params }: Props) {
 
   const { PLATFORM_NAME, PLATFORM_SIGNUP_URL } = getServerEnv();
   const { TURNSTILE_SITE_KEY } = getSecurityEnv();
-  // Chave PÚBLICA (anon): só abre o canal de leitura das vagas.
+  // Chave PÚBLICA (anon): só abre o canal de leitura do estado da banca.
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = getSupabaseEnv();
 
   return (
@@ -97,10 +97,8 @@ export default async function PaginaBanca({ params }: Props) {
             <span className="mt-2 block text-base font-extrabold uppercase tracking-[0.2em] text-fg-muted">por pessoa</span>
           </p>
 
-          <VagasAoVivo
+          <EstadoAoVivo
             codigo={codigo}
-            restantesIniciais={banca.restantes}
-            slots={banca.slots}
             statusInicial={banca.status}
             url={SUPABASE_URL}
             chavePublica={SUPABASE_ANON_KEY}

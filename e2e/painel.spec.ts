@@ -208,13 +208,14 @@ test("comprovante no chat e encerramento: tudo é apagado e todos voltam para o 
   await page.getByLabel(/Digite o nome da banca/).fill("Banca Relampago");
   await confirmar.click();
   await expect(page).toHaveURL(/\/painel$/);
-  await expect(espectador).toHaveURL(/\/$/);
-  await expect(espectador.getByRole("heading", { name: /Aguardando/ })).toBeVisible();
+  // Sai do pedido e do link encerrado: vai para a banca atual ou para "Aguardando banca..." (D-084).
+  await expect(espectador).not.toHaveURL(/\/pedido$/);
+  await expect(espectador).not.toHaveURL(new RegExp(`${linkBanca}$`));
 
   // O link da banca deixou de existir e nada do pedido sobrou no banco.
   const visitante = await ctx.newPage();
   await visitante.goto(linkBanca);
-  await expect(visitante).toHaveURL(/\/$/);
+  await expect(visitante).not.toHaveURL(new RegExp(`${linkBanca}$`));
   const [n] = await sql<{ n: number }[]>`
     select count(*)::int as n from app.orders o join app.bancas b on b.id = o.banca_id where b.name = 'Banca Relampago'`;
   expect(n?.n).toBe(0);

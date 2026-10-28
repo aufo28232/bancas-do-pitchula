@@ -87,10 +87,7 @@ export function FormMfaCadastrar() {
   if (!dados) {
     return (
       <div className="flex flex-col gap-6">
-        <p className="text-fg-muted">
-          O painel exige um app autenticador (Google Authenticator, Microsoft Authenticator, 1Password, Authy…).
-          Faça isso longe da câmera da live.
-        </p>
+        <p className="text-fg-muted">Cadastre um app autenticador para entrar no painel.</p>
         <p role="alert" className="min-h-5 text-sm text-accent">
           {erro}
         </p>

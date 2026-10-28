@@ -22,7 +22,7 @@ function centsParaTexto(c: number): string {
 }
 
 /** Criação e edição de banca, com prévia do valor por pessoa e da sobra. */
-export function FormBanca({ banca, ipEnfraquecido }: { banca?: BancaEditavel; ipEnfraquecido: boolean }) {
+export function FormBanca({ banca }: { banca?: BancaEditavel }) {
   const router = useRouter();
   const travado = (banca?.order_count ?? 0) > 0;
   const [nome, setNome] = useState(banca?.name ?? "");
@@ -148,15 +148,7 @@ export function FormBanca({ banca, ipEnfraquecido }: { banca?: BancaEditavel; ip
         <input type="checkbox" checked={ipLimit} onChange={(e) => setIpLimit(e.target.checked)} className="mt-0.5 size-4 accent-accent" />
         <span>
           Limitar a 1 pedido por IP
-          <span className="mt-1 block text-fg-muted">
-            Pode barrar pessoas diferentes na mesma casa ou na mesma rede de celular.
-            {banca ? " Mudar agora vale só para os próximos pedidos." : ""}
-          </span>
-          {ipEnfraquecido ? (
-            <span className="mt-1 block text-accent">
-              Neste modo de hospedagem o IP pode ser forjado: a regra por IP fica enfraquecida.
-            </span>
-          ) : null}
+          {banca ? <span className="mt-1 block text-fg-muted">Mudar agora vale só para os próximos pedidos.</span> : null}
         </span>
       </label>
 

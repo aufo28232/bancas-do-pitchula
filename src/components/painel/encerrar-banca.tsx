@@ -50,10 +50,6 @@ export function EncerrarBanca({ id, nome }: { id: string; nome: string }) {
 
   return (
     <form onSubmit={(e) => void aoEnviar(e)} className="flex flex-col gap-3 border border-accent p-4" aria-label="Encerrar banca">
-      <p className="text-sm">
-        Encerrar <strong>apaga agora</strong> todos os pedidos, conversas e comprovantes desta banca, e o link para de
-        funcionar. Quem estiver na página volta para &quot;Aguardando banca...&quot;. Não dá para desfazer.
-      </p>
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-fg-muted">
           Digite o nome da banca para confirmar: <strong className="text-fg">{nome}</strong>

@@ -1,7 +1,7 @@
 /**
  * Página do pedido (Etapa 4) num navegador real, desktop e celular:
  * fragmento apagado, posição, beep ao ser assumido, prazo de 5 min, chat,
- * vagas ao vivo e volta para "Aguardando banca..." quando a banca é encerrada.
+ * tela inicial abrindo a banca atual e saída do link quando a banca é encerrada.
  * Os eventos do painel (assumir, prazo) são simulados direto no banco: o painel
  * de atendimento chega na Etapa 5.
  */
@@ -118,28 +118,27 @@ test("sem pedido neste navegador, /pedido mostra aviso e não vaza nada", async 
   await expect(page.getByRole("heading", { name: "Nenhum pedido aqui" })).toBeVisible({ timeout: 45_000 });
 });
 
-test("vagas ao vivo na página da banca e volta para o início quando a banca é encerrada", async ({ page }) => {
+test("tela inicial abre a banca mais recente e o link encerrado deixa de valer", async ({ page }) => {
   const violacoes = observarCsp(page);
   // Banca descartável só para este teste (encerrar não pode afetar os outros).
   const codigo = `${randomBytes(4).toString("hex")}-${String(1000 + (randomBytes(2).readUInt16BE(0) % 9000))}`;
   const [staff] = await sql<{ user_id: string }[]>`select user_id from app.staff where active and role = 'owner' limit 1`;
   const [b] = await sql<{ id: string }[]>`
-    insert into app.bancas (code, code_hash, name, total_cents, slots, ip_limit, created_by)
-    values (${codigo}, ${createHash("sha256").update(codigo).digest()}, 'Banca relâmpago', 50000, 5, false, ${staff?.user_id ?? ""})
+    insert into app.bancas (code, code_hash, name, total_cents, slots, ip_limit, created_by, created_at)
+    values (${codigo}, ${createHash("sha256").update(codigo).digest()}, 'Banca relâmpago', 50000, 5, false, ${staff?.user_id ?? ""},
+            now() + interval '1 hour')
     returning id`;
   await sql`insert into app.banca_stats (banca_id) values (${b?.id ?? ""})`;
 
-  await page.goto(`/${codigo}-banca`);
-  const vagas = page.locator("[data-vagas]");
-  await expect(vagas).toHaveAttribute("data-vagas", "5");
-  await expect(vagas).toHaveAttribute("data-ao-vivo", "sim");
+  // A tela inicial abre direto a banca criada por último (D-084), sem contagem de vagas.
+  await page.goto("/");
+  await expect(page).toHaveURL(new RegExp(`/${codigo}-banca$`));
+  await expect(page.getByRole("heading", { name: "Banca relâmpago" })).toBeVisible();
+  await expect(page.locator("[data-ao-vivo]")).toHaveAttribute("data-ao-vivo", "sim");
+  await expect(page.getByText(/vagas restantes/)).toHaveCount(0);
 
-  await sql`update app.bancas set paid_count = 2 where id = ${b?.id ?? ""}`;
-  await expect(vagas).toHaveAttribute("data-vagas", "3");
-
-  // Encerrada: o código some e todo mundo que está na página volta para o início (D-044).
+  // Encerrada: o código some e quem está na página sai do link (D-044).
   await sql`update app.bancas set status = 'encerrada', ended_at = now(), code = null where id = ${b?.id ?? ""}`;
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: /Aguardando/ })).toBeVisible();
+  await expect(page).not.toHaveURL(new RegExp(`/${codigo}-banca$`));
   expect(violacoes).toEqual([]);
 });

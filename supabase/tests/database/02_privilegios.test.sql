@@ -92,7 +92,7 @@ select set_eq(
   array[
     'api.srv_register_staff_session', 'api.srv_login_failed',
     'api.srv_check_invite', 'api.srv_consume_invite', 'api.srv_seed_owner', 'api.srv_allow_account',
-    'api.public_get_banca', 'api.public_create_order',
+    'api.public_get_banca', 'api.public_create_order', 'api.public_current_banca',
     'api.srv_open_order_session', 'api.srv_bind_viewer', 'api.srv_viewer_state', 'api.srv_viewer_post_message',
     'api.srv_viewer_add_attachment', 'api.srv_viewer_attachment_path', 'api.srv_viewer_delete',
     'api.srv_maintenance', 'api.srv_purge_batch', 'api.srv_purge_done'

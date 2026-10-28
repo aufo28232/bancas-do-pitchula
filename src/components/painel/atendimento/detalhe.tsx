@@ -482,9 +482,6 @@ function FormBanir({
   const [tipo, setTipo] = useState("cpf");
   return (
     <form onSubmit={(e) => void aoEnviar(e)} className="flex flex-col gap-3 border border-line p-4" aria-label="Banir">
-      <p className="text-xs text-fg-muted">
-        O banimento usa o dado deste pedido; ninguém precisa digitar. Pedido pendente é recusado e o link dele para de funcionar.
-      </p>
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-fg-muted">O que banir</span>
         <select name="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} className="border border-line bg-bg px-2 py-2">

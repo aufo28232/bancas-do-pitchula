@@ -82,21 +82,3 @@
   }
 }
 
-/* Vagas mudaram ao vivo: o número pulsa uma vez. */
-.vagas-pulso {
-  animation: vagas-pulso 0.9s ease-out;
-}
-@keyframes vagas-pulso {
-  0% {
-    transform: scale(1.6);
-    color: var(--color-accent);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .vagas-pulso {
-    animation: none;
-  }
-}

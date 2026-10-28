@@ -124,9 +124,6 @@ export function FormCriarConvite() {
       </p>
       {link ? (
         <div className="flex flex-col gap-2 border border-line p-4">
-          <p className="text-sm text-fg-muted">
-            Link de uso único, válido por 24h. Ele só aparece agora: mande direto para a pessoa, nunca na live.
-          </p>
           <code className="break-all font-mono text-sm">{link}</code>
           <div>
             <Botao type="button" variante="secundario" onClick={copiar}>

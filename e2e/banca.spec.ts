@@ -25,7 +25,8 @@ test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genéric
   await expect(page.getByText("Banca do Pitchula", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Banca E2E" })).toBeVisible();
   await expect(page.getByText("R$ 30", { exact: true })).toBeVisible();
-  await expect(page.getByText(/vagas restantes/)).toBeVisible();
+  // A contagem de vagas não aparece mais para o público (D-084).
+  await expect(page.getByText(/vagas restantes/)).toHaveCount(0);
   await expect(page.getByRole("img", { name: /Pitchula/ })).toBeVisible();
 
   // Sem rolagem horizontal (celular e desktop).
@@ -115,11 +116,11 @@ test("dá para preencher e enviar só com o teclado", async ({ page, isMobile })
   await expect(page).toHaveURL(/\/pedido$/);
 });
 
-test("link de banca inexistente leva à tela inicial", async ({ page }) => {
+test("link de banca inexistente sai do link (vai para a banca atual ou para a espera)", async ({ page }) => {
   const violacoes = observarCsp(page);
   await page.goto("/zzzzzzzz-0000-banca");
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: /Aguardando/ })).toBeVisible();
+  await expect(page).not.toHaveURL(/zzzzzzzz-0000/);
+  await expect(page.getByRole("heading").first()).toBeVisible();
   expect(violacoes).toEqual([]);
 });
 

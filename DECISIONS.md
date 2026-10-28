@@ -577,6 +577,14 @@ Testado na integração (sem token, outra origem, cross-site).
 
 **Status:** Implementada (28/10/2026, pedido do streamer). O botão "Excluir meus dados" saiu da página do pedido. O espectador pede pelo chat (a política de privacidade diz isso) e o moderador clica em "Apagar dados" no pedido: mesmo efeito de D-076, com auditoria `exclusao_dados` e o autor. O direito de pedir a exclusão continua (LGPD art. 18): só mudou quem aperta o botão. **[ADVOGADO]** confirmar se o canal pelo chat basta.
 
+## D-084 · Tela inicial abre a banca atual; vagas restantes saem da página
+
+**Status:** Implementada (28/10/2026, pedido do streamer).
+- **Tela inicial:** abre direto a banca criada por último que ainda existe (aberta, pausada ou esgotada), pela função `api.public_current_banca()` (só devolve o código, só para o servidor). Sem banca, "Aguardando banca...". Quem tem pedido neste navegador vai antes para o próprio pedido (D-082).
+- **Troca:** o link da banca deixa de ser o "segredo da live". Qualquer pessoa (ou robô) que abrir o endereço do site chega à banca sem assistir à live. Continuam valendo Turnstile, limites por IP, anti-duplicidade e a opção "1 pedido por IP".
+- **Vagas restantes:** a contagem saiu da página pública e da descrição do link. A página continua acompanhando o estado ao vivo (pausada, esgotada, encerrada). O canal `vagas:{código}` ainda transmite a contagem, então quem souber inspecionar a página consegue vê-la: é ocultação visual, não sigilo.
+- **Painel:** saíram textos de explicação que a equipe já conhece (banidos, banir, convite, cadastro do autenticador, encerrar banca, limite por IP). As confirmações (digitar o nome para encerrar etc.) continuam.
+
 ---
 
 ## Registro de mudanças
@@ -594,3 +602,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Etapa 7: D-078 a D-081 |
 | 28/10/2026 | Pedido direto para o chat (D-082) e fila sem teto (D-032 revista) |
 | 28/10/2026 | Exclusão a pedido pela equipe (D-083) |
+| 28/10/2026 | Tela inicial abre a banca atual; vagas restantes ocultas (D-084) |

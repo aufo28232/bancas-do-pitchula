@@ -1,12 +1,25 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { RetomarPedido } from "@/components/pedido/retomar-pedido";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
+import { bancaAtual } from "@/lib/server/publico/banca";
+import { COOKIE_PEDIDO } from "@/lib/server/publico/espectador";
 
-/** Tela inicial: "Aguardando banca..." (DECISIONS D-044, D-047). */
-export default function Home() {
+/**
+ * Tela inicial (D-044, D-047, D-084). Com banca aberta (ou pausada/esgotada),
+ * abre direto a criada por último. Quem tem pedido neste navegador vai antes
+ * para o próprio pedido (D-082); sem banca, "Aguardando banca...".
+ */
+export default async function Home() {
+  const codigo = await bancaAtual();
+  const destino = codigo ? `/${codigo}-banca` : undefined;
+  // Sem sessão de pedido: redireciona já no servidor (nem pisca a tela de espera).
+  if (destino && !(await cookies()).has(COOKIE_PEDIDO)) redirect(destino);
+
   return (
     <main className="relative z-[1] mx-auto flex min-h-svh max-w-6xl flex-col justify-between px-4 py-8 sm:px-12 sm:py-12">
-      <RetomarPedido />
+      <RetomarPedido senao={destino} />
       <p className="font-display text-sm font-extrabold uppercase tracking-[0.35em] text-fg-muted">
         Banca do {site.streamer}
       </p>
@@ -26,7 +39,7 @@ export default function Home() {
           </span>
         </h1>
         <p className="mt-6 max-w-md text-base text-fg-muted">
-          Fica de olho na live. Quando a banca abrir, o link aparece lá.
+          Fica de olho na live. Quando a banca abrir, ela aparece aqui: é só atualizar a página.
         </p>
         <div className="espera-varredura mt-10 max-w-md text-accent" aria-hidden="true" />
       </section>

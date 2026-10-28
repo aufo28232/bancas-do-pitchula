@@ -553,7 +553,7 @@ Ponto de atenção: o enunciado fala em "canal público" para as vagas. Um canal
 
 ### 5.4. Criação de pedido (público)
 
-1. A página da banca é renderizada no servidor com nome, valor, vagas restantes e status. Se a banca estiver `fechada` ou `esgotada`, mostra o aviso e esconde o formulário. Código inexistente ou banca encerrada: redireciona para `/`.
+1. A página da banca é renderizada no servidor com nome, valor e status (a contagem de vagas não aparece, D-084). A tela inicial `/` abre direto a banca criada por último que ainda existe. Se a banca estiver `fechada` ou `esgotada`, mostra o aviso e esconde o formulário. Código inexistente ou banca encerrada: redireciona para `/`.
 2. Cliente: Zod com o mesmo schema do servidor, máscara de CPF, validação por tipo de chave Pix, checkbox de privacidade, declaração de maioridade (**[DECIDIR]** D-022) e Turnstile.
 3. Servidor (nesta ordem): Origin/CSRF → rate limit (IP e banca; Redis fora = bloqueia) → Turnstile siteverify (falha ou indisponível = bloqueia) → Zod → normalização → HMACs → checagem de banimentos (cpf, pix, platform_id, ip; globais e da banca) → cifra → `api.public_create_order`.
 4. A função no banco, em transação: `SELECT … FOR UPDATE` na banca → status `aberta` → teto de pendentes (D-032) → insere o pedido (os `unique` pegam CPF e IP) → `order_count += 1` → mensagem de sistema "Pedido recebido. Manda o print do comprovante aqui." → auditoria de sistema → triggers de Broadcast.

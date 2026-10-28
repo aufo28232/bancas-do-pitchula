@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { FormBanca } from "@/components/painel/form-banca";
-import { getServerEnv } from "@/lib/env";
 import { listarBancas } from "@/lib/server/painel/bancas-rsc";
 import { staffAtual } from "@/lib/server/painel/rsc";
 
@@ -27,7 +26,6 @@ export default async function EditarBanca({ params }: { params: Promise<{ id: st
           order_count: banca.order_count,
           version: banca.version,
         }}
-        ipEnfraquecido={getServerEnv().DEPLOY_MODE === "managed"}
       />
     </section>
   );
