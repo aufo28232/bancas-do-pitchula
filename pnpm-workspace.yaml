@@ -1,0 +1,6 @@
+# Scripts de instalação (postinstall etc.) ficam BLOQUEADOS por padrão no pnpm.
+# Cada pacote que pede para rodar script precisa de decisão explícita aqui.
+# false = não roda o script (o pacote usa o binário pré-compilado que já vem nas
+# dependências opcionais). Só mude para true com justificativa no DECISIONS.md.
+allowBuilds:
+  unrs-resolver: false
