@@ -36,7 +36,8 @@ async function entrarComoStreamer(page: Page): Promise<void> {
   }
 }
 
-async function pedidoDoEspectador(page: Page, nome: string): Promise<{ cpf: string; link: string }> {
+/** Pedido feito pela página da banca: o navegador cai direto no /pedido (D-082). */
+async function pedidoDoEspectador(page: Page, nome: string): Promise<{ cpf: string }> {
   const cpf = gerarCpf();
   await page.goto(lerEstado().link);
   await page.getByLabel("Nome completo").fill(nome);
@@ -48,9 +49,8 @@ async function pedidoDoEspectador(page: Page, nome: string): Promise<{ cpf: stri
   await page.getByLabel("Tenho 18 anos ou mais.").check();
   await esperarTurnstile(page);
   await page.getByRole("button", { name: "Enviar pedido" }).click();
-  await expect(page.getByText("Pedido enviado!")).toBeVisible();
-  const link = ((await page.locator("code").first().textContent()) ?? "").trim();
-  return { cpf, link };
+  await expect(page).toHaveURL(/\/pedido$/);
+  return { cpf };
 }
 
 test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pagar e pânico", async ({ page, browser }, info) => {
@@ -62,8 +62,7 @@ test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pag
   const espectador = await ctxEspectador.newPage();
   const nome = "Zelia Painel Teste";
   const mascarado = "Z*** P*** T***";
-  const { cpf, link } = await pedidoDoEspectador(espectador, nome);
-  await espectador.goto(link);
+  const { cpf } = await pedidoDoEspectador(espectador, nome);
   await expect(espectador.getByText("Sua posição na fila")).toBeVisible({ timeout: 45_000 });
 
   // Streamer no painel.
@@ -186,8 +185,7 @@ test("comprovante no chat e encerramento: tudo é apagado e todos voltam para o 
   await espectador.getByLabel("Tenho 18 anos ou mais.").check();
   await esperarTurnstile(espectador);
   await espectador.getByRole("button", { name: "Enviar pedido" }).click();
-  await expect(espectador.getByText("Pedido enviado!")).toBeVisible();
-  await espectador.goto(((await espectador.locator("code").first().textContent()) ?? "").trim());
+  await expect(espectador).toHaveURL(/\/pedido$/);
   await expect(espectador.getByText("Sua posição na fila")).toBeVisible({ timeout: 45_000 });
   await espectador.locator('input[type="file"]').setInputFiles({ name: "print.png", mimeType: "image/png", buffer: PNG_8X8 });
   await espectador.getByRole("button", { name: "Ver comprovante" }).click();

@@ -10,7 +10,7 @@ import { postCriarBanca } from "@/lib/server/painel/bancas";
 import { conectarBanco, esperar, exigirAmbiente, Navegador, novoStreamerLogado, TURNSTILE_TESTE } from "@/test/integracao";
 import { gerarCpf, mascararCpf } from "@/test/util";
 import { postCriarPedido } from "./pedido";
-import { COOKIE_PEDIDO, COOKIE_PEDIDO_RT, postEstadoPedido, postMensagemPedido, postRealtimePedido, postSessaoPedido } from "./espectador";
+import { COOKIE_PEDIDO, COOKIE_PEDIDO_RT, postEstadoPedido, postMensagemPedido, postRealtimePedido } from "./espectador";
 
 exigirAmbiente(["DATA_ENC_KEYS", "DATA_ENC_ACTIVE"]);
 process.env.RL_PEDIDO_RAJADA_SEG = "1";
@@ -21,7 +21,8 @@ let dono: Awaited<ReturnType<typeof novoStreamerLogado>>;
 let banca: { id: string; codigo: string };
 const clientes: RealtimeClient[] = [];
 
-async function novoPedido(): Promise<{ token: string; cpf: string; email: string; id: string; nav: Navegador }> {
+/** Cria o pedido: o MESMO navegador que enviou já fica com a sessão do pedido (D-082). */
+async function novoPedido(): Promise<{ cpf: string; email: string; id: string; nav: Navegador }> {
   const cpf = gerarCpf();
   const email = `joana.${cpf}@exemplo.com`;
   const nav = new Navegador();
@@ -37,13 +38,9 @@ async function novoPedido(): Promise<{ token: string; cpf: string; email: string
     turnstile: TURNSTILE_TESTE,
   });
   expect(r.status).toBe(201);
-  const token = String(r.dados.link).split("#")[1] ?? "";
+  expect(r.dados).toEqual({ proximo: "/pedido" });
   const [o] = await sql<{ id: string }[]>`select id from app.orders where banca_id = ${banca.id} order by seq desc limit 1`;
-  return { token, cpf, email, id: o?.id ?? "", nav };
-}
-
-async function abrir(nav: Navegador, token: string) {
-  return nav.post(postSessaoPedido, { token, turnstile: TURNSTILE_TESTE });
+  return { cpf, email, id: o?.id ?? "", nav };
 }
 
 function clienteRealtime(token: string | null): RealtimeClient {
@@ -99,13 +96,11 @@ afterAll(async () => {
 });
 
 describe("sessão do pedido", () => {
-  it("token do link vira cookie httpOnly e a conta anônima fica vinculada ao pedido", async () => {
+  it("criar o pedido já liga o navegador a ele: cookie httpOnly e conta anônima vinculada", async () => {
     const p = await novoPedido();
-    const nav = new Navegador();
-    const r = await abrir(nav, p.token);
-    expect(r.status).toBe(200);
-    expect(nav.cookies.get(COOKIE_PEDIDO)).toMatch(/^[A-Za-z0-9_-]{43}$/);
-    expect(nav.cookies.get(COOKIE_PEDIDO_RT)).toBeTruthy();
+    expect(p.nav.cookies.get(COOKIE_PEDIDO)).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(p.nav.cookies.get(COOKIE_PEDIDO_RT)).toBeTruthy();
+    expect((await p.nav.post(postEstadoPedido, {})).status).toBe(200);
 
     const [o] = await sql<{ viewer_uid: string | null; anonimo: boolean | null; sessoes: number }[]>`
       select o.viewer_uid, u.is_anonymous as anonimo,
@@ -116,22 +111,18 @@ describe("sessão do pedido", () => {
     expect(o?.sessoes).toBe(1);
   });
 
-  it("token inválido: 404, nenhum cookie e nenhuma conta anônima sobrando", async () => {
+  it("pedido recusado (CPF repetido): nenhum cookie e nenhuma conta anônima sobrando", async () => {
+    const p = await novoPedido();
     const [antes] = await sql<{ n: number }[]>`select count(*)::int as n from auth.users where is_anonymous`;
     const nav = new Navegador();
-    const r = await abrir(nav, "A".repeat(43));
-    expect(r.status).toBe(404);
+    const r = await nav.post(postCriarPedido, {
+      codigo: banca.codigo, nome: "Joana Prado Lima", pixTipo: "email", pixChave: `x${p.email}`, plataformaId: "outro1",
+      cpf: mascararCpf(p.cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
+    });
+    expect(r.status).toBe(409);
     expect(nav.cookies.has(COOKIE_PEDIDO)).toBe(false);
     const [depois] = await sql<{ n: number }[]>`select count(*)::int as n from auth.users where is_anonymous`;
     expect(depois?.n).toBe(antes?.n);
-  });
-
-  it("sem o token do Turnstile: 400 e nada criado", async () => {
-    const p = await novoPedido();
-    const nav = new Navegador();
-    const r = await nav.post(postSessaoPedido, { token: p.token, turnstile: "" });
-    expect(r.status).toBe(400);
-    expect(nav.cookies.has(COOKIE_PEDIDO)).toBe(false);
   });
 
   it("sem cookie de sessão não há estado (401)", async () => {
@@ -142,8 +133,7 @@ describe("sessão do pedido", () => {
 describe("estado e chat", () => {
   it("mostra posição e os próprios dados MASCARADOS: nada completo sai do servidor", async () => {
     const p = await novoPedido();
-    const nav = new Navegador();
-    await abrir(nav, p.token);
+    const nav = p.nav;
     const r = await nav.post(postEstadoPedido, {});
     expect(r.status).toBe(200);
     const texto = JSON.stringify(r.dados);
@@ -160,8 +150,7 @@ describe("estado e chat", () => {
 
   it("mensagem do espectador entra no chat; texto vazio é recusado", async () => {
     const p = await novoPedido();
-    const nav = new Navegador();
-    await abrir(nav, p.token);
+    const nav = p.nav;
     expect((await nav.post(postMensagemPedido, { texto: "   " })).status).toBe(400);
     // O limite de 1 mensagem a cada 2 s conta também a tentativa inválida (o limite vem antes da validação).
     expect((await nav.post(postMensagemPedido, { texto: "rápido demais" })).status).toBe(429);
@@ -174,8 +163,7 @@ describe("estado e chat", () => {
 
   it("prazo de 5 min: resposta no prazo zera o relógio; depois do prazo o pedido é encerrado", async () => {
     const p = await novoPedido();
-    const nav = new Navegador();
-    await abrir(nav, p.token);
+    const nav = p.nav;
 
     await sql`update app.orders set locked_by = ${dono.id}, locked_at = now(), lock_activity_at = now(),
                      reply_deadline_at = now() + interval '5 minutes' where id = ${p.id}`;
@@ -197,10 +185,8 @@ describe("tempo real (Supabase Realtime de verdade)", () => {
   it("espectador ouve SÓ o próprio pedido; não ouve outro pedido nem o painel; não consegue emitir", async () => {
     const meu = await novoPedido();
     const outro = await novoPedido();
-    const nav = new Navegador();
-    await abrir(nav, meu.token);
-    const navOutro = new Navegador();
-    await abrir(navOutro, outro.token);
+    const nav = meu.nav;
+    const navOutro = outro.nav;
 
     const cred = await nav.post(postRealtimePedido, {});
     expect(cred.status).toBe(200);

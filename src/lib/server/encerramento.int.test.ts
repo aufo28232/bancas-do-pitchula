@@ -13,7 +13,6 @@ import {
   postComprovante,
   postEstadoPedido,
   postExcluirDados,
-  postSessaoPedido,
   postVerComprovante,
 } from "@/lib/server/publico/espectador";
 import { postCriarPedido } from "@/lib/server/publico/pedido";
@@ -41,16 +40,15 @@ async function novaBanca(nome: string) {
   return { id: String(r.dados.id), codigo: /\/([a-z0-9]{8}-[0-9]{4})-banca$/.exec(String(r.dados.link))?.[1] ?? "" };
 }
 
-/** Cria o pedido e abre a sessão do espectador (cookie), como a página faz. */
+/** Cria o pedido; o mesmo navegador já fica com a sessão dele (cookie, D-082). */
 async function espectadorComPedido(codigo: string) {
   const cpf = gerarCpf();
-  const r = await new Navegador().post(postCriarPedido, {
+  const nav = new Navegador();
+  const r = await nav.post(postCriarPedido, {
     codigo, nome: "Bruna Arquivo Teste", pixTipo: "cpf", pixChave: mascararCpf(cpf), plataformaId: `br${cpf.slice(0, 5)}`,
     cpf: mascararCpf(cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
   });
   expect(r.status).toBe(201);
-  const nav = new Navegador();
-  expect((await nav.post(postSessaoPedido, { token: String(r.dados.link).split("#")[1], turnstile: TURNSTILE_TESTE })).status).toBe(200);
   const [o] = await sql<{ id: string; viewer_uid: string }[]>`select id, viewer_uid from app.orders order by seq desc limit 1`;
   return { nav, id: o?.id ?? "", viewer: o?.viewer_uid ?? "" };
 }

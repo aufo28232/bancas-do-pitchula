@@ -6,7 +6,7 @@ import type { TipoPix } from "@/lib/validacao/pedido";
 import { apagarCookie, lerCookies, serializarCookie } from "../cookies";
 import { decifrar, getChavesDeCifra, type Campo } from "../cripto";
 import { HttpError, MSG } from "../errors";
-import { adminApagarUsuario, entrarAnonimo, renovar } from "../gotrue";
+import { renovar } from "../gotrue";
 import { json, lerCorpo, mutacao } from "../http";
 import { ipDoCliente } from "../ip";
 import { getKeyring, hmac, toPgBytea } from "../keys";
@@ -17,14 +17,13 @@ import { contarOuFalhar, contarOuPermitir } from "../ratelimit";
 import { ImagemInvalidaError, LIMITE_BYTES, processarComprovante } from "../imagem";
 import { BUCKET, apagarArquivos, nomeNoBucket, subirArquivo, urlAssinada } from "../storage";
 import { zId } from "../validacao";
-import { zTurnstile } from "../validacao";
 
 /**
  * Página do pedido do espectador (ARCHITECTURE §5.5, D-003, D-023, D-043).
  *
- * - O link traz o token no FRAGMENTO. A página lê, apaga da barra de endereço e
- *   troca por uma sessão em cookie httpOnly (__Host-bp_ped). O banco guarda só hashes.
- * - Na troca, o servidor faz o login ANÔNIMO do Supabase (Turnstile no captcha do
+ * - Ao criar o pedido, o navegador já recebe uma sessão em cookie httpOnly
+ *   (__Host-bp_ped) e vai direto para /pedido (D-082). O banco guarda só hashes.
+ * - Na criação, o servidor faz o login ANÔNIMO do Supabase (Turnstile no captcha do
  *   Auth) e vincula esse usuário ao pedido. O refresh token fica em cookie httpOnly;
  *   o navegador recebe só o access token curto, que serve apenas para OUVIR o canal
  *   do próprio pedido no Realtime (RLS em realtime.messages).
@@ -34,11 +33,9 @@ export const COOKIE_PEDIDO = "__Host-bp_ped";
 export const COOKIE_PEDIDO_RT = "__Host-bp_ped_rt";
 const VIDA_SESSAO_SEG = 30 * 24 * 3600;
 
-const MSG_LINK = "Este link de pedido não é válido ou já expirou.";
-const MSG_SEM_SESSAO = "Abra de novo o link do seu pedido.";
+const MSG_SEM_SESSAO = "Não encontramos um pedido aberto neste navegador.";
 
 const hashSessao = (s: string) => createHash("sha256").update(`ped-sessao\u0000${s}`, "utf8").digest();
-const hashToken = (t: string) => createHash("sha256").update(t, "utf8").digest();
 
 function sessaoDoCookie(req: Request): string | null {
   const v = lerCookies(req.headers.get("cookie"))[COOKIE_PEDIDO];
@@ -53,54 +50,34 @@ function exigirSessao(req: Request): { sessao: string; hash: string; idRl: strin
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/pedido/sessao: troca o token do link por cookie + login anônimo
+// Sessão do pedido: aberta na hora em que o pedido é criado (D-082)
 // ---------------------------------------------------------------------------
-const corpoSessao = z.object({
-  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-  turnstile: zTurnstile,
-});
-
-export const postSessaoPedido = mutacao("pedido/sessao", async (ctx) => {
-  const env = getSecurityEnv();
-  const ip = ipDoCliente(ctx.req.headers, env.DEPLOY_MODE);
-  const idIp = hmac(getKeyring(), "rl-ip", ip).toString("hex");
-
-  // Redis fora = bloqueia (cria conta anônima no Auth).
-  const lim = await contarOuFalhar("pedido-sessao-ip", idIp, 20, 600);
-  if (!lim.permitido) {
-    throw new HttpError(429, MSG.muitasTentativas, "rate_limit", { "Retry-After": String(lim.tentarEmSeg) });
-  }
-
-  const d = await lerCorpo(ctx.req, corpoSessao, 4096);
-
-  // O Supabase Auth confere o Turnstile (captcha nativo, D-054). Inválido = recusa.
-  const anon = await entrarAnonimo(d.turnstile);
-  if (!anon) {
-    throw new HttpError(400, "Não foi possível confirmar que você é uma pessoa. Recarregue e tente de novo.", "captcha");
-  }
-
+/**
+ * Liga o navegador ao pedido recém-criado: cookie de sessão (o banco guarda só o
+ * hash) + refresh token da conta anônima (só para o Realtime). Os dois são
+ * httpOnly, Secure, SameSite=Strict, e valem até o encerramento da banca.
+ */
+export async function abrirSessaoPedido(
+  ctx: { setCookies: string[] },
+  hashTokenAcesso: Buffer,
+  anon: { userId: string; refresh_token: string },
+): Promise<void> {
   const sessao = randomBytes(32).toString("base64url");
   const hSessao = toPgBytea(hashSessao(sessao));
   const pedido = await rpc<string | null>(
     "srv_open_order_session",
-    { p_token_hash: toPgBytea(hashToken(d.token)), p_session_hash: hSessao },
+    { p_token_hash: toPgBytea(hashTokenAcesso), p_session_hash: hSessao },
     "servico",
   );
-  if (!pedido) {
-    // Link inválido: a conta anônima recém-criada não serve para nada.
-    await adminApagarUsuario(anon.userId).catch(() => undefined);
-    throw new HttpError(404, MSG_LINK, "token_invalido");
-  }
-
-  const vinculado = await rpc<boolean>("srv_bind_viewer", { p_session_hash: hSessao, p_viewer: anon.userId }, "servico");
-  if (!vinculado) throw new HttpError(404, MSG_LINK, "vinculo");
-
+  const vinculado = pedido
+    ? await rpc<boolean>("srv_bind_viewer", { p_session_hash: hSessao, p_viewer: anon.userId }, "servico")
+    : false;
+  if (!vinculado) throw new HttpError(500, MSG.generico, "sessao_pedido");
   ctx.setCookies.push(
     serializarCookie(COOKIE_PEDIDO, sessao, { maxAge: VIDA_SESSAO_SEG }),
     serializarCookie(COOKIE_PEDIDO_RT, anon.refresh_token, { maxAge: VIDA_SESSAO_SEG }),
   );
-  return json({ ok: true }, 200, ctx);
-});
+}
 
 // ---------------------------------------------------------------------------
 // POST /api/pedido/estado: estado + mensagens, com dados mascarados

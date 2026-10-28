@@ -266,6 +266,7 @@ Proposta original (mantida como registro):
 
 - **Lacuna:** nada limita quantos pedidos uma banca de 10 vagas recebe. Centenas de pessoas entregariam CPF e Pix sem chance real de receber. Isso fere a minimização de dados da LGPD e enche a fila.
 - **Recomendação:** recusar novos pedidos (com "Fila cheia, tenta de novo daqui a pouco") quando os pendentes passarem de **3× as vagas restantes** (configurável por banca).
+- **Revista em 28/10/2026 (pedido do streamer):** **sem teto**. A fila aceita quantos pedidos chegarem enquanto a banca estiver aberta; quem fecha as entradas é pausar, esgotar (todas as vagas **pagas**) ou encerrar. O teto continua possível por banca (`pending_factor`), mas fica desligado. Efeito colateral: mais gente entrega CPF e Pix sem chance de receber. Os pendentes que sobram são recusados na hora em que a banca esgota (D-004) e tudo é apagado no encerramento (D-044). O limite de 600 pedidos por minuto por banca (anti-robô) continua.
 
 ## D-033 · Pagamento marcado por engano **[DECIDIR]**
 
@@ -563,6 +564,15 @@ Testado na integração (sem token, outra origem, cross-site).
 
 **Status:** Implementada (Etapa 7). `/painel/auditoria` (só o streamer) lista quem fez o quê e quando, sem dados pessoais, e confere a cadeia de hash (D-019) a cada abertura. No pedido, o painel avisa quando a mesma chave Pix ou o mesmo ID aparece em outro pedido da banca e quando o mesmo comprovante (SHA-256 do arquivo re-encodado) foi enviado em outro pedido (T9). Encerramento feito por moderador gera alerta para o streamer (T22). Revelar dado tem limite próprio de 30 por minuto por pessoa (T21).
 
+## D-082 · Pedido vai direto para o chat, sem link
+
+**Status:** Implementada (28/10/2026, pedido do streamer). Substitui o "link com token no fragmento" de §5.5.
+- Ao enviar o pedido, o servidor já cria a sessão do pedido no **mesmo navegador** (cookie httpOnly, Secure, SameSite=Strict, 30 dias) e a página vai direto para `/pedido`. Não existe mais link para copiar, mostrar na live ou mandar em print.
+- **Voltar ao site:** quem já tem pedido aberto e abre o link da banca (ou a página inicial) cai direto no próprio pedido. A marca de "tem pedido" fica no `localStorage` só para evitar uma consulta em toda visita; a sessão de verdade é o cookie, que o JavaScript não lê. Banca encerrada = pedido apagado = a marca é esquecida.
+- **Turnstile:** o token do formulário vai para o captcha nativo do Supabase Auth na criação da conta anônima do espectador (mesmo esquema do login, D-054). Pedido recusado (duplicado, banido, banca fechada) apaga essa conta na hora.
+- **Troca:** quem limpar os dados do navegador ou trocar de aparelho perde o acesso ao pedido (o pedido continua na fila do painel). Era o preço de não ter link.
+- **Limites do Supabase Auth:** como todas as chamadas saem do nosso servidor (um IP só), os limites por IP do Auth valem para o site inteiro. Em produção, suba em Authentication → Rate Limits: usuários anônimos (ex.: 3000/h) e renovação de token (ex.: 3000/5 min). Os limites por espectador continuam no app (Redis). Alternativa a avaliar: o encaminhamento de IP do Supabase (`Sb-Forwarded-For`, exige chave secreta nova).
+
 ---
 
 ## Registro de mudanças
@@ -578,3 +588,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Etapa 5: D-071 a D-074 |
 | 28/10/2026 | Etapa 6: D-075 a D-077 |
 | 28/10/2026 | Etapa 7: D-078 a D-081 |
+| 28/10/2026 | Pedido direto para o chat (D-082) e fila sem teto (D-032 revista) |

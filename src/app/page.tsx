@@ -1,3 +1,4 @@
+import { RetomarPedido } from "@/components/pedido/retomar-pedido";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
 
@@ -5,6 +6,7 @@ import { site } from "@/config/site";
 export default function Home() {
   return (
     <main className="relative z-[1] mx-auto flex min-h-svh max-w-6xl flex-col justify-between px-4 py-8 sm:px-12 sm:py-12">
+      <RetomarPedido />
       <p className="font-display text-sm font-extrabold uppercase tracking-[0.35em] text-fg-muted">
         Banca do {site.streamer}
       </p>

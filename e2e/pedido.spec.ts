@@ -39,7 +39,8 @@ async function instrumentarAudio(page: Page): Promise<void> {
 
 const bipes = (page: Page) => page.evaluate(() => (window as unknown as { __bipes: number }).__bipes);
 
-async function fazerPedido(page: Page): Promise<string> {
+/** Faz o pedido pela página da banca; o navegador cai direto no /pedido (D-082). */
+async function fazerPedido(page: Page): Promise<void> {
   const cpf = gerarCpf();
   await page.goto(lerEstado().link);
   await page.getByLabel("Nome completo").fill("Paula Fila Viva");
@@ -51,22 +52,20 @@ async function fazerPedido(page: Page): Promise<string> {
   await page.getByLabel("Tenho 18 anos ou mais.").check();
   await esperarTurnstile(page);
   await page.getByRole("button", { name: "Enviar pedido" }).click();
-  await expect(page.getByText("Pedido enviado!")).toBeVisible();
-  return ((await page.locator("code").first().textContent()) ?? "").trim();
+  await expect(page).toHaveURL(/\/pedido$/);
 }
 
 test("acompanha o pedido: posição, beep ao ser assumido, prazo e chat", async ({ page }, info) => {
   await instrumentarAudio(page);
   const violacoes = observarCsp(page);
-  const link = await fazerPedido(page);
+  await fazerPedido(page);
   const [pedido] = await sql<{ id: string }[]>`select id from app.orders order by seq desc limit 1`;
   const [staff] = await sql<{ user_id: string }[]>`select user_id from app.staff where active order by created_at desc limit 1`;
   expect(pedido && staff).toBeTruthy();
   if (!pedido || !staff) return;
 
-  await page.goto(link);
-  // O token sai da barra de endereço na hora (não fica no histórico nem em print).
-  await expect.poll(() => page.evaluate(() => window.location.hash)).toBe("");
+  // Nenhum token na barra de endereço: a sessão é um cookie httpOnly.
+  expect(await page.evaluate(() => window.location.hash)).toBe("");
   await expect(page.getByText("Sua posição na fila")).toBeVisible({ timeout: 45_000 });
   await expect(page.locator("[data-posicao]")).toHaveAttribute("data-posicao", /^\d+$/);
   await expect(page.getByText("Atualizando ao vivo.")).toBeVisible();
@@ -114,9 +113,10 @@ test("acompanha o pedido: posição, beep ao ser assumido, prazo e chat", async 
   expect(violacoes).toEqual([]);
 });
 
-test("link de pedido inválido mostra aviso, sem vazar nada", async ({ page }) => {
-  await page.goto(`/pedido#${"A".repeat(43)}`);
-  await expect(page.getByRole("heading", { name: "Link inválido" })).toBeVisible({ timeout: 45_000 });
+test("sem pedido neste navegador, /pedido mostra aviso e não vaza nada", async ({ page }) => {
+  await page.goto("/pedido");
+  await expect(page.getByRole("heading", { name: "Nenhum pedido aqui" })).toBeVisible({ timeout: 45_000 });
+})
   expect(await page.evaluate(() => window.location.hash)).toBe("");
 });
 

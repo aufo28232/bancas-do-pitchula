@@ -50,12 +50,20 @@ test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genéric
   const cpf = gerarCpf();
   await preencher(page, cpf);
   await page.getByRole("button", { name: "Enviar pedido" }).click();
-  await expect(page.getByText("Pedido enviado!")).toBeVisible();
+  // Vai direto para o chat do pedido, sem link para copiar (D-082).
+  await expect(page).toHaveURL(/\/pedido$/);
+  await expect(page.getByText("Sua posição na fila")).toBeVisible({ timeout: 45_000 });
   await page.screenshot({ path: `test-results/capturas/pedido-enviado-${info.project.name}.png` });
-  await expect(page.getByText("Não mostre na live nem mande print dele.")).toBeVisible();
-  await expect(page.locator("code")).toContainText("/pedido#");
 
-  // Mesmo CPF de novo: mensagem genérica, sem dizer qual dado repetiu.
+  // Voltar para o link da banca (ou para o início) leva de volta ao pedido.
+  await page.goto(link);
+  await expect(page).toHaveURL(/\/pedido$/);
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/pedido$/);
+
+  // Mesmo CPF de novo, de outro navegador: mensagem genérica, sem dizer qual dado repetiu.
+  await page.context().clearCookies();
+  await page.evaluate(() => localStorage.clear());
   await page.goto(link);
   await preencher(page, cpf);
   await page.getByRole("button", { name: "Enviar pedido" }).click();
@@ -104,7 +112,7 @@ test("dá para preencher e enviar só com o teclado", async ({ page, isMobile })
   await esperarTurnstile(page);
   await page.getByLabel(/^CPF cadastrado na /).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByText("Pedido enviado!")).toBeVisible();
+  await expect(page).toHaveURL(/\/pedido$/);
 });
 
 test("link de banca inexistente leva à tela inicial", async ({ page }) => {

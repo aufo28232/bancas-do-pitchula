@@ -572,13 +572,15 @@ Normalização antes do HMAC:
 
 ### 5.5. Acesso do espectador ao pedido e tempo real
 
-1. `/pedido` carrega com `Referrer-Policy: no-referrer` e `noindex`. O primeiro código da página (antes de qualquer script de terceiro) lê `location.hash`, guarda o token na memória e executa `history.replaceState`, removendo o fragmento (D-067).
-2. Só então o Turnstile é carregado. POST `/api/pedido/sessao` com `{token, turnstile}`.
-3. Servidor: rate limit por IP (Redis fora = bloqueia) → login **anônimo** no Supabase Auth com o token do Turnstile no captcha nativo → SHA-256(token) → `api.srv_open_order_session(token_hash, session_hash)`, que confere `token_revoked_at is null` → `api.srv_bind_viewer` vincula o usuário anônimo ao pedido → cookies `__Host-bp_ped` (sessão, 256 bits, só o hash fica no banco) e `__Host-bp_ped_rt` (refresh token do usuário anônimo), ambos httpOnly, Secure e SameSite=Strict. Token inválido: 404 e a conta anônima recém-criada é apagada.
+**Mudou em 28/10/2026 (D-082):** não existe mais link com token. O pedido abre a sessão no mesmo navegador e a página vai direto para o chat.
+
+1. `POST /api/bancas/pedido`: rate limit → Zod → cifra/HMAC → login **anônimo** no Supabase Auth com o token do Turnstile no captcha nativo → `api.public_create_order` → `api.srv_open_order_session` + `api.srv_bind_viewer` → cookies `__Host-bp_ped` (sessão, 256 bits, só o hash fica no banco) e `__Host-bp_ped_rt` (refresh token da conta anônima), ambos httpOnly, Secure e SameSite=Strict. Pedido recusado apaga a conta anônima na hora.
+2. O navegador vai para `/pedido` (`Referrer-Policy: no-referrer`, `noindex`). Quem volta ao link da banca ou à página inicial com pedido aberto é levado de volta a ele.
+3. O token de acesso continua sendo gerado e guardado só como hash, mas não é mostrado a ninguém.
 4. `POST /api/pedido/estado` devolve estado, posição e chat. Os dados pessoais saem decifrados e **mascarados** (D-023): o valor completo nunca chega ao navegador.
 5. `POST /api/pedido/realtime` renova a sessão anônima no servidor e devolve só o access token curto (5 min), a URL e a chave pública, para o navegador **ouvir** os canais privados `pedido:{id}` e `vagas:{código}`. A página renova 1 min antes de vencer. Sem Realtime, a página faz polling do estado (8 s; 60 s com o Realtime conectado).
 6. `POST /api/pedido/mensagem` grava a resposta do espectador e zera o prazo de 5 min. Depois do prazo, o pedido é encerrado antes e a mensagem é recusada (409).
-7. Revogar o token (ban ou exclusão, Etapa 5) apaga as `order_sessions`, zera `viewer_uid` e encerra a sessão anônima.
+7. Revogar o acesso (ban ou exclusão) apaga as `order_sessions`, zera `viewer_uid` e encerra a sessão anônima.
 
 Eventos no canal `pedido:{id}` (payload mínimo):
 - `status` → `{status, em_atendimento, atendente, motivo}`

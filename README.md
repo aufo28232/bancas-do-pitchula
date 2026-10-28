@@ -41,13 +41,13 @@ A Etapa 3 entrega:
 - **Painel:** criar banca com prévia do valor por pessoa e da sobra, editar (valor e vagas travam depois do primeiro pedido), pausar e reabrir. Clique duplo não cria duas bancas.
 - **Página pública** `/{código}-banca`: foto do streamer, valor em destaque, vagas restantes e link de cadastro na plataforma (configurável).
 - **Formulário do espectador** com máscaras e validação igual no navegador e no servidor (CPF com dígito verificador, Pix por tipo), Turnstile verificado no servidor e declaração de maioridade.
-- **Bloqueio de pedidos indevidos** com a mesma mensagem genérica: CPF repetido, IP repetido (opcional), banido e fila cheia.
+- **Bloqueio de pedidos indevidos** com a mesma mensagem genérica: CPF repetido, IP repetido (opcional) e banido. A fila não tem teto: aceita pedidos até a banca ser pausada, esgotar (vagas **pagas**) ou ser encerrada (D-032 revista).
 - **Criptografia dos dados pessoais** (AES-256-GCM, chave só no servidor) e HMAC para duplicidade e banimentos.
 - **Política de privacidade** (texto a validar com advogado).
 
 A Etapa 4 entrega:
 
-- **Página do pedido** `/pedido#token`: o token sai da barra de endereço na hora e vira uma sessão em cookie httpOnly. Mostra posição na fila, quem está atendendo, os próprios dados **mascarados** e o chat com a equipe.
+- **Página do pedido** `/pedido`: ao enviar o pedido, o espectador vai **direto para o chat** (sessão em cookie httpOnly, sem link para copiar; voltar ao site leva de volta ao pedido, D-082). Mostra posição na fila, quem está atendendo, os próprios dados **mascarados** e o chat com a equipe.
 - **Tempo real** (Supabase Realtime, canais privados, só leitura): posição, mensagens, "pedido assumido" com **bipe**, vibração e título piscando, contagem regressiva do **prazo de 5 min** e volta para "Aguardando banca..." quando a banca é encerrada. Sem conexão, a página continua atualizando por polling.
 - **Prazo de resposta:** depois que o moderador manda mensagem, o espectador tem 5 min; senão o pedido é encerrado (job a cada 15 s + checagem a cada acesso).
 - **Vagas ao vivo** na página da banca, com animação.
@@ -115,6 +115,7 @@ Estes valores espelham o `supabase/config.toml` e precisam ser aplicados à mão
 | Authentication → Attack Protection | **Captcha: Turnstile**, com o *secret* de produção | Protege login e login anônimo (D-054) |
 | Authentication → Multi-Factor | TOTP ligado; telefone desligado | MFA obrigatório |
 | Authentication → Sessions / JWT | **JWT expiry: 300 s** | Revogação vale rápido (D-028) |
+| Authentication → Rate Limits | **Anonymous users: 3000/h**; **Token refresh: 3000 por 5 min** | Todas as chamadas saem do nosso servidor (um IP só); os limites por espectador ficam no app (D-082) |
 | Authentication → Password | Mínimo de **12** caracteres | O servidor também confere e checa senha vazada |
 | Data API → Exposed schemas | **somente `api`** | Tabelas ficam fora da API (D-002) |
 | Realtime → Settings | **"Allow public access": desligado** | Só canais privados, autorizados pela RLS de `realtime.messages` (D-008) |

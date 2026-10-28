@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { marcarPedidoAberto } from "@/lib/client/pedido-salvo";
 import { useRef, useState, type FormEvent } from "react";
 import { Botao } from "@/components/ui/botao";
 import { Campo } from "@/components/ui/campo";
@@ -36,8 +38,7 @@ export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; si
   const [erros, setErros] = useState<Erros>({});
   const [erroGeral, setErroGeral] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [link, setLink] = useState("");
-  const [copiado, setCopiado] = useState(false);
+  const router = useRouter();
 
   function aoMudarPix(valor: string) {
     setPixChave(tipoPix === "cpf" ? mascaraCpf(valor) : tipoPix === "telefone" ? mascaraTelefone(valor) : valor);
@@ -82,42 +83,17 @@ export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; si
     setErros({});
     setErroGeral("");
     setEnviando(true);
-    const resposta = await enviar<{ link: string }>("/api/bancas/pedido", dados);
-    setEnviando(false);
+    const resposta = await enviar<{ proximo: string }>("/api/bancas/pedido", dados);
     if (resposta.ok) {
-      setLink(resposta.dados.link);
+      // O navegador já está ligado ao pedido (cookie): vai direto para o chat (D-082).
+      marcarPedidoAberto();
+      router.push("/pedido");
       return;
     }
+    setEnviando(false);
     setErroGeral(resposta.erro);
     setTurnstile("");
     setChaveTurnstile((k) => k + 1); // token do Turnstile é de uso único
-  }
-
-  async function copiar() {
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopiado(true);
-    } catch {
-      setCopiado(false);
-    }
-  }
-
-  if (link) {
-    return (
-      <div role="status" className="flex flex-col gap-4 border-l-2 border-accent pl-4">
-        <p className="font-display text-3xl font-black uppercase leading-none">Pedido enviado!</p>
-        <p>
-          Salve este link para voltar ao seu pedido. <strong>Não mostre na live nem mande print dele.</strong>
-        </p>
-        <code className="break-all bg-surface p-3 font-mono text-sm">{link}</code>
-        <div>
-          <Botao type="button" variante="secundario" onClick={copiar}>
-            {copiado ? "Link copiado" : "Copiar link"}
-          </Botao>
-        </div>
-        <p className="text-sm text-fg-muted">É por ele que você manda o comprovante e acompanha a fila.</p>
-      </div>
-    );
   }
 
   const erroDe = (c: keyof Erros) => erros[c];

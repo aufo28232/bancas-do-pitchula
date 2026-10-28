@@ -51,6 +51,15 @@ enable_anonymous_sign_ins = true
 enable_manual_linking = false
 minimum_password_length = 12
 
+# Todas as chamadas ao Auth saem do NOSSO servidor (um IP só), então os limites
+# por IP do Supabase valem para o site inteiro. Os limites de verdade (por
+# espectador) ficam no app, com Redis. Em produção, ajuste o mesmo em
+# Authentication -> Rate Limits (README, D-082).
+[auth.rate_limit]
+anonymous_users = 3000
+token_refresh = 3000
+sign_in_sign_ups = 300
+
 [auth.mfa]
 max_enrolled_factors = 2
 

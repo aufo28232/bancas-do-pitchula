@@ -133,16 +133,17 @@ select is(pg_temp.pedido('aaaaaaaa-0001', '55555555555', '10.0.0.5'), 'bloqueado
 select is(pg_temp.pedido('aaaaaaaa-0001', '66666666666', '10.9.9.9'), 'ok', 'ban de IP vencido não vale mais');
 reset role;
 
--- 6. Teto de pendentes (D-032): 3 × vagas restantes --------------------------------------
+-- 6. Sem teto de fila (D-032 revista): a banca aceita quantos pedidos chegarem ------------
 do $$ begin perform pg_temp.como('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-00000000005a'); end $$;
 select lives_ok($$ select * from api.owner_create_banca('cccccccc-0003', 'Uma vaga', 1000, 1, false, null) $$, 'banca de 1 vaga');
 reset role;
 set local role service_role;
 select is(
   array[pg_temp.pedido('cccccccc-0003', '70000000001', '1'), pg_temp.pedido('cccccccc-0003', '70000000002', '1'),
-        pg_temp.pedido('cccccccc-0003', '70000000003', '1'), pg_temp.pedido('cccccccc-0003', '70000000004', '1')],
-  array['ok', 'ok', 'ok', 'fila_cheia'],
-  'com 1 vaga, a fila aceita 3 pendentes e recusa o 4º (minimização de dados)');
+        pg_temp.pedido('cccccccc-0003', '70000000003', '1'), pg_temp.pedido('cccccccc-0003', '70000000004', '1'),
+        pg_temp.pedido('cccccccc-0003', '70000000005', '1')],
+  array['ok', 'ok', 'ok', 'ok', 'ok'],
+  'com 1 vaga, a fila aceita mais pedidos do que vagas (só vagas PAGAS esgotam a banca)');
 reset role;
 
 -- 7. Fechar e reabrir ---------------------------------------------------------------------

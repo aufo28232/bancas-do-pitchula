@@ -6,7 +6,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { postCriarBanca } from "@/lib/server/painel/bancas";
-import { postEstadoPedido, postSessaoPedido } from "@/lib/server/publico/espectador";
+import { postEstadoPedido } from "@/lib/server/publico/espectador";
 import { postCriarPedido } from "@/lib/server/publico/pedido";
 import {
   conectarBanco,
@@ -48,7 +48,8 @@ async function novaBanca(vagas: number): Promise<{ id: string; codigo: string }>
 async function novoPedido(codigo: string) {
   const cpf = gerarCpf();
   const email = `renata.${cpf}@exemplo.com`;
-  const r = await new Navegador().post(postCriarPedido, {
+  const nav = new Navegador();
+  const r = await nav.post(postCriarPedido, {
     codigo,
     nome: "Renata Quintas Lobo",
     pixTipo: "email",
@@ -60,9 +61,9 @@ async function novoPedido(codigo: string) {
     turnstile: TURNSTILE_TESTE,
   });
   expect(r.status).toBe(201);
-  const token = String(r.dados.link).split("#")[1] ?? "";
   const [o] = await sql<{ id: string }[]>`select id from app.orders order by seq desc limit 1`;
-  return { id: o?.id ?? "", cpf, email, token };
+  // O navegador que fez o pedido já tem a sessão dele (D-082).
+  return { id: o?.id ?? "", cpf, email, espectador: nav };
 }
 
 const acao = (id: string) => ({ id, idem: randomUUID() });
@@ -194,8 +195,7 @@ describe("permissões e banimento", () => {
   it("banir pelo painel recusa o pedido pendente e o link do espectador para de funcionar", async () => {
     const banca = await novaBanca(5);
     const p = await novoPedido(banca.codigo);
-    const espectador = new Navegador();
-    expect((await espectador.post(postSessaoPedido, { token: p.token, turnstile: TURNSTILE_TESTE })).status).toBe(200);
+    const espectador = p.espectador;
     expect((await espectador.post(postEstadoPedido, {})).status).toBe(200);
 
     const ban = await mod1.nav.post(postBanir, { ...acao(p.id), tipo: "cpf", escopo: "global", motivo: "Comprovante falso" });

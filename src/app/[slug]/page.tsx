@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { FormPedido } from "@/components/banca/form-pedido";
 import { VagasAoVivo } from "@/components/banca/vagas-ao-vivo";
+import { RetomarPedido } from "@/components/pedido/retomar-pedido";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
 import { formatarReais } from "@/lib/dinheiro";
@@ -63,6 +64,8 @@ export default async function PaginaBanca({ params }: Props) {
 
   return (
     <main className="relative z-[1] min-h-svh lg:grid lg:grid-cols-[45fr_55fr]">
+      {/* Já fez pedido nesta banca neste navegador? Volta direto para ele. */}
+      <RetomarPedido codigo={codigo} />
       {/* Foto: banner no celular, metade direita sangrando no desktop */}
       <div className="relative h-[40svh] w-full lg:sticky lg:top-0 lg:order-2 lg:h-svh">
         <Image

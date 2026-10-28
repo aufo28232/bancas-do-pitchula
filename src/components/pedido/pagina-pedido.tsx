@@ -4,16 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Botao } from "@/components/ui/botao";
-import { Turnstile } from "@/components/ui/turnstile";
 import { alertarAssumido, ativarSom, bipe } from "@/lib/client/alerta";
 import { enviar, enviarArquivo } from "@/lib/client/api";
+import { esquecerPedido } from "@/lib/client/pedido-salvo";
 import { VerComprovante } from "@/components/ui/ver-comprovante";
 import { TempoReal } from "@/lib/client/tempo-real";
 import { ROTULO_TIPO_PIX } from "@/lib/validacao/pedido";
 import type { EstadoPedido } from "@/lib/server/publico/espectador";
 
 type Mensagem = EstadoPedido["mensagens"][number];
-type Fase = "lendo" | "verificar" | "carregando" | "pronto" | "invalido" | "erro" | "excluido";
+type Fase = "carregando" | "pronto" | "invalido" | "erro" | "excluido";
 
 type RespostaRealtime = {
   url: string;
@@ -34,18 +34,6 @@ const MOTIVOS: Record<string, string> = {
   outro: "O pedido foi recusado pela equipe.",
 };
 
-// O fragmento é lido UMA vez por carregamento (o React em dev roda efeitos duas vezes).
-let tokenDoLink: string | null | undefined;
-
-function lerFragmento(): string | null {
-  if (tokenDoLink !== undefined) return tokenDoLink;
-  const t = window.location.hash.slice(1);
-  // Apaga o token da barra de endereço ANTES de qualquer outra coisa carregar.
-  if (t) history.replaceState(null, "", window.location.pathname + window.location.search);
-  tokenDoLink = /^[A-Za-z0-9_-]{43}$/.test(t) ? t : null;
-  return tokenDoLink;
-}
-
 const hora = (iso: string) =>
   new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
@@ -54,12 +42,10 @@ function formatarRestante(seg: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function PaginaPedido({ siteKey }: { siteKey: string }) {
+export function PaginaPedido() {
   const router = useRouter();
-  const [fase, setFase] = useState<Fase>("lendo");
+  const [fase, setFase] = useState<Fase>("carregando");
   const [erro, setErro] = useState("");
-  const [token, setToken] = useState<string | null>(null);
-  const [chaveTs, setChaveTs] = useState(0);
   const [estado, setEstado] = useState<EstadoPedido | null>(null);
   const [conectado, setConectado] = useState(false);
   const [som, setSom] = useState(false);
@@ -101,7 +87,8 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
         return;
       }
       if (r.status === 401) {
-        // Pedido apagado (banca encerrada, D-044) ou sessão perdida.
+        // Pedido apagado (banca encerrada, D-044) ou sem pedido neste navegador.
+        esquecerPedido();
         if (inicial) setFase("invalido");
         else router.replace("/");
         return;
@@ -114,37 +101,10 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
     [aplicarEstado, router],
   );
 
-  // 1. Fragmento -> Turnstile -> sessão em cookie. Sem fragmento, tenta a sessão existente.
+  // 1. O pedido vem pela sessão em cookie, criada junto com o pedido (D-082).
   useEffect(() => {
-    const t = lerFragmento();
-    void Promise.resolve().then(() => {
-      if (t) {
-        setToken(t);
-        setFase("verificar");
-      } else {
-        setFase("carregando");
-        void carregar(true);
-      }
-    });
+    void Promise.resolve().then(() => carregar(true));
   }, [carregar]);
-
-  async function aoVerificar(ts: string) {
-    if (!ts || !token) return;
-    setFase("carregando");
-    const r = await enviar("/api/pedido/sessao", { token, turnstile: ts });
-    if (r.ok) {
-      setToken(null);
-      await carregar(true);
-      return;
-    }
-    if (r.status === 404) {
-      setFase("invalido");
-      return;
-    }
-    setErro(r.erro);
-    setChaveTs((k) => k + 1);
-    setFase("verificar");
-  }
 
   // 2. Tempo real (só ouvir) + renovação do token curto.
   const pronto = fase === "pronto";
@@ -312,6 +272,7 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
     }
     const r = await enviar("/api/pedido/excluir", { confirmar: true });
     if (r.ok) {
+      esquecerPedido();
       setEstado(null);
       setFase("excluido");
     } else {
@@ -328,7 +289,7 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
           Dados apagados
         </h1>
         <p className="mt-3 text-fg-muted">
-          Seus dados e o chat deste pedido foram apagados. Este link não funciona mais.
+          Seus dados e o chat deste pedido foram apagados.
         </p>
         <Link href="/" className="mt-6 inline-block underline underline-offset-4">
           Ir para o início
@@ -337,7 +298,7 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
     );
   }
 
-  if (fase === "lendo" || fase === "carregando") {
+  if (fase === "carregando") {
     return (
       <p role="status" className="mt-16 text-fg-muted">
         Carregando seu pedido…
@@ -345,35 +306,16 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
     );
   }
 
-  if (fase === "verificar") {
-    return (
-      <section aria-labelledby="t-verificar" className="mt-12 max-w-md">
-        <h1 id="t-verificar" className="font-display text-4xl font-black uppercase">
-          Abrindo seu pedido
-        </h1>
-        <p className="mt-3 text-fg-muted">Só uma verificação rápida de segurança.</p>
-        <div className="mt-6">
-          <Turnstile key={chaveTs} siteKey={siteKey} acao="pedido_sessao" aoMudar={(t) => void aoVerificar(t)} />
-        </div>
-        {erro ? (
-          <p role="alert" className="mt-4 text-sm text-accent">
-            {erro}
-          </p>
-        ) : null}
-      </section>
-    );
-  }
-
   if (fase === "invalido" || fase === "erro" || !estado) {
     return (
       <section aria-labelledby="t-invalido" className="mt-12 max-w-md">
         <h1 id="t-invalido" className="font-display text-4xl font-black uppercase">
-          {fase === "erro" ? "Algo deu errado" : "Link inválido"}
+          {fase === "erro" ? "Algo deu errado" : "Nenhum pedido aqui"}
         </h1>
         <p className="mt-3 text-fg-muted">
           {fase === "erro"
             ? erro || "Não foi possível abrir seu pedido agora."
-            : "Este link de pedido não é válido ou já expirou. Use o link que apareceu quando você enviou o pedido."}
+            : "Não encontramos um pedido aberto neste navegador. Ele pode ter sido encerrado junto com a banca. Use o mesmo navegador em que você fez o pedido."}
         </p>
         <Link href="/" className="mt-6 inline-block underline underline-offset-4">
           Ir para o início

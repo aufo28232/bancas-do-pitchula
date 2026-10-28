@@ -2,7 +2,7 @@
  * INTEGRAÇÃO (Etapa 3): criação de banca pelo painel e pedido do espectador,
  * contra Supabase local + Redis reais. Nada mockado.
  */
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { decifrar, getChavesDeCifra, hmacsDeDado } from "@/lib/server/cripto";
 import { getKeyring, toPgBytea } from "@/lib/server/keys";
@@ -17,6 +17,7 @@ import {
   TURNSTILE_TESTE,
 } from "@/test/integracao";
 import { gerarCpf, mascararCpf } from "@/test/util";
+import { COOKIE_PEDIDO } from "./espectador";
 import { MSG_BLOQUEADO, postCriarPedido } from "./pedido";
 
 exigirAmbiente(["DATA_ENC_KEYS", "DATA_ENC_ACTIVE"]);
@@ -93,23 +94,24 @@ describe("pedido do espectador", () => {
     banca = await criarBanca({ ipLimit: true });
   });
 
-  it("cria o pedido, devolve o link com o token no fragmento e guarda tudo CIFRADO", async () => {
+  it("cria o pedido, já liga o navegador a ele (sem link) e guarda tudo CIFRADO", async () => {
     const r = await nav.post(postCriarPedido, pedido(banca.codigo, cpf));
     expect(r.status).toBe(201);
-    const link = String(r.dados.link);
-    expect(link).toMatch(/\/pedido#[A-Za-z0-9_-]{43}$/);
-    const token = link.split("#")[1] ?? "";
+    // Vai direto para o chat: nenhum link ou token sai na resposta (D-082).
+    expect(r.dados).toEqual({ proximo: "/pedido" });
+    expect(nav.cookies.get(COOKIE_PEDIDO)).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
-    const [o] = await sql<{ id: string; full_name_enc: string; cpf_enc: string; pix_key_enc: string; token_ok: boolean }[]>`
-      select id, full_name_enc, cpf_enc, pix_key_enc,
-             access_token_hash = ${createHash("sha256").update(token).digest()} as token_ok
-        from app.orders where banca_id = ${banca.id}`;
+    const [o] = await sql<{ id: string; full_name_enc: string; cpf_enc: string; pix_key_enc: string; token_bytes: number; sessoes: number }[]>`
+      select id, full_name_enc, cpf_enc, pix_key_enc, octet_length(access_token_hash) as token_bytes,
+             (select count(*)::int from app.order_sessions s where s.order_id = o.id) as sessoes
+        from app.orders o where banca_id = ${banca.id}`;
     expect(o).toBeDefined();
     if (!o) return;
-    // No banco: nada em claro, e só o hash do token.
+    // No banco: nada em claro, só hashes.
     expect(o.full_name_enc).not.toContain("Maria");
     expect(o.cpf_enc).not.toContain(cpf);
-    expect(o.token_ok).toBe(true);
+    expect(o.token_bytes).toBe(32);
+    expect(o.sessoes).toBe(1);
     // Com a chave (só no servidor), volta o original.
     const chaves = getChavesDeCifra();
     expect(decifrar(chaves, "orders.full_name_enc", o.id, o.full_name_enc)).toBe("Maria da Silva");
@@ -159,15 +161,10 @@ describe("pedido do espectador", () => {
     expect(r.status).toBe(403);
   });
 
-  it("Turnstile recusado no servidor: nada é gravado", async () => {
+  it("sem o token do Turnstile: recusado e nada é gravado", async () => {
     const antes = await pedidosDaBanca(banca.id);
-    const original = process.env.TURNSTILE_SECRET_KEY;
-    process.env.TURNSTILE_SECRET_KEY = "2x0000000000000000000000000000000AA"; // chave de teste "sempre recusa"
-    try {
-      expect((await new Navegador().post(postCriarPedido, pedido(banca.codigo))).status).toBe(400);
-    } finally {
-      process.env.TURNSTILE_SECRET_KEY = original;
-    }
+    const r = await new Navegador().post(postCriarPedido, pedido(banca.codigo, gerarCpf(), { turnstile: "" }));
+    expect(r.status).toBe(400);
     expect(await pedidosDaBanca(banca.id)).toBe(antes);
   });
 
@@ -194,10 +191,9 @@ describe("pedido do espectador", () => {
     process.stdout.write = capturar as typeof process.stdout.write;
     process.stderr.write = capturar as typeof process.stderr.write;
     const outroCpf = gerarCpf();
-    let link = "";
+    const navLog = new Navegador();
     try {
-      const r = await new Navegador().post(postCriarPedido, pedido(banca.codigo, outroCpf, { nome: "Joana Rastreável" }));
-      link = String(r.dados.link);
+      await navLog.post(postCriarPedido, pedido(banca.codigo, outroCpf, { nome: "Joana Rastreável" }));
       await new Navegador().post(postCriarPedido, pedido(banca.codigo, outroCpf)); // duplicado também loga
     } finally {
       process.stdout.write = out;
@@ -209,7 +205,7 @@ describe("pedido do espectador", () => {
     expect(tudo).not.toContain(mascararCpf(outroCpf));
     expect(tudo).not.toContain("Rastreável");
     expect(tudo).not.toContain(`maria.${outroCpf}`);
-    expect(tudo).not.toContain(link.split("#")[1] ?? "token-ausente");
+    expect(tudo).not.toContain(navLog.cookies.get(COOKIE_PEDIDO) ?? "sessao-ausente");
   });
 });
 
