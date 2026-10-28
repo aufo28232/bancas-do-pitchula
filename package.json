@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:db": "supabase test db",
     "deps:pin": "node scripts/pin-deps.mjs",
-    "audit:deps": "pnpm audit --audit-level high"
+    "audit:deps": "pnpm audit --audit-level high",
+    "seed:owner": "tsx scripts/seed-owner.ts"
   },
   "dependencies": {
     "next": "16.4.3",

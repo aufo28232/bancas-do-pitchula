@@ -30,9 +30,17 @@ function resolve(name, range) {
 
 const resolved = { dependencies: {}, devDependencies: {} };
 const pending = [];
+const somenteFaltantes = process.argv.includes("--faltantes");
+const exata = (v) => typeof v === "string" && /^\d+\.\d+\.\d+$/.test(v);
 
 for (const group of ["dependencies", "devDependencies"]) {
   for (const [name, range] of Object.entries(intent[group])) {
+    // Com --faltantes, mantém as versões já fixadas e só resolve os pacotes novos.
+    const atual = pkg[group]?.[name];
+    if (somenteFaltantes && exata(atual)) {
+      resolved[group][name] = atual;
+      continue;
+    }
     if (range.startsWith("=")) {
       pending.push({ group, name, same: range.slice(1) });
       continue;
@@ -50,8 +58,9 @@ const sortObj = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a
 pkg.dependencies = sortObj(resolved.dependencies);
 pkg.devDependencies = sortObj(resolved.devDependencies);
 
-const pnpmVersion = execFileSync("pnpm", ["--version"], { encoding: "utf8" }).trim();
-pkg.packageManager = `pnpm@${pnpmVersion}`;
+const pnpmAtual = execFileSync("pnpm", ["--version"], { encoding: "utf8" }).trim();
+if (!pkg.packageManager) pkg.packageManager = `pnpm@${pnpmAtual}`;
+const pnpmVersion = pkg.packageManager.replace(/^pnpm@/, "");
 
 writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
 

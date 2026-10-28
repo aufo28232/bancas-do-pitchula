@@ -2,7 +2,7 @@
 -- que authenticated só tem SELECT (filtrado por RLS) e que segredos de coluna não são legíveis.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(11);
 
 -- Tabelas de app, para reuso nas consultas abaixo.
 create temp view t_app as
@@ -66,11 +66,27 @@ select is_empty(
 );
 
 select set_eq(
-  $$ select p.proname::text
+  $$ select n.nspname || '.' || p.proname
        from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname in ('app', 'api') and has_function_privilege('authenticated', p.oid, 'EXECUTE') $$,
-  array['current_staff_role'],
-  'authenticated só executa app.current_staff_role (usada pelas políticas)'
+  array[
+    'app.current_staff_role',
+    'api.staff_whoami', 'api.preauth_whoami', 'api.preauth_end_session', 'api.staff_list_sessions', 'api.staff_revoke_session',
+    'api.owner_list_alerts', 'api.owner_ack_alert', 'api.owner_list_staff', 'api.owner_deactivate_staff',
+    'api.owner_prepare_mfa_reset', 'api.owner_create_invite', 'api.owner_revoke_invite', 'api.owner_list_invites'
+  ],
+  'authenticated só executa a função das políticas e as funções staff_/owner_/preauth_ (que conferem o papel por dentro)'
+);
+
+select set_eq(
+  $$ select n.nspname || '.' || p.proname
+       from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname in ('app', 'api') and has_function_privilege('service_role', p.oid, 'EXECUTE') $$,
+  array[
+    'api.srv_register_staff_session', 'api.srv_login_failed',
+    'api.srv_check_invite', 'api.srv_consume_invite', 'api.srv_seed_owner'
+  ],
+  'service_role só executa as funções srv_ (nada de app.* direto)'
 );
 
 select ok(

@@ -22,9 +22,27 @@ jobs:
       # contents: write só para (1) gravar package.json/lockfile fixados na primeira
       # execução (D-049) e (2) publicar a saída dos passos no branch `ci-logs`.
       contents: write
+    services:
+      # Redis de verdade + proxy REST compatível com a API do Upstash (D-059).
+      redis:
+        image: redis:7-alpine
+      srh:
+        image: hiett/serverless-redis-http:latest
+        ports:
+          - 8079:80
+        env:
+          SRH_MODE: env
+          SRH_TOKEN: token-local-de-teste
+          SRH_CONNECTION_STRING: redis://redis:6379
     env:
-      # Chave de TESTE pública da Cloudflare (sempre aprova). Nunca usar em produção.
+      # Chaves de TESTE públicas da Cloudflare (sempre aprovam). Nunca usar em produção.
       SUPABASE_AUTH_CAPTCHA_SECRET: 1x0000000000000000000000000000000AA
+      TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+      UPSTASH_REDIS_REST_URL: http://127.0.0.1:8079
+      UPSTASH_REDIS_REST_TOKEN: token-local-de-teste
+      SITE_URL: http://localhost:3000
+      DEPLOY_MODE: managed
       PLATFORM_NAME: 4fly
       NEXT_TELEMETRY_DISABLED: "1"
       LOGS: ${{ github.workspace }}/.ci-logs
@@ -51,15 +69,18 @@ jobs:
             pnpm --version
           } 2>&1 | tee "$LOGS/01-pnpm.log"
 
-      - name: Fixar versões exatas (só se ainda não houver lockfile)
+      - name: Fixar versões exatas (primeira execução ou pacote novo)
         id: pin
         run: |
           set -o pipefail
-          if [ -f pnpm-lock.yaml ]; then
-            echo "novo=0" >> "$GITHUB_OUTPUT"
-          else
+          if [ ! -f pnpm-lock.yaml ]; then
             node scripts/pin-deps.mjs 2>&1 | tee "$LOGS/02-pin.log"
             echo "novo=1" >> "$GITHUB_OUTPUT"
+          elif ! node scripts/deps-faltantes.mjs; then
+            node scripts/pin-deps.mjs --faltantes 2>&1 | tee "$LOGS/02-pin.log"
+            echo "novo=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "novo=0" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Instalar dependências
@@ -80,6 +101,19 @@ jobs:
           set -o pipefail
           { supabase --version; supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,postgres-meta; } 2>&1 \
             | grep -viE 'key|secret|jwt|token' | tee "$LOGS/04-supabase-start.log"
+
+      - name: Variáveis do Supabase local e chave HMAC efêmera para os testes
+        run: |
+          eval "$(supabase status -o env)"
+          {
+            echo "SUPABASE_URL=${API_URL}"
+            echo "SUPABASE_ANON_KEY=${ANON_KEY:-$PUBLISHABLE_KEY}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY:-$SECRET_KEY}"
+            echo "DB_URL=${DB_URL}"
+            echo "HMAC_KEYS={\"1\":\"$(openssl rand -base64 32)\"}"
+            echo "HMAC_ACTIVE=1"
+          } >> "$GITHUB_ENV"
+          echo "variáveis exportadas (valores não são exibidos)"
 
       - name: pnpm lint
         run: set -o pipefail; pnpm lint 2>&1 | tee "$LOGS/05-lint.log"

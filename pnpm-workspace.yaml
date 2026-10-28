@@ -4,3 +4,5 @@
 # dependências opcionais). Só mude para true com justificativa no DECISIONS.md.
 allowBuilds:
   unrs-resolver: false
+  # esbuild (usado pelo tsx no script de seed): o binário vem no pacote opcional @esbuild/<plataforma>.
+  esbuild: false

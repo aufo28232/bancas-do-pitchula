@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import type { ReactNode } from "react";
 import { site } from "@/config/site";
 import { fontDisplay, fontMono, fontSans } from "@/theme/fonts";
@@ -19,7 +20,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Renderização sempre dinâmica: a CSP usa um nonce novo por requisição (ARCHITECTURE §8).
+  await connection();
   return (
     <html lang="pt-BR" className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable}`}>
       <body className="bg-bg font-sans text-fg antialiased">{children}</body>
