@@ -39,8 +39,9 @@ export async function processarComprovante(original: Buffer): Promise<Comprovant
   let meta: sharp.Metadata;
   try {
     meta = await sharp(original, opcoes).metadata();
-  } catch {
-    throw new ImagemInvalidaError("corrompida");
+  } catch (e) {
+    // O sharp recusa já na leitura do cabeçalho quando passa do limite de pixels.
+    throw new ImagemInvalidaError(/pixel limit/i.test(String(e)) ? "dimensao" : "corrompida");
   }
   // O formato que o decodificador leu precisa ser o mesmo dos bytes mágicos.
   if (meta.format !== tipo) throw new ImagemInvalidaError("tipo");
