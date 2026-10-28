@@ -19,13 +19,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
-      # Só para gravar package.json/lockfile fixados na PRIMEIRA execução (DECISIONS D-049).
+      # contents: write só para (1) gravar package.json/lockfile fixados na primeira
+      # execução (D-049) e (2) publicar a saída dos passos no branch `ci-logs`.
       contents: write
     env:
       # Chave de TESTE pública da Cloudflare (sempre aprova). Nunca usar em produção.
       SUPABASE_AUTH_CAPTCHA_SECRET: 1x0000000000000000000000000000000AA
       PLATFORM_NAME: 4fly
       NEXT_TELEMETRY_DISABLED: "1"
+      LOGS: ${{ github.workspace }}/.ci-logs
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
@@ -33,29 +38,37 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - name: Preparar pasta de logs
+        run: mkdir -p "$LOGS"
+
       - name: Instalar pnpm (versão do packageManager, ou a mais recente na primeira execução)
         run: |
-          PM=$(node -p "require('./package.json').packageManager || ''")
-          if [ -n "$PM" ]; then npm install -g "$PM"; else npm install -g pnpm@latest; fi
-          node --version
-          pnpm --version
+          set -o pipefail
+          {
+            PM=$(node -p "require('./package.json').packageManager || ''")
+            if [ -n "$PM" ]; then npm install -g "$PM"; else npm install -g pnpm@latest; fi
+            node --version
+            pnpm --version
+          } 2>&1 | tee "$LOGS/01-pnpm.log"
 
       - name: Fixar versões exatas (só se ainda não houver lockfile)
         id: pin
         run: |
+          set -o pipefail
           if [ -f pnpm-lock.yaml ]; then
             echo "novo=0" >> "$GITHUB_OUTPUT"
           else
-            node scripts/pin-deps.mjs
+            node scripts/pin-deps.mjs 2>&1 | tee "$LOGS/02-pin.log"
             echo "novo=1" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Instalar dependências
         run: |
+          set -o pipefail
           if [ "${{ steps.pin.outputs.novo }}" = "1" ]; then
-            pnpm install --no-frozen-lockfile
+            pnpm install --no-frozen-lockfile 2>&1 | tee "$LOGS/03-install.log"
           else
-            pnpm install --frozen-lockfile
+            pnpm install --frozen-lockfile 2>&1 | tee "$LOGS/03-install.log"
           fi
 
       - uses: supabase/setup-cli@v1
@@ -64,26 +77,27 @@ jobs:
 
       - name: Subir Supabase local
         run: |
-          supabase --version
-          supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,postgres-meta
+          set -o pipefail
+          { supabase --version; supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,postgres-meta; } 2>&1 \
+            | grep -viE 'key|secret|jwt|token' | tee "$LOGS/04-supabase-start.log"
 
       - name: pnpm lint
-        run: pnpm lint
+        run: set -o pipefail; pnpm lint 2>&1 | tee "$LOGS/05-lint.log"
 
       - name: pnpm typecheck
-        run: pnpm typecheck
+        run: set -o pipefail; pnpm typecheck 2>&1 | tee "$LOGS/06-typecheck.log"
 
       - name: pnpm test
-        run: pnpm test
+        run: set -o pipefail; pnpm test 2>&1 | tee "$LOGS/07-test.log"
 
       - name: pnpm test:db
-        run: pnpm test:db
+        run: set -o pipefail; pnpm test:db 2>&1 | tee "$LOGS/08-test-db.log"
 
       - name: pnpm build
-        run: pnpm build
+        run: set -o pipefail; pnpm build 2>&1 | tee "$LOGS/09-build.log"
 
       - name: pnpm audit (sem vulnerabilidades altas)
-        run: pnpm audit --audit-level high
+        run: set -o pipefail; pnpm audit --audit-level high 2>&1 | tee "$LOGS/10-audit.log"
 
       - name: Gravar versões fixadas no repositório
         if: always() && steps.pin.outputs.novo == '1' && github.event_name != 'pull_request' && hashFiles('pnpm-lock.yaml') != ''
@@ -93,6 +107,25 @@ jobs:
           git add package.json pnpm-lock.yaml scripts/pinned-versions.md
           git commit -m "chore: fixar versões exatas das dependências e lockfile"
           git push
+
+      - name: Publicar saída dos passos no branch ci-logs
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "run_id=${{ github.run_id }}"
+            echo "sha=${{ github.sha }}"
+            echo "status=${{ job.status }}"
+            date -u +"quando=%Y-%m-%dT%H:%M:%SZ"
+          } > "$LOGS/00-resumo.txt"
+          cd "$LOGS"
+          git init -q -b ci-logs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "logs do CI ${{ github.run_id }} (${{ github.sha }})"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" ci-logs
 
       - name: Parar Supabase
         if: always()
