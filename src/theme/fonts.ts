@@ -1,10 +1,10 @@
-import { Big_Shoulders_Display, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
+import { Big_Shoulders, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 
 // Fontes auto-hospedadas pelo next/font (baixadas no build, servidas do próprio domínio).
 // Escolha e alternativas: DECISIONS D-024.
 
 /** Display condensada e pesada: valor da banca e títulos. */
-export const fontDisplay = Big_Shoulders_Display({
+export const fontDisplay = Big_Shoulders({
   subsets: ["latin"],
   weight: ["800", "900"],
   variable: "--font-display",

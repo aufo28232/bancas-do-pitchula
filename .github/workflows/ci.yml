@@ -71,6 +71,12 @@ jobs:
             pnpm install --frozen-lockfile 2>&1 | tee "$LOGS/03-install.log"
           fi
 
+      - name: Diagnóstico temporário (fontes disponíveis no next/font)
+        continue-on-error: true
+        run: |
+          grep -oE "export declare function (Big_Shoulders|Instrument_Sans|IBM_Plex_Mono)[A-Za-z_]*<[^;]*" \
+            node_modules/next/dist/compiled/@next/font/dist/google/index.d.ts > "$LOGS/diag-fontes.txt" || true
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
