@@ -1,4 +1,4 @@
-import { createPublicKey, verify, type JsonWebKey } from "node:crypto";
+import { createPublicKey, verify } from "node:crypto";
 
 /**
  * Cloudflare Access no /painel (ARCHITECTURE §11, opcional).
@@ -9,7 +9,8 @@ import { createPublicKey, verify, type JsonWebKey } from "node:crypto";
  * (modo "managed"). Falha ao buscar as chaves = NEGA (falha fechada).
  * Sem as variáveis, a checagem fica desligada (o login + MFA continuam valendo).
  */
-type Jwks = { keys: (JsonWebKey & { kid?: string })[] };
+type Jwk = Record<string, unknown> & { kid?: string; kty?: string };
+type Jwks = { keys: Jwk[] };
 export type ConfigAccess = { equipe: string; aud: string };
 
 export function configAccess(env: Record<string, string | undefined> = process.env): ConfigAccess | null {
@@ -48,7 +49,7 @@ export function verificarJwtAccess(
   if (!jwk) return false;
   let ok = false;
   try {
-    const chave = createPublicKey({ key: jwk, format: "jwk" });
+    const chave = createPublicKey({ key: jwk, format: "jwk" } as Parameters<typeof createPublicKey>[0]);
     ok = verify("RSA-SHA256", Buffer.from(`${h}.${p}`), chave, b64url(s));
   } catch {
     return false;
