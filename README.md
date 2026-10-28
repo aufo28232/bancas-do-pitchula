@@ -10,8 +10,9 @@ Aplicação para o streamer Pitchula e seus moderadores receberem pedidos de ban
 | Etapa | Situação |
 |---|---|
 | Arquitetura | Aprovada em 27/10/2026 |
-| 1. Fundação (estrutura, Supabase local, migrations, RLS) | **Concluída em 27/10/2026.** CI verde: lint, typecheck, 20 testes Vitest, 83 testes pgTAP, build e `pnpm audit` sem vulnerabilidades |
-| 2 a 7 | Não iniciadas |
+| 1. Fundação (estrutura, Supabase local, migrations, RLS) | **Concluída em 27/10/2026.** CI verde |
+| 2. Autenticação do painel (login, MFA, convites, sessões, revogação) | **Concluída em 27/10/2026.** CI verde: lint, typecheck, 57 testes Vitest (19 de integração contra Supabase + Redis reais), 122 testes pgTAP, build e `pnpm audit` sem vulnerabilidades |
+| 3 a 7 | Não iniciadas |
 
 O que a Etapa 1 entrega:
 
@@ -22,7 +23,16 @@ O que a Etapa 1 entrega:
 - Testes pgTAP e Vitest
 - CI no GitHub Actions
 
-Ainda **não há** login, formulário, painel nem tempo real (etapas 2 a 5).
+A Etapa 2 entrega:
+
+- Login do painel feito pelo servidor, com Turnstile, limite de tentativas e bloqueio progressivo (Redis; fora do ar = bloqueia).
+- MFA por app autenticador obrigatório para tudo no painel.
+- Convites de moderador de uso único (24h), com checagem de senha vazada.
+- Sessões com alerta de dispositivo novo, revogação imediata, inatividade de 8h e reset de MFA pelo streamer.
+- Cadastro público barrado no banco.
+- CSP com nonce e proteção CSRF em todas as mutações.
+
+Ainda **não há** bancas, formulário do espectador, fila nem tempo real (etapas 3 a 5).
 
 ## Pré-requisitos (desenvolvimento local)
 
@@ -36,12 +46,44 @@ Ainda **não há** login, formulário, painel nem tempo real (etapas 2 a 5).
 ```bash
 pnpm install --frozen-lockfile
 cp .env.example .env.local          # ajuste os valores; nunca versione este arquivo
+
+# Redis local com a mesma API REST do Upstash (só para desenvolvimento)
+docker network create bancas-dev
+docker run -d --name bancas-redis --network bancas-dev redis:7-alpine
+docker run -d --name bancas-srh --network bancas-dev -p 8079:80 \
+  -e SRH_MODE=env -e SRH_TOKEN=token-local-de-teste -e SRH_CONNECTION_STRING=redis://bancas-redis:6379 \
+  hiett/serverless-redis-http:latest
+
 export SUPABASE_AUTH_CAPTCHA_SECRET=1x0000000000000000000000000000000AA   # chave de teste da Cloudflare
-supabase start                      # sobe Postgres, Auth, Realtime e Storage locais e aplica as migrations
-pnpm dev                            # http://localhost:3000
+supabase start                      # aplica as migrations; `supabase status` mostra URL e chaves
+# copie API URL, anon key e service_role key para SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY no .env.local
+# gere a chave HMAC: openssl rand -base64 32  ->  HMAC_KEYS={"1":"<chave>"}
+
+pnpm seed:owner --email voce@exemplo.com --apelido Pitchula   # cria a conta do streamer (pede a senha)
+pnpm dev                            # http://localhost:3000/painel/entrar
 ```
 
-No Windows (PowerShell), a variável fica assim: `$env:SUPABASE_AUTH_CAPTCHA_SECRET="1x0000000000000000000000000000000AA"`.
+No Windows (PowerShell), as variáveis ficam assim: `$env:SUPABASE_AUTH_CAPTCHA_SECRET="1x0000000000000000000000000000000AA"`.
+
+`pnpm test` inclui os testes de integração e precisa do Supabase local e do Redis rodando, com as variáveis do `.env.example` exportadas no terminal.
+
+## Supabase em produção (o que configurar no painel do projeto)
+
+Estes valores espelham o `supabase/config.toml` e precisam ser aplicados à mão no projeto de produção:
+
+| Onde | Configuração | Por quê |
+|---|---|---|
+| Authentication → Sign In / Providers | **Email: ligado**; "Allow new users to sign up": ligado | Desligar o provedor de e-mail desliga o login (D-048). O cadastro público é barrado pelo trigger do banco |
+| Authentication → Sign In / Providers | **Anonymous sign-ins: ligado** | Espectador no tempo real (Etapa 4, D-003) |
+| Authentication → Sign In / Providers | Telefone e provedores sociais: desligados | Superfície mínima |
+| Authentication → Attack Protection | **Captcha: Turnstile**, com o *secret* de produção | Protege login e login anônimo (D-054) |
+| Authentication → Multi-Factor | TOTP ligado; telefone desligado | MFA obrigatório |
+| Authentication → Sessions / JWT | **JWT expiry: 300 s** | Revogação vale rápido (D-028) |
+| Authentication → Password | Mínimo de **12** caracteres | O servidor também confere e checa senha vazada |
+| Data API → Exposed schemas | **somente `api`** | Tabelas ficam fora da API (D-002) |
+| Database → Migrations | `supabase link` + `supabase db push` | Aplica as migrations deste repositório |
+
+Depois do primeiro deploy, rode `pnpm seed:owner` com as variáveis de produção, entre em `/painel/entrar` e cadastre o app autenticador.
 
 ## Critério de pronto de cada etapa
 
@@ -58,6 +100,7 @@ A partir da Etapa 3, também `pnpm test:e2e`. O mesmo conjunto roda no GitHub Ac
 | `pnpm test` | Vitest (unitários) |
 | `pnpm test:db` | pgTAP contra o Supabase local (`supabase test db`): RLS, privilégios, constraints e auditoria |
 | `pnpm build` | Build de produção (`.next/standalone`) |
+| `pnpm seed:owner` | Cria a conta do streamer (uma vez) |
 
 ## Estrutura
 

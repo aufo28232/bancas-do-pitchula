@@ -391,14 +391,17 @@ Pontos para o advogado:
 - `/` mostra só "Aguardando banca..." com animação: fundo escuro com grain, título em Big Shoulders Display, três pontos pulsando no laranja e uma linha de varredura lenta. A animação para com `prefers-reduced-motion`. Também aparecem os links da Twitch e do Instagram e o aviso de site oficial.
 - A tela inicial **não lista** a banca aberta: o link continua vindo da live. Se quiser um botão "Banca aberta, entrar" quando houver banca, é uma mudança pequena.
 
-## D-048 · Cadastro público desligado, login anônimo ligado
+## D-048 · Cadastro público barrado NO BANCO, login anônimo ligado
 
-**Status:** Proposta técnica, **não verificada** (Etapa 1)
+**Status:** Implementada e **verificada no CI** (Etapa 2). Substitui a versão da Etapa 1.
 
-- **Conflito:** o enunciado pede "signups desativados", mas no Supabase Auth o login anônimo (D-003) depende do interruptor geral de cadastro (`enable_signup`).
-- **Decisão:** `enable_signup = true` (necessário para o anônimo), com `[auth.email] enable_signup = false` e `[auth.sms] enable_signup = false`. Ninguém consegue criar conta com e-mail ou telefone. As contas do staff só nascem pelo seed e pelos convites (`auth.admin.createUser` no servidor).
-- **Risco residual:** alguém com a anon key pode criar usuários **anônimos** diretamente na API do Auth. Mitigações: captcha Turnstile obrigatório no Auth, rate limit do próprio Supabase, e usuários anônimos não acessam nenhuma tabela (provado no pgTAP 04) nem canal que não seja de um pedido vinculado a eles.
-- **Verificação pendente (Etapa 2):** teste de integração tentando `signUp` com e-mail e com telefone contra o Supabase local. Precisa ser recusado.
+- **O que o CI mostrou:** desligar o cadastro por e-mail no Supabase (`[auth.email] enable_signup = false`) desliga também o **login** por e-mail ("Email logins are disabled"). E desligar o cadastro geral desliga o login anônimo do espectador (D-003). Nenhum interruptor do Auth atende ao enunciado sozinho.
+- **Decisão:** o Auth fica com o provedor de e-mail ligado, e quem barra o cadastro é o **Postgres**. Um trigger `BEFORE INSERT` em `auth.users` só deixa o Supabase Auth (papel `supabase_auth_admin`) criar usuário **não anônimo** se o servidor tiver pré-autorizado aquele e-mail há menos de 10 minutos (`app.auth_provisioning`, uso único, só o hash do e-mail). Isso só acontece no seed do streamer e no aceite de convite.
+- **Provado nos testes de integração:**
+  - `POST /auth/v1/signup` com e-mail é recusado.
+  - Nem a API admin com a service role cria conta sem a pré-autorização.
+  - O login anônimo continua funcionando.
+- **Risco residual:** contas anônimas podem ser criadas pela API pública. Elas não acessam nenhuma tabela (pgTAP 04/07) e exigem captcha.
 
 ## D-049 · Como as versões exatas são fixadas
 
@@ -425,6 +428,53 @@ Pontos para o advogado:
 
 **Status:** Proposta (Etapa 1). O "arquivo de tema central" é a pasta `src/theme/`: `theme.ts` (cores, foto, logo, raios), lido pelo Tailwind, e `fonts.ts` (as fontes ficam separadas porque o `next/font` exige chamadas literais no módulo). Um teste confere o contraste AA de todos os pares de cor usados como texto.
 
+## D-053 · Alerta de dispositivo novo só a partir do segundo dispositivo
+
+**Status:** Implementada (Etapa 2). O primeiro login de uma conta registra o dispositivo sem alerta (não há com o que comparar). A partir daí, todo login de um dispositivo desconhecido gera alerta no painel do streamer. O dispositivo é reconhecido por um cookie aleatório de 1 ano, guardado como HMAC junto com o id do usuário.
+
+## D-054 · Turnstile do login verificado pelo Supabase Auth
+
+**Status:** Implementada (Etapa 2). Os tokens do Turnstile são de uso único. Como o captcha do Supabase Auth está ligado (necessário para proteger o login anônimo), o token do formulário de login vai direto para o Auth, que verifica. O nosso servidor não verifica de novo, senão o token chegaria ao Auth já gasto. No aceite de convite (que usa a API admin, sem captcha), quem verifica é o nosso servidor. Nos dois casos, Cloudflare fora do ar = recusa.
+
+## D-055 · `style-src-attr 'unsafe-inline'` na CSP
+
+**Status:** Implementada (Etapa 2). `<script>` e `<style>` inline continuam proibidos (só com nonce). Atributos `style="..."` são liberados porque o `next/image` (foto da página da banca, Etapa 3) depende deles para posicionar a imagem. Injetar um atributo exigiria injetar HTML, e o React escapa todo texto. O lint também proíbe `style` nos nossos componentes.
+
+## D-056 · Clientes HTTP próprios no servidor
+
+**Status:** Implementada (Etapa 2). O servidor fala com o Supabase Auth (GoTrue), o PostgREST e o Upstash pelas APIs REST com `fetch`, em vez de `@supabase/supabase-js`, `@supabase/ssr` e `@upstash/redis`. Isso dá controle total sobre timeouts, falha fechada e onde ficam os tokens (o refresh token nunca vai para um storage no navegador), com zero dependências de runtime a mais. O `supabase-js` entra na Etapa 4, só no navegador e só para o Realtime.
+
+## D-057 · Sessão do staff em cookies `__Host-` e renovação no `proxy.ts`
+
+**Status:** Implementada (Etapa 2).
+- Cookies `__Host-bp_at` (access, ~5 min) e `__Host-bp_rt` (refresh, 8h deslizantes): `HttpOnly`, `Secure`, `SameSite=Strict`, sem `Domain`.
+- O `proxy.ts` renova a sessão no servidor quando faltam menos de 60 s para o access vencer. Server Components não conseguem gravar cookies, por isso a renovação fica no proxy. Se o Auth recusar a renovação (sessão revogada), os cookies são apagados.
+
+## D-058 · IP do cliente na hospedagem gerenciada
+
+**Status:** Implementada (Etapa 2). No modo `managed`, o IP é o **último** valor de `X-Forwarded-For`, o que o proxy da hospedagem acrescenta. O primeiro valor é controlado pelo cliente. **Não verificado:** quantos proxies a Hostinger coloca na frente; se forem dois ou mais, o valor certo é outro, e isso precisa ser medido no deploy (Etapa 7). Nos modos `cloudflare_locked` e `tunnel`, só `CF-Connecting-IP`.
+
+## D-059 · Redis de verdade nos testes
+
+**Status:** Implementada (Etapa 2). No CI, os testes usam um Redis 7 real atrás do `serverless-redis-http`, um proxy que implementa a mesma API REST do Upstash. Não é mock: os comandos rodam num Redis. Em produção, a URL e o token passam a ser os do Upstash. "Redis fora do ar" é testado apontando para uma porta fechada.
+
+## D-060 · CSRF: double submit com cookie `__Host-` (sem assinatura)
+
+**Status:** Implementada (Etapa 2). Substitui o "token assinado" de D-039. A assinatura protege contra cookie plantado por subdomínio ou por conexão sem TLS, e o prefixo `__Host-` já impede as duas coisas. Toda mutação exige:
+1. `Origin` igual ao `SITE_URL`;
+2. `Sec-Fetch-Site: same-origin` (quando enviado);
+3. header `x-csrf-token` igual ao cookie `__Host-bp_csrf`.
+
+Testado na integração (sem token, outra origem, cross-site).
+
+## D-061 · Logout pelo JWT verificado
+
+**Status:** Implementada (Etapa 2). O logout chama `api.preauth_end_session()` com o próprio JWT do usuário, e o banco tira o `session_id` do token **verificado** pelo PostgREST. Nenhuma rota aceita um id de sessão vindo do cookie lido sem verificação. A primeira versão desta etapa usava a service role com o id do cookie e foi corrigida antes de subir.
+
+## D-062 · Retenção da auditoria apaga só o trecho inicial contínuo
+
+**Status:** Implementada (Etapa 2). A rotina de 12 meses apaga o trecho **inicial contínuo** de registros antigos da cadeia, nunca um registro recente. A cadeia continua verificável a partir da âncora. Teste dedicado no pgTAP 06.
+
 ---
 
 ## Registro de mudanças
@@ -434,3 +484,4 @@ Pontos para o advogado:
 | 27/10/2026 | Proposta inicial (D-001 a D-042) |
 | 27/10/2026 | Aprovação de todas as recomendações; foto recebida e paleta definida (D-025); novos requisitos: prazo de 5 min (D-043), encerrar apaga tudo e leva para "Aguardando banca..." (D-044), moderador pode encerrar (D-045), beep ao assumir (D-046), tela inicial (D-047) |
 | 27/10/2026 | Etapa 1: cadastro/anônimo no Auth (D-048), fixação de versões via CI (D-049), RLS sem FORCE (D-050), tsconfig (D-051), pasta de tema (D-052) |
+| 27/10/2026 | Etapa 2: D-048 revisada (trigger no banco), D-053 a D-062 |

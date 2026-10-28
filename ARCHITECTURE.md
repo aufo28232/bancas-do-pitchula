@@ -230,6 +230,8 @@ Check: `not (used_at is not null and revoked_at is not null)`.
 
 Unique `(user_id, device_hash)`.
 
+**`app.auth_provisioning`**: pré-autorização de uso único (10 min) para o Supabase Auth criar uma conta com e-mail. Guarda só o SHA-256 do e-mail. Um trigger em `auth.users` recusa qualquer outra criação de conta não anônima (D-048).
+
 **`app.security_alerts`**: alertas de dispositivo novo (e futuros alertas).
 
 | `id` uuid PK | `user_id` uuid | `session_id` uuid | `kind` text (`novo_dispositivo`) | `created_at` | `acknowledged_at`, `acknowledged_by` |
@@ -733,7 +735,7 @@ Cron a cada 5 min chama a mesma rotina como "sistema": `fechada` com `closed_at 
 | Sessão do pedido (cookie) | 256 bits | SHA-256 | Cookie `__Host-`, httpOnly, SameSite=Strict | Até o encerramento da banca (apagado junto com o pedido) |
 | Convite | 256 bits | SHA-256 | Fragmento `#` | 24h, uso único |
 | Dispositivo do staff | 128 bits | HMAC | Cookie httpOnly | 1 ano |
-| CSRF | 256 bits | — | Cookie + header (double submit assinado) | Por sessão |
+| CSRF | 256 bits | — | Cookie `__Host-bp_csrf` + header `x-csrf-token` (double submit, D-060) | Até fechar o navegador |
 
 Comparações de hash em tempo constante (`timingSafeEqual`), quando feitas fora do banco.
 
