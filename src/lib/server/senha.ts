@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { log } from "./log";
 
 /**
  * Política de senha do staff (enunciado §5):
@@ -8,7 +9,7 @@ import { createHash } from "node:crypto";
  *   saem do servidor, com padding para esconder o tamanho da resposta.
  * Se o HIBP estiver fora, a senha é RECUSADA (falha fechada, D-012).
  *
- * Este arquivo não importa nada do projeto: também é usado pelo script de seed.
+ * Também é usado pelo script de seed (só importa o logger, que não tem dependências).
  */
 export const SENHA_MIN = 12;
 export const SENHA_MAX = 128;
@@ -49,8 +50,10 @@ export async function senhaVazada(senha: string, baseUrl = "https://api.pwnedpas
         cache: "no-store",
       });
       if (resposta.ok) texto = await resposta.text();
-    } catch {
+      else log("warn", { evento: "hibp_falhou", status: resposta.status, tentativas: tentativa + 1 });
+    } catch (e) {
       texto = null;
+      log("warn", { evento: "hibp_falhou", motivo: e instanceof Error ? e.name : "desconhecido", tentativas: tentativa + 1 });
     }
   }
   if (texto === null) throw new HibpIndisponivelError();
