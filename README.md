@@ -14,7 +14,8 @@ Aplicação para o streamer Pitchula e seus moderadores receberem pedidos de ban
 | 2. Autenticação do painel (login, MFA, convites, sessões, revogação) | **Concluída em 27/10/2026.** CI verde: lint, typecheck, 57 testes Vitest (19 de integração contra Supabase + Redis reais), 122 testes pgTAP, build e `pnpm audit` sem vulnerabilidades |
 | 3. Bancas, página pública e pedido do espectador | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 105 testes Vitest (35 de integração), 149 testes pgTAP, build, **10 testes E2E no Chromium** (desktop e celular) e `pnpm audit` sem vulnerabilidades |
 | 4. Página do pedido, chat, prazo de 5 min e tempo real | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 120 testes Vitest (44 de integração, incluindo o Realtime de verdade), 184 testes pgTAP, build, **16 testes E2E** (desktop e celular) e `pnpm audit` sem vulnerabilidades |
-| 5 a 7 | Não iniciadas |
+| 5. Painel de atendimento | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 130 testes Vitest (incluindo concorrência real), 242 testes pgTAP, build, **18 testes E2E** (streamer e espectador em navegadores separados) e `pnpm audit` sem vulnerabilidades |
+| 6 e 7 | Não iniciadas |
 
 O que a Etapa 1 entrega:
 
@@ -49,6 +50,16 @@ A Etapa 4 entrega:
 - **Tempo real** (Supabase Realtime, canais privados, só leitura): posição, mensagens, "pedido assumido" com **bipe**, vibração e título piscando, contagem regressiva do **prazo de 5 min** e volta para "Aguardando banca..." quando a banca é encerrada. Sem conexão, a página continua atualizando por polling.
 - **Prazo de resposta:** depois que o moderador manda mensagem, o espectador tem 5 min; senão o pedido é encerrado (job a cada 15 s + checagem a cada acesso).
 - **Vagas ao vivo** na página da banca, com animação.
+
+A Etapa 5 entrega:
+
+- **Atendimento** (`/painel/bancas/{id}/atendimento`): fila ao vivo (pendentes por padrão, filtro "sem comprovante", aba de finalizados), resumo da banca, chat com respostas rápidas e bipe para pedido novo e resposta do espectador.
+- **Travas:** assumir, liberar e (só o streamer) forçar assumir. A trava cai com 10 min sem atividade. A mensagem do moderador inicia o prazo de 5 min do espectador.
+- **Pagar** com confirmação em 2 passos. A última vaga esgota a banca e recusa na hora os pendentes que sobraram. Recusar com motivo e nota. Clique duplo não paga duas vezes.
+- **Banir** a partir do pedido (CPF, Pix, ID ou IP por até 7 dias, global ou só na banca), sem ninguém digitar o dado. Lista de banidos sem o valor; desbanir segue D-014.
+- **Modo live** ligado em todo login: os dados saem mascarados do servidor (inclusive CPF/Pix digitados no chat). Revelar mostra por 5 s e fica na auditoria; copiar Pix vai direto para a área de transferência.
+- **Atalho de pânico** `Alt+Q` (ou o botão no canto) esconde a tela inteira.
+- **Respostas rápidas** editáveis pelo streamer.
 
 ## Pré-requisitos (desenvolvimento local)
 
