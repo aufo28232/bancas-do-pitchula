@@ -1,6 +1,6 @@
 # Versões fixadas
 
-Geradas por `scripts/pin-deps.mjs` em 2026-10-28T01:26:52.135Z.
+Geradas por `scripts/pin-deps.mjs` em 2026-10-28T11:14:22.615Z.
 
 | Pacote | Versão | Faixa pretendida |
 |---|---|---|
@@ -10,6 +10,8 @@ Geradas por `scripts/pin-deps.mjs` em 2026-10-28T01:26:52.135Z.
 | react | 19.2.9 | ^19.2.0 |
 | react-dom | 19.2.9 | ^19.2.0 |
 | zod | 4.6.7 | ^4.1.0 |
+| @axe-core/playwright | 4.14.0 | ^4.10.0 |
+| @playwright/test | 1.64.1 | ^1.50.0 |
 | @tailwindcss/postcss | 4.3.3 | ^4.1.0 |
 | @types/node | 26.6.5 | >=24.0.0 <27.0.0 |
 | @types/react | 19.3.0 | ^19.2.0 |
