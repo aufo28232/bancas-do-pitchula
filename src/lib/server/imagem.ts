@@ -36,7 +36,7 @@ export async function processarComprovante(original: Buffer): Promise<Comprovant
   if (!tipo) throw new ImagemInvalidaError("tipo");
 
   const opcoes = { limitInputPixels: LIMITE_PIXELS, failOn: "error" as const, sequentialRead: true };
-  let meta: sharp.Metadata;
+  let meta: Awaited<ReturnType<ReturnType<typeof sharp>["metadata"]>>;
   try {
     meta = await sharp(original, opcoes).metadata();
   } catch (e) {
