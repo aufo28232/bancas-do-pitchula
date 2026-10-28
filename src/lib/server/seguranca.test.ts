@@ -35,6 +35,12 @@ describe("IP do cliente por modo de deploy", () => {
     expect(ipDoCliente(h, "managed")).toBe("198.51.100.7");
   });
 
+  it("managed com 2 proxies confiáveis: pega o penúltimo; cabeçalho curto demais não vale", () => {
+    const h = new Headers({ "x-forwarded-for": "6.6.6.6, 198.51.100.9, 10.0.0.2" });
+    expect(ipDoCliente(h, "managed", 2)).toBe("198.51.100.9");
+    expect(ipDoCliente(new Headers({ "x-forwarded-for": "198.51.100.9" }), "managed", 2)).toBe("desconhecido");
+  });
+
   it("cloudflare_locked/tunnel: só confia no CF-Connecting-IP", () => {
     const h = new Headers({ "x-forwarded-for": "1.1.1.1", "cf-connecting-ip": "203.0.113.5" });
     expect(ipDoCliente(h, "cloudflare_locked")).toBe("203.0.113.5");

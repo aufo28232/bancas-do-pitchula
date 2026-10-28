@@ -728,7 +728,7 @@ Cron a cada 5 min chama a mesma rotina como "sistema": `fechada` com `closed_at 
 
 1. Gerar a nova chave (`openssl rand -base64 32`) e adicionar como versão N+1 sem ativar. Deploy.
 2. Ativar N+1. Deploy. Novas gravações já usam N+1.
-3. Rodar `pnpm rotate:data --from N --to N+1`: re-cifra em lotes, com transação por lote, retomável.
+3. Rodar `pnpm rotate:data` (com `DATA_ENC_ACTIVE=N+1`): re-cifra em lotes, com transação por lote, retomável.
 4. Conferir que não resta nenhum `vN:` (`select count(*) … like 'vN:%'`). Remover a chave N. Deploy.
 5. Registrar a rotação no log de auditoria (ação de sistema).
 
@@ -758,12 +758,12 @@ Mudou em 27/10/2026 (D-044): o enunciado previa 30 dias depois do encerramento, 
 | Dado | Retenção | Mecanismo |
 |---|---|---|
 | Pedido (nome, CPF, Pix, ID), mensagens, sessões | Até o encerramento da banca (no máximo: 7 dias aberta sem movimento, 7 dias fechada, 24h esgotada) | Apagados na transação de encerramento |
-| Comprovantes | Até o encerramento | Fila + Edge Function chamada na hora (cron como rede de segurança) |
+| Comprovantes | Até o encerramento | Fila + trabalhador de limpeza chamado na hora (cron como rede de segurança, D-075) |
 | Bans cpf/pix/id | Enquanto ativos; revisão a cada 12 meses | Só HMAC + motivo |
 | Bans de IP | Até 7 dias | cron SQL |
 | Auditoria | 12 meses | `purge_audit_log()` via cron |
 | Agregados (`banca_stats`, `bancas`) | Indefinido | Sem dados pessoais |
-| Usuários anônimos do Supabase | Até o encerramento da banca | Edge Function |
+| Usuários anônimos do Supabase | Até o encerramento da banca (sem pedido: 1 dia) | Fila + trabalhador de limpeza (D-075) |
 | Rate limit (Redis) | TTL da janela (≤ 24h) | Chaves com HMAC do IP |
 | Backups do Supabase | Conforme o plano (dados apagados persistem no backup até ele expirar) | Documentado no README e na política |
 

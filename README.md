@@ -125,6 +125,62 @@ Estes valores espelham o `supabase/config.toml` e precisam ser aplicados à mão
 
 Depois do primeiro deploy, rode `pnpm seed:owner` com as variáveis de produção, entre em `/painel/entrar` e cadastre o app autenticador.
 
+## Colocando no ar
+
+> Nada aqui afirma que a operação está autorizada ou em conformidade com a lei: os pontos jurídicos abertos estão em DECISIONS (marcados **[ADVOGADO]**) e no relatório final.
+
+### 1. Contas e chaves
+
+| Variável | Onde pegar | Observação |
+|---|---|---|
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | Supabase → Project Settings → API | A anon key é pública (vai para o navegador só para o Realtime) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Mesmo lugar ("service_role" / "secret") | **Só no servidor.** Quem tem esta chave lê o banco inteiro |
+| `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Cloudflare → Turnstile → Add site (seu domínio) | O *secret* também vai no Supabase (Attack Protection → Captcha) |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | upstash.com → Redis → banco novo (região São Paulo) → REST API | Fora do ar = login, pedido e upload bloqueados (de propósito) |
+| `HMAC_KEYS` | `openssl rand -base64 32` → `{"1":"<valor>"}` | Separada da cifra. **Guarde fora do servidor também** (cofre de senhas) |
+| `DATA_ENC_KEYS` | `openssl rand -base64 32` → `{"1":"<valor>"}` | Perdeu esta chave = os dados dos pedidos abertos ficam ilegíveis |
+| `LIMPEZA_SECRET` | `openssl rand -base64 48` | O mesmo valor vai no Vault do Supabase (`limpeza_segredo`) |
+| `SITE_URL` | Seu domínio, com `https://` | Usado no CSRF e nos links |
+| `DEPLOY_MODE`, `TRUSTED_PROXY_HOPS` | Ver os modos abaixo | Decide em qual IP confiar |
+| `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` | Cloudflare Zero Trust → Access → aplicação do `/painel` | Opcional, recomendado (D-079) |
+| `PLATFORM_NAME`, `PLATFORM_SIGNUP_URL` | Texto e link da plataforma | Link vazio = some da página |
+
+Nenhuma chave é `NEXT_PUBLIC_`: trocar um valor exige só reiniciar o processo. **Nunca** versione `.env` com valores reais.
+
+### 2. Banco
+
+1. `supabase link --project-ref <ref>` e `supabase db push` (aplica as migrations).
+2. Aplique a tabela "Supabase em produção" acima (Auth, Realtime, extensões, Vault, Storage).
+3. Deploy do app (um dos modos abaixo) e `pnpm seed:owner --email ... --apelido Pitchula` com as variáveis de produção.
+4. Entre em `/painel/entrar`, cadastre o app autenticador e abra `/painel/diagnostico` para conferir o IP (modo 1).
+
+### 3. Modos de deploy
+
+| | 1. Node gerenciado (ex.: Hostinger) | 2. VPS + Docker + Nginx | 3. VPS + Cloudflare Tunnel |
+|---|---|---|---|
+| `DEPLOY_MODE` | `managed` | `cloudflare_locked` | `tunnel` |
+| IP confiável para "1 pedido por IP" e bans de IP | **Não** (enfraquecido; o painel avisa) | Sim, se a origem só aceitar a Cloudflare | Sim |
+| Origem escondida | Depende da hospedagem (não verificado) | Firewall + Authenticated Origin Pulls | Nenhuma porta aberta |
+
+**Modo 1: Node gerenciado.** Build: `pnpm install --frozen-lockfile && pnpm build`. Start: `node .next/standalone/server.js` (porta em `PORT`). Configure as variáveis no painel da hospedagem. Depois do deploy, abra `/painel/diagnostico`: se "Seu IP" não for o seu IP real, ajuste `TRUSTED_PROXY_HOPS` (quantos proxies a hospedagem coloca na frente, D-058/D-078). Mesmo certo, alguém que descubra o endereço direto da origem consegue forjar o IP: por isso as regras por IP ficam marcadas como enfraquecidas.
+
+**Modo 2: VPS + Docker + Nginx.**
+
+```bash
+docker build -t bancas .
+docker run -d --name bancas --restart unless-stopped --env-file /etc/bancas.env -p 127.0.0.1:3000:3000 bancas
+```
+
+A imagem roda como usuário sem privilégio (uid 10001), sem npm, e não leva nenhum segredo (tudo vem do `--env-file`, que deve ter permissão `600`). No Nginx, HTTPS na frente e: `set_real_ip_from` **só** com as faixas da Cloudflare (<https://www.cloudflare.com/ips/>), `real_ip_header CF-Connecting-IP`, e repasse do cabeçalho `CF-Connecting-IP`. No firewall (ufw/iptables), libere 443 só para as faixas da Cloudflare e ligue *Authenticated Origin Pulls*. Sem isso, use `managed`.
+
+**Modo 3: VPS + Cloudflare Tunnel.** Rode o container como no modo 2 (porta só em `127.0.0.1`) e o `cloudflared` apontando para `http://127.0.0.1:3000`. Não abra nenhuma porta de entrada no servidor.
+
+**Cloudflare Access (recomendado nos três modos).** Crie uma aplicação *Self-hosted* para `seu-dominio/painel*` e `seu-dominio/api/painel*` com a política de quem pode entrar (e-mails do streamer e dos moderadores). Copie o *Application Audience (AUD) Tag* para `CF_ACCESS_AUD` e o domínio da equipe para `CF_ACCESS_TEAM_DOMAIN`. O servidor confere o JWT do Access em toda requisição do painel; no modo 1 isso fecha o caminho de quem chega direto na origem.
+
+### 4. Backups e exclusão
+
+Os backups do Supabase guardam o banco como estava: um pedido apagado (encerramento ou exclusão a pedido) continua no backup até ele expirar, conforme o plano contratado. A política de privacidade precisa dizer isso. Restaurar um backup traz de volta dados já apagados; nesse caso, encerre as bancas restauradas logo em seguida.
+
 ## Critério de pronto de cada etapa
 
 ```bash
@@ -142,6 +198,7 @@ A partir da Etapa 3, também `pnpm test:e2e` (Playwright contra o build de produ
 | `pnpm build` | Build de produção (`.next/standalone`) |
 | `pnpm test:e2e` | Playwright no Chromium, desktop e celular: login com MFA pela tela, criação de banca, pedido, acessibilidade (axe), teclado e ausência de violações de CSP |
 | `pnpm seed:owner` | Cria a conta do streamer (uma vez) |
+| `pnpm rotate:data` | Re-cifra os pedidos com a chave ativa (rotação, ver SECURITY.md) |
 
 ## Estrutura
 
@@ -149,11 +206,14 @@ A partir da Etapa 3, também `pnpm test:e2e` (Playwright contra o build de produ
 src/app/            páginas (App Router)
 src/components/     componentes de interface
 src/config/site.ts  identidade fixa (links oficiais, aviso de site oficial)
-src/lib/            código de servidor (env, e nas próximas etapas: cripto, rate limit...)
+src/lib/server/     código só de servidor (env, cripto, sessão, rate limit, Storage, limpeza)
+src/lib/client/     código de navegador (chamadas à API, tempo real, alertas)
 src/theme/          TEMA CENTRAL: theme.ts (cores, foto, logo) e fonts.ts
 supabase/migrations SQL executável: schemas, tabelas, RLS, auditoria
 supabase/tests/     testes pgTAP
-scripts/            fixação de versões das dependências
+scripts/            seed do streamer, rotação de chave, fixação de versões
+e2e/                testes Playwright (contra o build de produção)
+Dockerfile          imagem de produção (modo 2)
+SECURITY.md         segredos, rotação, incidente
+RELATORIO-FINAL.md  o que está implementado, testado, pendente e não verificado
 ```
-
-As seções sobre Supabase em produção, Turnstile, Upstash, Cloudflare e os três modos de deploy entram aqui nas etapas 2 e 7.

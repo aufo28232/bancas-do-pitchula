@@ -547,6 +547,22 @@ Testado na integração (sem token, outra origem, cross-site).
 
 **Status:** Implementada (Etapa 6). O navegador manda a imagem no corpo (`application/octet-stream`), sem multipart. O servidor lê o fluxo e **para** ao passar de 5 MB (não confia no `Content-Length`), decide o tipo pelos bytes, confere dimensões antes de decodificar e re-encoda em WEBP sem metadados (sharp). O arquivo vai para o bucket privado `comprovantes` com nome gerado pelo servidor (`{banca}/{pedido}/{uuid}.webp`); se o banco recusar (limite de 5, pedido finalizado), o arquivo é apagado na hora. Ver é sempre por URL assinada de 60 s, pedida na hora do clique; no painel, cada abertura fica na auditoria.
 
+## D-078 · Quantos proxies confiar no modo gerenciado
+
+**Status:** Implementada (Etapa 7), resolve a pendência de D-058. `TRUSTED_PROXY_HOPS` (1 a 5, padrão 1) diz quantos proxies da hospedagem ficam na frente; o IP usado é o dessa posição, contando do fim do `X-Forwarded-For`. Cabeçalho com menos valores do que o esperado = IP "desconhecido" (todo mundo no mesmo balde, mais restritivo). A página `/painel/diagnostico` (só o streamer) mostra quantos valores chegam e qual IP as regras enxergam, para acertar o número na hospedagem real. **Continua não verificado** quantos proxies a Hostinger usa: precisa ser medido no deploy.
+
+## D-079 · Cloudflare Access conferido pelo servidor
+
+**Status:** Implementada (Etapa 7). Com `CF_ACCESS_TEAM_DOMAIN` e `CF_ACCESS_AUD` preenchidos, o `proxy.ts` exige em todo `/painel` e `/api/painel` o JWT do Access válido: RS256 com as chaves públicas da equipe (cache de 1h), `aud`, emissor e validade. Sem o JWT, com JWT inválido ou se as chaves não puderem ser buscadas: 403 (falha fechada). Testado com chaves geradas no teste (assinatura de outra chave, `kid` desconhecido, `alg` trocado, corpo adulterado, `aud`/emissor errados, vencido). Sem as variáveis, fica desligado.
+
+## D-080 · E-mail de alerta não implementado
+
+**Status:** Pendente (Etapa 7). D-040 era opcional. Os alertas (dispositivo novo, banca encerrada por moderador, falha na retenção) aparecem no painel do streamer. As variáveis `SMTP_*` saíram do `.env.example` para não sugerir algo que não existe.
+
+## D-081 · Auditoria legível e sinais de fraude
+
+**Status:** Implementada (Etapa 7). `/painel/auditoria` (só o streamer) lista quem fez o quê e quando, sem dados pessoais, e confere a cadeia de hash (D-019) a cada abertura. No pedido, o painel avisa quando a mesma chave Pix ou o mesmo ID aparece em outro pedido da banca e quando o mesmo comprovante (SHA-256 do arquivo re-encodado) foi enviado em outro pedido (T9). Encerramento feito por moderador gera alerta para o streamer (T22). Revelar dado tem limite próprio de 30 por minuto por pessoa (T21).
+
 ---
 
 ## Registro de mudanças
@@ -561,3 +577,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Etapa 4: D-008 verificada, D-067 a D-070 |
 | 28/10/2026 | Etapa 5: D-071 a D-074 |
 | 28/10/2026 | Etapa 6: D-075 a D-077 |
+| 28/10/2026 | Etapa 7: D-078 a D-081 |

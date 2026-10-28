@@ -38,6 +38,12 @@ export default async function LayoutProtegido({ children }: { children: ReactNod
                 <Link href="/painel/equipe" className="text-fg-muted hover:text-fg">
                   Equipe
                 </Link>
+                <Link href="/painel/auditoria" className="text-fg-muted hover:text-fg">
+                  Auditoria
+                </Link>
+                <Link href="/painel/diagnostico" className="text-fg-muted hover:text-fg">
+                  Diagnóstico
+                </Link>
               </>
             ) : null}
           </nav>

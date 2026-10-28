@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { accessPermite } from "@/lib/server/cf-access";
 import { serializarCookie } from "@/lib/server/cookies";
 import { CSRF_COOKIE, novoTokenCsrf } from "@/lib/server/csrf";
 import { renovar } from "@/lib/server/gotrue";
@@ -16,6 +17,7 @@ import {
  * 2. Cookie de CSRF (double submit) se ainda não existir.
  * 3. Renovação da sessão do staff NO SERVIDOR: o refresh token nunca vai para o JS.
  * 4. Referrer-Policy no-referrer nas páginas com token no fragmento.
+ * 5. Cloudflare Access (opcional): no painel, exige o JWT do Access válido.
  * Nenhuma decisão de AUTORIZAÇÃO acontece aqui: isso fica no banco e nas rotas.
  */
 function politicaCsp(nonce: string, dev: boolean, supabaseUrl: string | undefined, siteHttps: boolean): string {
@@ -69,6 +71,13 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
   }
 
   const ehPainel = caminho === "/painel" || caminho.startsWith("/painel/") || caminho.startsWith("/api/painel/");
+  if (ehPainel && !(await accessPermite(req.headers.get("cf-access-jwt-assertion")))) {
+    // Cloudflare Access configurado e JWT ausente/inválido: nem chega no login (falha fechada).
+    return new NextResponse("Acesso negado.", {
+      status: 403,
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": csp },
+    });
+  }
   if (ehPainel) {
     const access = cookies.get(COOKIE_ACCESS);
     const refresh = cookies.get(COOKIE_REFRESH);

@@ -79,7 +79,7 @@ select set_eq(
     'api.staff_send_message', 'api.staff_mark_paid', 'api.staff_refuse', 'api.staff_ban', 'api.staff_list_bans',
     'api.staff_lift_ban', 'api.staff_reveal', 'api.staff_set_live_mode', 'api.staff_list_quick_replies',
     'api.owner_save_quick_reply', 'api.owner_delete_quick_reply',
-    'api.staff_attachment_path', 'api.staff_end_banca'
+    'api.staff_attachment_path', 'api.staff_end_banca', 'api.owner_list_audit', 'api.owner_verify_audit'
   ],
   'authenticated só executa as funções das políticas e as funções staff_/owner_/preauth_ (que conferem o papel por dentro)'
 );

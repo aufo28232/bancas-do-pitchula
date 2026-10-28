@@ -1,0 +1,14 @@
+# Nada de segredos, dependências locais ou artefatos na imagem.
+.env
+.env.*
+!.env.example
+node_modules
+.next
+.git
+.github
+test-results
+playwright-report
+coverage
+e2e/.estado.json
+supabase/.temp
+*.log

@@ -53,15 +53,27 @@ export function normalizarIp(bruto: string | null | undefined): string | null {
  * - managed: último valor de X-Forwarded-For (o que o proxy da hospedagem acrescentou).
  *   Pode ser forjado se houver acesso direto à origem: as regras por IP ficam ENFRAQUECIDAS.
  */
-export function ipDoCliente(headers: Headers, modo: DeployMode): string {
+/**
+ * Quantos proxies confiáveis a hospedagem põe na frente (TRUSTED_PROXY_HOPS, 1 a 5;
+ * padrão 1). O IP do cliente é o valor nessa posição, contando do FIM do
+ * X-Forwarded-For. Meça na hospedagem real com a página /painel/diagnostico (D-078).
+ */
+export function saltosConfiaveis(env: Record<string, string | undefined> = process.env): number {
+  const n = Number(env.TRUSTED_PROXY_HOPS ?? "1");
+  return Number.isInteger(n) && n >= 1 && n <= 5 ? n : 1;
+}
+
+export function ipDoCliente(headers: Pick<Headers, "get">, modo: DeployMode, saltos = saltosConfiaveis()): string {
   if (modo === "cloudflare_locked" || modo === "tunnel") {
     return normalizarIp(headers.get("cf-connecting-ip")) ?? IP_DESCONHECIDO;
   }
   const xff = headers.get("x-forwarded-for");
   if (xff) {
     const partes = xff.split(",").map((p) => p.trim()).filter(Boolean);
-    const ultimo = normalizarIp(partes[partes.length - 1]);
-    if (ultimo) return ultimo;
+    // Menos valores do que proxies confiáveis = cabeçalho incompleto: não confia em nenhum.
+    if (partes.length < saltos) return IP_DESCONHECIDO;
+    const escolhido = normalizarIp(partes[partes.length - saltos]);
+    if (escolhido) return escolhido;
   }
   return normalizarIp(headers.get("x-real-ip")) ?? IP_DESCONHECIDO;
 }

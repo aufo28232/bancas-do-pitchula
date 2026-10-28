@@ -12,7 +12,9 @@ import { decifrar, getChavesDeCifra, type Campo } from "../cripto";
 import { HttpError, MSG } from "../errors";
 import { json, lerCorpo, mutacao } from "../http";
 import { log } from "../log";
+import { getKeyring, hmac } from "../keys";
 import { RpcError, rpc } from "../postgrest";
+import { contarOuFalhar } from "../ratelimit";
 import { agendarLimpeza } from "../limpeza";
 import { exigirStaff, lerClaims, type ContextoStaff } from "../sessao-staff";
 import { nomeNoBucket, urlAssinada } from "../storage";
@@ -155,9 +157,12 @@ export type MensagemPainel = {
   criada_em: string;
 };
 
+export type SinaisFraude = { mesmo_pix: number; mesmo_id: number; comprovante_repetido: number };
+
 export type DetalhePedido = {
   live: boolean;
   pedido: PedidoPainel;
+  sinais: SinaisFraude;
   dados: { nome: string; cpf: string; pixTipo: TipoPix; pix: string; plataformaId: string };
   banca: { id: string; nome: string; status: string; por_pessoa_cents: number; restantes: number };
   mensagens: MensagemPainel[];
@@ -188,6 +193,7 @@ export async function carregarPedido(staff: ContextoStaff, id: string): Promise<
   return {
     live,
     pedido,
+    sinais: b.sinais,
     dados,
     banca: b.banca,
     // D-015: com o modo live ligado, dados digitados pelo espectador no chat também são mascarados.
@@ -300,6 +306,13 @@ const CAMPOS: Record<"nome" | "cpf" | "pix" | "pid", Campo> = {
 const corpoRevelar = z.object({ id: zId, campo: z.enum(["nome", "cpf", "pix", "pid"]) });
 
 async function revelar(staff: ContextoStaff, id: string, campo: keyof typeof CAMPOS, acao: "revelar" | "copiar_pix") {
+  // Revelar é um a um e com limite próprio (T21): 30 por minuto por pessoa. Redis fora = bloqueia.
+  const lim = await contarOuFalhar("revelar", hmac(getKeyring(), "rl-staff", staff.userId).toString("hex"), 30, 60);
+  if (!lim.permitido) {
+    throw new HttpError(429, "Muitas revelações seguidas. Espere um pouco.", "rate_limit_revelar", {
+      "Retry-After": String(lim.tentarEmSeg),
+    });
+  }
   const enc = await chamar<string>(staff, "staff_reveal", { p_order: id, p_campo: campo, p_acao: acao });
   const valor = decifrarCampo(id, CAMPOS[campo], enc);
   if (valor === null) throw new HttpError(500, MSG.generico, "decifra");
@@ -454,3 +467,26 @@ export const postEncerrarBanca = mutacao("painel/bancas/encerrar", async (ctx) =
     throw e;
   }
 });
+
+// ---------------------------------------------------------------------------
+// Auditoria (só o streamer lê; ninguém altera)
+// ---------------------------------------------------------------------------
+export type RegistroAuditoria = {
+  pos: number;
+  em: string;
+  acao: string;
+  papel: "owner" | "moderator" | "sistema";
+  autor: string | null;
+  alvo: string | null;
+  banca: string | null;
+  pedido: string | null;
+  detalhe: Record<string, unknown> | null;
+};
+
+export function listarAuditoria(staff: ContextoStaff, antes: number | null): Promise<RegistroAuditoria[]> {
+  return chamar<RegistroAuditoria[]>(staff, "owner_list_audit", { p_limit: 100, p_antes: antes });
+}
+
+export function verificarAuditoria(staff: ContextoStaff): Promise<{ integra: boolean; quebra_em: number | null; registros: number }> {
+  return chamar(staff, "owner_verify_audit", {});
+}

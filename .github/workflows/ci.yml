@@ -143,6 +143,22 @@ jobs:
       - name: pnpm audit (sem vulnerabilidades altas)
         run: set -o pipefail; pnpm audit --audit-level high 2>&1 | tee "$LOGS/11-audit.log"
 
+      - name: Imagem Docker de produção (build, usuário não-root e resposta)
+        run: |
+          set -o pipefail
+          {
+            docker build -t bancas:ci .
+            echo "usuário na imagem: $(docker run --rm --entrypoint id bancas:ci -u)"
+            test "$(docker run --rm --entrypoint id bancas:ci -u)" = "10001"
+            env | grep -E '^(SUPABASE_URL|SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY|TURNSTILE_|UPSTASH_|HMAC_|DATA_ENC_|SITE_URL|DEPLOY_MODE|PLATFORM_)' > "$RUNNER_TEMP/docker.env"
+            docker run -d --name bancas-ci --network host --env-file "$RUNNER_TEMP/docker.env" -e PORT=3100 bancas:ci
+            rm -f "$RUNNER_TEMP/docker.env"
+            for i in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:3100/privacidade && break; sleep 1; done
+            curl -fsS -D - -o /dev/null http://127.0.0.1:3100/ | grep -iE '^(content-security-policy|x-frame-options|strict-transport-security):' | cut -c1-80
+            docker rm -f bancas-ci
+            docker image ls bancas:ci --format 'tamanho da imagem: {{.Size}}'
+          } 2>&1 | grep -viE 'key|secret|token' | tee "$LOGS/12-docker.log"
+
       - name: Gravar versões fixadas no repositório
         if: always() && steps.pin.outputs.novo == '1' && github.event_name != 'pull_request' && hashFiles('pnpm-lock.yaml') != ''
         run: |

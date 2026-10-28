@@ -18,6 +18,12 @@ type Sessao = {
 };
 type Alerta = { id: string; display_name: string; kind: string; created_at: string };
 
+const TEXTO_ALERTA: Record<string, string> = {
+  novo_dispositivo: "entrou de um dispositivo novo",
+  encerramento_por_moderador: "· uma banca foi encerrada por um moderador (veja quem na auditoria)",
+  retencao_falhou: "· a rotina de limpeza encontrou pedidos que deveriam ter sido apagados",
+};
+
 export default async function PaginaSessoes() {
   const staff = await staffAtual();
   if (!staff) redirect("/painel/entrar");
@@ -36,7 +42,7 @@ export default async function PaginaSessoes() {
             {alertas.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <span>
-                  <strong>{a.display_name}</strong> entrou de um dispositivo novo · {dataHora(a.created_at)}
+                  <strong>{a.display_name}</strong> {TEXTO_ALERTA[a.kind] ?? "gerou um alerta"} · {dataHora(a.created_at)}
                 </span>
                 <BotaoAcao url="/api/painel/alertas/ciente" corpo={{ id: a.id }} rotulo="Fui eu / ciente" />
               </li>

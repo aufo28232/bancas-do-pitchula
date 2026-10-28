@@ -229,6 +229,15 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
         )}
         {linhaDado("ID na plataforma", "pid", detalhe.dados.plataformaId)}
       </dl>
+      {detalhe.sinais.mesmo_pix + detalhe.sinais.mesmo_id + detalhe.sinais.comprovante_repetido > 0 ? (
+        <ul role="note" aria-label="Sinais de atenção" className="-mt-2 flex flex-col gap-1 border-l-2 border-accent pl-3 text-sm" data-sinais="">
+          {detalhe.sinais.mesmo_pix > 0 ? <li>Mesma chave Pix em {detalhe.sinais.mesmo_pix} outro(s) pedido(s) desta banca.</li> : null}
+          {detalhe.sinais.mesmo_id > 0 ? <li>Mesmo ID na plataforma em {detalhe.sinais.mesmo_id} outro(s) pedido(s) desta banca.</li> : null}
+          {detalhe.sinais.comprovante_repetido > 0 ? (
+            <li>Comprovante idêntico enviado em {detalhe.sinais.comprovante_repetido} outro(s) pedido(s).</li>
+          ) : null}
+        </ul>
+      ) : null}
       {detalhe.live ? (
         <p className="-mt-3 text-xs text-fg-muted">Modo live: os dados ficam escondidos. Revelar mostra por 5 s e fica registrado.</p>
       ) : null}
