@@ -42,7 +42,9 @@ test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genéric
   expect(graves.map((v) => `${v.id}: ${v.help}`)).toEqual([]);
 
   // Capturas para revisão visual (publicadas junto com os logs do CI).
-  await page.waitForLoadState("networkidle");
+  const foto = page.getByRole("img", { name: /Pitchula/ });
+  await expect.poll(() => foto.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  await esperarTurnstile(page);
   await page.screenshot({ path: `test-results/capturas/banca-${info.project.name}.png`, fullPage: info.project.name === "celular" });
 
   const cpf = gerarCpf();
