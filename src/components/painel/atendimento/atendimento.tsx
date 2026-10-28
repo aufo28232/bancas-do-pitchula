@@ -7,6 +7,7 @@ import { enviar } from "@/lib/client/api";
 import { TempoReal } from "@/lib/client/tempo-real";
 import { formatarReais } from "@/lib/dinheiro";
 import type { DetalhePedido, Fila, ItemFila, RespostaRapida } from "@/lib/server/painel/atendimento";
+import { EncerrarBanca } from "../encerrar-banca";
 import { Detalhe } from "./detalhe";
 import { formatarRestante, useRelogio } from "./relogio";
 
@@ -134,6 +135,8 @@ export function Atendimento({ inicial, respostas, dono }: Props) {
               }
               agendar();
             },
+            // Banca encerrada (aqui ou em outra aba): tudo foi apagado, volta para a lista.
+            banca_encerrada: () => router.replace("/painel"),
             mensagem: (p) => {
               // Espectador respondeu num pedido que está comigo: bipe.
               if (p.autor === "espectador" && typeof p.pedido === "string" && meusRef.current.has(p.pedido)) bipe(2);
@@ -155,7 +158,7 @@ export function Atendimento({ inicial, respostas, dono }: Props) {
       if (agendado) clearTimeout(agendado);
       rt?.encerrar();
     };
-  }, [bancaId, atualizar]);
+  }, [bancaId, atualizar, router]);
 
   // Polling de reserva.
   useEffect(() => {
@@ -227,6 +230,7 @@ export function Atendimento({ inicial, respostas, dono }: Props) {
           <Resumo rotulo="Recusados" valor={String(b.recusados)} />
           <Resumo rotulo="Total pago" valor={formatarReais(b.total_pago_cents)} />
         </dl>
+        <EncerrarBanca id={b.id} nome={b.nome} />
         <p className="text-xs text-fg-muted" aria-live="polite">
           {conectado ? "Fila ao vivo." : "Reconectando… a fila continua se atualizando."}
           {b.status !== "aberta" ? ` Banca ${b.status === "fechada" ? "pausada" : b.status}.` : ""}

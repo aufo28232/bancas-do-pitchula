@@ -13,7 +13,9 @@ import { HttpError, MSG } from "../errors";
 import { json, lerCorpo, mutacao } from "../http";
 import { log } from "../log";
 import { RpcError, rpc } from "../postgrest";
+import { agendarLimpeza } from "../limpeza";
 import { exigirStaff, lerClaims, type ContextoStaff } from "../sessao-staff";
+import { nomeNoBucket, urlAssinada } from "../storage";
 import { zId } from "../validacao";
 import { limitePainel } from "./bancas";
 
@@ -49,6 +51,8 @@ async function chamar<T>(staff: ContextoStaff, funcao: string, args: Record<stri
 }
 
 function decifrarCampo(id: string, campo: Campo, valor: string): string | null {
+  // "v0:" = dado apagado a pedido do titular (D-018): não há o que decifrar.
+  if (valor.startsWith("v0:")) return null;
   try {
     return decifrar(getChavesDeCifra(), campo, id, valor);
   } catch {
@@ -138,6 +142,7 @@ export type PedidoPainel = {
   pago_em: string | null;
   recusado_por: string | null;
   recusado_em: string | null;
+  apagado: boolean;
 };
 
 export type MensagemPainel = {
@@ -145,6 +150,7 @@ export type MensagemPainel = {
   autor: "espectador" | "staff" | "sistema";
   texto: string | null;
   tem_anexo: boolean;
+  anexo: string | null;
   atendente: string | null;
   criada_em: string;
 };
@@ -167,7 +173,10 @@ export async function carregarPedido(staff: ContextoStaff, id: string): Promise<
   const live = staff.liveMode;
   const tipo = pedido.pix_tipo;
   const nome = decifrarCampo(id, "orders.full_name_enc", enc.nome) ?? "********";
-  const dados = live
+  const APAGADO = "(apagado a pedido do titular)";
+  const dados = pedido.apagado
+    ? { nome: APAGADO, cpf: APAGADO, pixTipo: tipo, pix: APAGADO, plataformaId: APAGADO }
+    : live
     ? { nome: mascararNomeLive(nome), cpf: CPF_LIVE, pixTipo: tipo, pix: mascararPixLive(tipo), plataformaId: ID_LIVE }
     : {
         nome,
@@ -407,4 +416,41 @@ export const postRealtimePainel = mutacao("painel/realtime", async (ctx) => {
     200,
     ctx,
   );
+});
+
+// ---------------------------------------------------------------------------
+// Comprovante (URL assinada de 60 s; abrir fica na auditoria, D-016)
+// ---------------------------------------------------------------------------
+export const postComprovanteStaff = mutacao("painel/pedidos/comprovante", async (ctx) => {
+  const d = await lerCorpo(ctx.req, z.object({ anexo: zId }), 256);
+  const staff = await exigirStaff(ctx.req);
+  await limitePainel(staff.userId);
+  const caminho = await chamar<string>(staff, "staff_attachment_path", { p_attachment: d.anexo });
+  return json({ url: await urlAssinada(nomeNoBucket(caminho), 60) }, 200, ctx);
+});
+
+// ---------------------------------------------------------------------------
+// Encerrar banca = apagar tudo na hora (D-044). Streamer ou moderador (D-045),
+// digitando o nome da banca. Arquivos e contas anônimas saem logo depois.
+// ---------------------------------------------------------------------------
+const corpoEncerrar = z.object({ id: zId, nome: z.string().max(120), idem: zId });
+
+export const postEncerrarBanca = mutacao("painel/bancas/encerrar", async (ctx) => {
+  const d = await lerCorpo(ctx.req, corpoEncerrar, 512);
+  const staff = await exigirStaff(ctx.req);
+  await limitePainel(staff.userId);
+  try {
+    const r = await chamar<Record<string, unknown>>(staff, "staff_end_banca", {
+      p_banca: d.id,
+      p_confirm_name: d.nome,
+      p_idem: d.idem,
+    });
+    agendarLimpeza();
+    return json({ resumo: r, proximo: "/painel" }, 200, ctx);
+  } catch (e) {
+    if (e instanceof HttpError && e.reason === "rpc_BP005") {
+      throw new HttpError(400, "O nome digitado não confere com o nome da banca.", "nome_confirmacao");
+    }
+    throw e;
+  }
 });

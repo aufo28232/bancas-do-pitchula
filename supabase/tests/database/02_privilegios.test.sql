@@ -78,7 +78,8 @@ select set_eq(
     'api.staff_list_queue', 'api.staff_get_order', 'api.staff_claim', 'api.owner_force_claim', 'api.staff_release',
     'api.staff_send_message', 'api.staff_mark_paid', 'api.staff_refuse', 'api.staff_ban', 'api.staff_list_bans',
     'api.staff_lift_ban', 'api.staff_reveal', 'api.staff_set_live_mode', 'api.staff_list_quick_replies',
-    'api.owner_save_quick_reply', 'api.owner_delete_quick_reply'
+    'api.owner_save_quick_reply', 'api.owner_delete_quick_reply',
+    'api.staff_attachment_path', 'api.staff_end_banca'
   ],
   'authenticated só executa as funções das políticas e as funções staff_/owner_/preauth_ (que conferem o papel por dentro)'
 );
@@ -91,7 +92,9 @@ select set_eq(
     'api.srv_register_staff_session', 'api.srv_login_failed',
     'api.srv_check_invite', 'api.srv_consume_invite', 'api.srv_seed_owner', 'api.srv_allow_account',
     'api.public_get_banca', 'api.public_create_order',
-    'api.srv_open_order_session', 'api.srv_bind_viewer', 'api.srv_viewer_state', 'api.srv_viewer_post_message'
+    'api.srv_open_order_session', 'api.srv_bind_viewer', 'api.srv_viewer_state', 'api.srv_viewer_post_message',
+    'api.srv_viewer_add_attachment', 'api.srv_viewer_attachment_path', 'api.srv_viewer_delete',
+    'api.srv_maintenance', 'api.srv_purge_batch', 'api.srv_purge_done'
   ],
   'service_role só executa as funções srv_ e public_ (nada de app.* direto)'
 );

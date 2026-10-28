@@ -151,3 +151,76 @@ test("painel no celular: fila e pedido em telas separadas, sem rolagem horizonta
   }
   await page.screenshot({ path: "test-results/capturas/painel-celular.png", fullPage: true });
 });
+
+// PNG 8x8 válido (laranja), montado à mão com zlib. Basta para o fluxo; o processamento é testado no Vitest.
+const PNG_8X8 = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR4nGN4VyGDFTEMLQkA6XNggVl2qhkAAAAASUVORK5CYII=",
+  "base64",
+);
+
+test("comprovante no chat e encerramento: tudo é apagado e todos voltam para o início", async ({ page, browser }, info) => {
+  test.skip(info.project.name === "celular", "fluxo completo no desktop");
+  const violacoes = observarCsp(page);
+
+  // Streamer cria uma banca só para este teste.
+  await entrarComoStreamer(page);
+  await page.getByRole("link", { name: "Nova banca" }).click();
+  await page.getByLabel("Nome da banca").fill("Banca Relampago");
+  await page.getByLabel("Valor total (R$)").fill("500");
+  await page.getByLabel("Quantidade de vagas").fill("5");
+  await page.getByLabel(/Limitar a 1 pedido por IP/).uncheck();
+  await page.getByRole("button", { name: "Criar banca" }).click();
+  await expect(page.getByText("Banca criada")).toBeVisible();
+  const linkBanca = new URL(((await page.locator("code").first().textContent()) ?? "").trim()).pathname;
+
+  // Espectador faz o pedido e manda o comprovante.
+  const ctx = await browser.newContext({ baseURL: "http://localhost:3000", locale: "pt-BR" });
+  const espectador = await ctx.newPage();
+  const cpf = gerarCpf();
+  await espectador.goto(linkBanca);
+  await espectador.getByLabel("Nome completo").fill("Otavio Comprovante");
+  await espectador.getByLabel(/^ID na /).fill(`ot${cpf.slice(0, 6)}`);
+  await espectador.getByLabel(/^CPF cadastrado na /).fill(cpf);
+  await espectador.getByLabel("Chave Pix (CPF)").fill(cpf);
+  await espectador.getByLabel(/política de privacidade/).check();
+  await espectador.getByLabel("Tenho 18 anos ou mais.").check();
+  await esperarTurnstile(espectador);
+  await espectador.getByRole("button", { name: "Enviar pedido" }).click();
+  await expect(espectador.getByText("Pedido enviado!")).toBeVisible();
+  await espectador.goto(((await espectador.locator("code").first().textContent()) ?? "").trim());
+  await expect(espectador.getByText("Sua posição na fila")).toBeVisible({ timeout: 45_000 });
+  await espectador.locator('input[type="file"]').setInputFiles({ name: "print.png", mimeType: "image/png", buffer: PNG_8X8 });
+  await espectador.getByRole("button", { name: "Ver comprovante" }).click();
+  const img = espectador.locator("img[data-comprovante]");
+  await expect(img).toBeVisible();
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth === 8)).toBe(true);
+
+  // Streamer vê o comprovante (no modo live, abrir fica registrado).
+  await page.goto("/painel");
+  await page.getByRole("link", { name: /^Atender/ }).first().click();
+  await expect(page.getByRole("heading", { name: "Banca Relampago" })).toBeVisible();
+  await page.locator("[data-fila] button").first().click();
+  await page.getByRole("button", { name: "Ver (fica registrado)" }).click();
+  await expect(page.locator("img[data-comprovante]")).toBeVisible();
+
+  // Encerrar: digita o nome, confirma; o painel volta para a lista e o espectador para o início.
+  await page.getByRole("button", { name: "Encerrar banca" }).click();
+  const confirmar = page.getByRole("button", { name: "Encerrar e apagar tudo" });
+  await expect(confirmar).toBeDisabled();
+  await page.getByLabel(/Digite o nome da banca/).fill("Banca Relampago");
+  await confirmar.click();
+  await expect(page).toHaveURL(/\/painel$/);
+  await expect(espectador).toHaveURL(/\/$/);
+  await expect(espectador.getByRole("heading", { name: /Aguardando/ })).toBeVisible();
+
+  // O link da banca deixou de existir e nada do pedido sobrou no banco.
+  const visitante = await ctx.newPage();
+  await visitante.goto(linkBanca);
+  await expect(visitante).toHaveURL(/\/$/);
+  const [n] = await sql<{ n: number }[]>`
+    select count(*)::int as n from app.orders o join app.bancas b on b.id = o.banca_id where b.name = 'Banca Relampago'`;
+  expect(n?.n).toBe(0);
+
+  await ctx.close();
+  expect(violacoes).toEqual([]);
+});

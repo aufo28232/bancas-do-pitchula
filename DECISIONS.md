@@ -531,6 +531,22 @@ Testado na integração (sem token, outra origem, cross-site).
 
 **Status:** Implementada (Etapa 5), conforme D-021. Além de 10 por minuto e 1 a cada 2 s, o chat do espectador aceita no máximo 30 mensagens por hora por pedido (Redis fora = bloqueia). O limite de 5 comprovantes chega com os uploads (Etapa 6).
 
+## D-075 · Limpeza de arquivos e contas anônimas pelo servidor da aplicação
+
+**Status:** Implementada (Etapa 6). A ARCHITECTURE previa uma Edge Function `purge-storage`. Troquei por uma rota do próprio app, `POST /api/interno/limpeza`, protegida por `Authorization: Bearer LIMPEZA_SECRET` (comparação em tempo constante; sem a variável, a rota não existe).
+- **Por quê:** o mesmo código roda nos 3 modos de deploy e no CI, sem um segundo runtime (Deno) para manter e testar. O teste obrigatório ("o arquivo some do Storage") roda contra o Storage local de verdade.
+- **Quem chama:** (1) o próprio servidor, logo depois de encerrar uma banca ou de uma exclusão a pedido, sem segurar a resposta (`after` do Next); (2) o pg_cron a cada hora, via pg_net, lendo a URL e o segredo do **Vault** do Supabase (`limpeza_url`, `limpeza_segredo`); (3) qualquer cron externo, se a hospedagem preferir.
+- **O banco continua no controle:** encerramento automático, retenção e prazos rodam no pg_cron (`app.auto_end_bancas`, `app.retencao`). A rota também roda essa manutenção (`api.srv_maintenance`), para quem hospedar sem pg_cron.
+- **Filas:** `storage_purge_queue` (arquivos) e `auth_purge_queue` (contas anônimas), com até 5 tentativas e erro registrado sem dado pessoal.
+
+## D-076 · Exclusão a pedido mantém só o mínimo
+
+**Status:** Implementada (Etapa 6), conforme D-018. O botão "Excluir meus dados" (`/pedido`) troca nome, CPF, Pix e ID por valores que não decifram (`v0:`), apaga chat, comprovantes e sessões, revoga o link e põe a conta anônima na fila. Ficam: estado do pedido (para os agregados) e os HMACs de **CPF e IP** (para impedir um novo pedido duplicado na mesma banca). Os HMACs de Pix e ID são trocados por valores aleatórios. Tudo some de vez no encerramento da banca. **[ADVOGADO]** continua valendo a pergunta de D-018.
+
+## D-077 · Comprovante enviado como arquivo cru
+
+**Status:** Implementada (Etapa 6). O navegador manda a imagem no corpo (`application/octet-stream`), sem multipart. O servidor lê o fluxo e **para** ao passar de 5 MB (não confia no `Content-Length`), decide o tipo pelos bytes, confere dimensões antes de decodificar e re-encoda em WEBP sem metadados (sharp). O arquivo vai para o bucket privado `comprovantes` com nome gerado pelo servidor (`{banca}/{pedido}/{uuid}.webp`); se o banco recusar (limite de 5, pedido finalizado), o arquivo é apagado na hora. Ver é sempre por URL assinada de 60 s, pedida na hora do clique; no painel, cada abertura fica na auditoria.
+
 ---
 
 ## Registro de mudanças
@@ -544,3 +560,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Etapa 3: D-063 a D-066 |
 | 28/10/2026 | Etapa 4: D-008 verificada, D-067 a D-070 |
 | 28/10/2026 | Etapa 5: D-071 a D-074 |
+| 28/10/2026 | Etapa 6: D-075 a D-077 |

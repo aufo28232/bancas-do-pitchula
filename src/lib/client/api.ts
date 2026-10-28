@@ -25,3 +25,21 @@ export async function enviar<T = unknown>(url: string, corpo: unknown = {}): Pro
     return { ok: false, status: 0, erro: "Sem conexão. Confira a internet e tente de novo." };
   }
 }
+
+/** Envia um arquivo cru no corpo (comprovante), com o token CSRF. */
+export async function enviarArquivo<T = unknown>(url: string, arquivo: Blob): Promise<RespostaApi<T>> {
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/octet-stream", "x-csrf-token": tokenCsrf() },
+      body: arquivo,
+    });
+    const dados = (await r.json().catch(() => ({}))) as Record<string, unknown>;
+    if (r.ok) return { ok: true, dados: dados as T };
+    const erro = typeof dados.erro === "string" ? dados.erro : "Não foi possível enviar agora. Tente de novo.";
+    return { ok: false, status: r.status, erro };
+  } catch {
+    return { ok: false, status: 0, erro: "Sem conexão. Confira a internet e tente de novo." };
+  }
+}

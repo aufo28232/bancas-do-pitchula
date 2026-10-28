@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { VerComprovante } from "@/components/ui/ver-comprovante";
 import { enviar } from "@/lib/client/api";
 import { formatarReais } from "@/lib/dinheiro";
 import type { DetalhePedido, RespostaRapida } from "@/lib/server/painel/atendimento";
@@ -204,6 +205,7 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
                 ? `Pago${p.pago_por ? ` por ${p.pago_por}` : ""}`
                 : `Recusado (${MOTIVO_TEXTO[p.motivo ?? "outro"] ?? "outro motivo"})${p.recusado_por ? ` por ${p.recusado_por}` : ""}`}
             {p.status === "pendente" && !p.tem_comprovante ? " · sem comprovante" : ""}
+            {p.apagado ? " · dados apagados a pedido do titular" : ""}
           </p>
         </div>
         {restante !== null && pendente ? (
@@ -379,7 +381,13 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
                   </p>
                 ) : null}
                 {m.texto ? <p className="whitespace-pre-wrap break-words">{m.texto}</p> : null}
-                {m.tem_anexo ? <p className="text-xs text-fg-muted">[comprovante]</p> : null}
+                {m.anexo ? (
+                  <VerComprovante
+                    url="/api/painel/pedidos/comprovante"
+                    corpo={{ anexo: m.anexo }}
+                    rotulo={detalhe.live ? "Ver (fica registrado)" : "Ver comprovante"}
+                  />
+                ) : null}
               </li>
             ))}
           </ol>

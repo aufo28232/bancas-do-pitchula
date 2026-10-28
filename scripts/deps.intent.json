@@ -5,7 +5,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "zod": "^4.1.0",
-    "@supabase/realtime-js": "^2.15.0"
+    "@supabase/realtime-js": "^2.15.0",
+    "sharp": "^0.34.0"
   },
   "devDependencies": {
     "typescript": ">=5.9.0 <7.0.0",

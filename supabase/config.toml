@@ -29,6 +29,12 @@ enabled = false
 enabled = true
 file_size_limit = "5MiB"
 
+# Bucket PRIVADO dos comprovantes (a migration também cria em produção).
+[storage.buckets.comprovantes]
+public = false
+file_size_limit = "5MiB"
+allowed_mime_types = ["image/webp"]
+
 [auth]
 enabled = true
 site_url = "http://localhost:3000"

@@ -658,9 +658,9 @@ stateDiagram-v2
 4. `DELETE` de todos os pedidos da banca (cascade: mensagens, anexos, sessões). O trigger dos anexos enfileira os arquivos.
 5. `status = 'encerrada'`, `ended_at = now()`, `ended_by`, `code = NULL`: o link deixa de existir.
 6. Auditoria `banca_encerrar`, com contagens e sem dados pessoais.
-7. `pg_net` chama a Edge Function `purge-storage` **na hora** (assíncrona, depois do commit), sem esperar o cron. O cron de hora em hora fica como rede de segurança para o que falhar.
+7. O servidor dispara o trabalhador de limpeza **na hora** (depois da resposta), sem esperar o cron. O cron de hora em hora fica como rede de segurança para o que falhar. **Implementação:** rota `POST /api/interno/limpeza` do próprio app em vez de Edge Function (D-075).
 
-Os usuários anônimos ligados aos pedidos apagados são removidos pela mesma Edge Function.
+Os usuários anônimos ligados aos pedidos apagados vão para a fila `auth_purge_queue` e são removidos pelo mesmo trabalhador.
 
 Cron a cada 5 min chama a mesma rotina como "sistema": `fechada` com `closed_at < now() - 7 dias`; `esgotada` com `sold_out_at < now() - 24h`; `aberta` sem pedido novo nem ação de atendimento há 7 dias (D-005).
 

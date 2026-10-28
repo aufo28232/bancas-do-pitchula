@@ -20,10 +20,13 @@ import {
  */
 function politicaCsp(nonce: string, dev: boolean, supabaseUrl: string | undefined, siteHttps: boolean): string {
   let supabase = "";
+  let imagens = "";
   if (supabaseUrl) {
     try {
       const u = new URL(supabaseUrl);
       supabase = ` ${u.origin} ${u.protocol === "https:" ? "wss" : "ws"}://${u.host}`;
+      // Comprovantes: URL assinada de 60 s do Storage (bucket privado).
+      imagens = ` ${u.origin}`;
     } catch {
       supabase = "";
     }
@@ -35,7 +38,7 @@ function politicaCsp(nonce: string, dev: boolean, supabaseUrl: string | undefine
     dev ? "style-src 'self' 'unsafe-inline'" : `style-src 'self' 'nonce-${nonce}'`,
     // Atributos style (ex.: next/image) são liberados; <style> e <script> inline não (D-055).
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    `img-src 'self' data: blob:${imagens}`,
     "font-src 'self'",
     `connect-src 'self'${supabase}${dev ? " ws:" : ""}`,
     "frame-src https://challenges.cloudflare.com",

@@ -59,7 +59,12 @@ export class Navegador {
       cookie: [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; "),
     });
     if (!extra.semCsrf) headers.set("x-csrf-token", CSRF);
-    const res = await handler(new Request(`${SITE()}/api/teste`, { method: "POST", headers, body: JSON.stringify(corpo) }));
+    let body: BodyInit = JSON.stringify(corpo);
+    if (corpo instanceof Uint8Array) {
+      headers.set("content-type", "application/octet-stream");
+      body = new Uint8Array(corpo);
+    }
+    const res = await handler(new Request(`${SITE()}/api/teste`, { method: "POST", headers, body }));
     for (const c of res.headers.getSetCookie()) {
       const [par = "", ...atributos] = c.split("; ");
       const i = par.indexOf("=");

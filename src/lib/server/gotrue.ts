@@ -153,8 +153,10 @@ export async function adminCriarUsuario(email: string, senha: string): Promise<{
   return null;
 }
 
-export async function adminApagarUsuario(userId: string): Promise<void> {
-  await chamar(`/admin/users/${encodeURIComponent(userId)}`, "DELETE", { servico: true });
+/** true se a conta foi apagada ou já não existia. */
+export async function adminApagarUsuario(userId: string): Promise<boolean> {
+  const r = await chamar(`/admin/users/${encodeURIComponent(userId)}`, "DELETE", { servico: true });
+  return r.status === 200 || r.status === 204 || r.status === 404;
 }
 
 export async function adminFatores(userId: string): Promise<Fator[] | null> {

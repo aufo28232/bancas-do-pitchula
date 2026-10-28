@@ -13,6 +13,7 @@ const PERMITIDOS = new Set([
   "codigo",
   "duracaoMs",
   "tentativas",
+  "quantidade",
 ]);
 
 type Nivel = "info" | "warn" | "error";

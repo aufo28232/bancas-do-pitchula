@@ -6,3 +6,5 @@ allowBuilds:
   unrs-resolver: false
   # esbuild (usado pelo tsx no script de seed): o binário vem no pacote opcional @esbuild/<plataforma>.
   esbuild: false
+  # sharp (comprovantes): o binário vem no pacote opcional @img/sharp-<plataforma>.
+  sharp: false

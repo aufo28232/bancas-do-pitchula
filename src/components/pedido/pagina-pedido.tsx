@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Botao } from "@/components/ui/botao";
 import { Turnstile } from "@/components/ui/turnstile";
 import { alertarAssumido, ativarSom, bipe } from "@/lib/client/alerta";
-import { enviar } from "@/lib/client/api";
+import { enviar, enviarArquivo } from "@/lib/client/api";
+import { VerComprovante } from "@/components/ui/ver-comprovante";
 import { TempoReal } from "@/lib/client/tempo-real";
 import { ROTULO_TIPO_PIX } from "@/lib/validacao/pedido";
 import type { EstadoPedido } from "@/lib/server/publico/espectador";
 
 type Mensagem = EstadoPedido["mensagens"][number];
-type Fase = "lendo" | "verificar" | "carregando" | "pronto" | "invalido" | "erro";
+type Fase = "lendo" | "verificar" | "carregando" | "pronto" | "invalido" | "erro" | "excluido";
 
 type RespostaRealtime = {
   url: string;
@@ -67,6 +68,8 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erroMsg, setErroMsg] = useState("");
+  const [enviandoArquivo, setEnviandoArquivo] = useState(false);
+  const [confirmarExclusao, setConfirmarExclusao] = useState(false);
   const ultimoAlerta = useRef(0);
   const atendimentoAnterior = useRef<boolean | null>(null);
   const fimDaLista = useRef<HTMLDivElement>(null);
@@ -194,6 +197,8 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
               setEstado((e) => (e ? { ...e, pedido: { ...e.pedido, prazo: expira } } : e));
             },
             assumido: (p) => alertar(typeof p.atendente === "string" ? p.atendente : null),
+            // Encerramento: o pedido já foi apagado; volta para "Aguardando banca..." (D-044).
+            banca_encerrada: () => router.replace("/"),
             mensagem: (p) =>
               setEstado((e) => {
                 if (!e || typeof p.id !== "string" || e.mensagens.some((m) => m.id === p.id)) return e;
@@ -202,6 +207,7 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
                   autor: p.autor === "staff" || p.autor === "sistema" ? p.autor : "espectador",
                   texto: typeof p.texto === "string" ? p.texto : null,
                   tem_anexo: p.tem_anexo === true,
+                  anexo: typeof p.anexo === "string" ? p.anexo : null,
                   atendente: typeof p.atendente === "string" ? p.atendente : null,
                   criada_em: typeof p.criada_em === "string" ? p.criada_em : new Date().toISOString(),
                 };
@@ -283,7 +289,54 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
     if (r.status === 409) void carregar(false);
   }
 
+  async function aoEscolherArquivo(e: ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    if (arquivo.size > 5 * 1024 * 1024) {
+      setErroMsg("A imagem passa de 5 MB. Mande um print menor.");
+      return;
+    }
+    setEnviandoArquivo(true);
+    setErroMsg("");
+    const r = await enviarArquivo("/api/pedido/comprovante", arquivo);
+    setEnviandoArquivo(false);
+    if (!r.ok) setErroMsg(r.erro);
+    void carregar(false);
+  }
+
+  async function aoExcluir() {
+    if (!confirmarExclusao) {
+      setConfirmarExclusao(true);
+      return;
+    }
+    const r = await enviar("/api/pedido/excluir", { confirmar: true });
+    if (r.ok) {
+      setEstado(null);
+      setFase("excluido");
+    } else {
+      setErroMsg(r.erro);
+      setConfirmarExclusao(false);
+    }
+  }
+
   // -------------------------------------------------------------------------
+  if (fase === "excluido") {
+    return (
+      <section aria-labelledby="t-excluido" className="mt-12 max-w-md">
+        <h1 id="t-excluido" className="font-display text-4xl font-black uppercase">
+          Dados apagados
+        </h1>
+        <p className="mt-3 text-fg-muted">
+          Seus dados e o chat deste pedido foram apagados. Este link não funciona mais.
+        </p>
+        <Link href="/" className="mt-6 inline-block underline underline-offset-4">
+          Ir para o início
+        </Link>
+      </section>
+    );
+  }
+
   if (fase === "lendo" || fase === "carregando") {
     return (
       <p role="status" className="mt-16 text-fg-muted">
@@ -411,6 +464,25 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
           <dd className="font-mono">{estado.dados.plataformaId}</dd>
         </dl>
         <p className="mt-2 text-xs text-fg-muted">Seus dados aparecem incompletos de propósito.</p>
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={() => void aoExcluir()}
+            className="rounded-sm border border-line px-2 py-1 text-fg-muted hover:text-fg"
+          >
+            {confirmarExclusao ? "Confirmar: apagar meus dados" : "Excluir meus dados"}
+          </button>
+          {confirmarExclusao ? (
+            <>
+              <span className="text-fg-muted">
+                {p.status === "pendente" ? "O pedido será encerrado. " : ""}Não dá para desfazer.
+              </span>
+              <button type="button" onClick={() => setConfirmarExclusao(false)} className="underline underline-offset-2">
+                Cancelar
+              </button>
+            </>
+          ) : null}
+        </div>
         <p className="mt-6 text-xs text-fg-muted" aria-live="polite">
           {conectado ? "Atualizando ao vivo." : "Reconectando… a página continua se atualizando."}
         </p>
@@ -439,7 +511,7 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
                 </p>
               ) : null}
               {m.texto ? <p className="whitespace-pre-wrap break-words">{m.texto}</p> : null}
-              {m.tem_anexo ? <p className="text-xs text-fg-muted">[imagem enviada]</p> : null}
+              {m.anexo ? <VerComprovante url="/api/pedido/comprovante/ver" corpo={{ id: m.anexo }} /> : null}
             </li>
           ))}
           </ol>
@@ -467,7 +539,17 @@ export function PaginaPedido({ siteKey }: { siteKey: string }) {
                 {erroMsg}
               </p>
             ) : null}
-            <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+              <label className="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm hover:border-fg-muted focus-within:outline-2 focus-within:outline-accent">
+                {enviandoArquivo ? "Enviando…" : "Enviar comprovante"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  disabled={enviandoArquivo}
+                  onChange={(e) => void aoEscolherArquivo(e)}
+                />
+              </label>
               <span className="font-mono text-xs text-fg-muted">{texto.length}/1000</span>
               <Botao carregando={enviando} className="w-auto! px-5 py-2 text-base" disabled={!texto.trim()}>
                 Enviar

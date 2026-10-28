@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { z } from "zod";
 import { getSecurityEnv, getSupabaseEnv } from "@/lib/env";
 import { mascararCpf, mascararNome, mascararPix, mascararPlataformaId } from "@/lib/mascara";
@@ -10,9 +10,13 @@ import { adminApagarUsuario, entrarAnonimo, renovar } from "../gotrue";
 import { json, lerCorpo, mutacao } from "../http";
 import { ipDoCliente } from "../ip";
 import { getKeyring, hmac, toPgBytea } from "../keys";
+import { agendarLimpeza } from "../limpeza";
 import { log } from "../log";
 import { rpc } from "../postgrest";
 import { contarOuFalhar, contarOuPermitir } from "../ratelimit";
+import { ImagemInvalidaError, LIMITE_BYTES, processarComprovante } from "../imagem";
+import { BUCKET, apagarArquivos, nomeNoBucket, subirArquivo, urlAssinada } from "../storage";
+import { zId } from "../validacao";
 import { zTurnstile } from "../validacao";
 
 /**
@@ -115,12 +119,13 @@ type EstadoBruto = {
     pix_tipo: TipoPix;
     enc: { nome: string; cpf: string; pix: string; pid: string };
   };
-  banca: { nome: string; codigo: string | null; status: string };
+  banca: { id: string; nome: string; codigo: string | null; status: string };
   mensagens: {
     id: string;
     autor: "espectador" | "staff" | "sistema";
     texto: string | null;
     tem_anexo: boolean;
+    anexo: string | null;
     atendente: string | null;
     criada_em: string;
   }[];
@@ -237,4 +242,118 @@ export const postMensagemPedido = mutacao("pedido/mensagem", async (ctx) => {
   if (r === "sessao") semSessao(ctx);
   if (r === "finalizado") throw new HttpError(409, "Este pedido já foi finalizado e não recebe mais mensagens.", "finalizado");
   return json({ ok: true }, 201, ctx);
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/pedido/comprovante: imagem crua no corpo (sem multipart)
+// ---------------------------------------------------------------------------
+const MSG_IMAGEM = "Envie uma foto ou print em JPG, PNG ou WEBP, com até 5 MB.";
+
+/** Lê o corpo parando assim que passar do limite (não depende do Content-Length declarado). */
+async function lerAteLimite(req: Request, limite: number): Promise<Buffer> {
+  const declarado = Number(req.headers.get("content-length") ?? "0");
+  if (declarado > limite) throw new HttpError(413, MSG_IMAGEM, "imagem_grande");
+  if (!req.body) throw new HttpError(400, MSG_IMAGEM, "sem_corpo");
+  const leitor = req.body.getReader();
+  const partes: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await leitor.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limite) {
+      await leitor.cancel().catch(() => undefined);
+      throw new HttpError(413, MSG_IMAGEM, "imagem_grande");
+    }
+    partes.push(value);
+  }
+  return Buffer.concat(partes);
+}
+
+export const postComprovante = mutacao("pedido/comprovante", async (ctx) => {
+  const s = exigirSessao(ctx.req);
+  const env = getSecurityEnv();
+  const idIp = hmac(getKeyring(), "rl-ip", ipDoCliente(ctx.req.headers, env.DEPLOY_MODE)).toString("hex");
+  // Redis fora = bloqueia (envio de arquivo é operação crítica).
+  const [porIp, porSessao] = await Promise.all([
+    contarOuFalhar("comprovante-ip", idIp, 20, 600),
+    contarOuFalhar("comprovante-sessao", s.idRl, 10, 600),
+  ]);
+  if (!porIp.permitido || !porSessao.permitido) {
+    throw new HttpError(429, MSG.muitasTentativas, "rate_limit", {
+      "Retry-After": String(Math.max(porIp.tentarEmSeg, porSessao.tentarEmSeg)),
+    });
+  }
+
+  const original = await lerAteLimite(ctx.req, LIMITE_BYTES);
+  let img;
+  try {
+    img = await processarComprovante(original);
+  } catch (e) {
+    if (e instanceof ImagemInvalidaError) throw new HttpError(e.motivo === "tamanho" ? 413 : 400, MSG_IMAGEM, `imagem_${e.motivo}`);
+    throw e;
+  }
+
+  // O banco confere sessão, estado e limite; o caminho segue o formato {banca}/{pedido}/{id}.webp.
+  const estado = await rpc<EstadoBruto | null>("srv_viewer_state", { p_session_hash: s.hash }, "servico");
+  if (!estado) semSessao(ctx);
+  if (estado.pedido.status !== "pendente") {
+    throw new HttpError(409, "Este pedido já foi finalizado e não recebe mais comprovantes.", "finalizado");
+  }
+  const id = randomUUID();
+  const caminho = `${BUCKET}/${estado.banca.id}/${estado.pedido.id}/${id}.webp`;
+  await subirArquivo(nomeNoBucket(caminho), img.webp, "image/webp");
+  let r: string;
+  try {
+    r = await rpc<string>(
+      "srv_viewer_add_attachment",
+      {
+        p_session_hash: s.hash,
+        p_id: id,
+        p_path: caminho,
+        p_bytes: img.webp.length,
+        p_width: img.largura,
+        p_height: img.altura,
+        p_sha256: toPgBytea(img.sha256),
+      },
+      "servico",
+    );
+  } catch (e) {
+    await apagarArquivos([nomeNoBucket(caminho)]).catch(() => undefined);
+    throw e;
+  }
+  if (r !== "ok") {
+    // Não entrou no banco: o arquivo não pode ficar órfão no Storage.
+    await apagarArquivos([nomeNoBucket(caminho)]).catch(() => undefined);
+    if (r === "sessao") semSessao(ctx);
+    if (r === "limite") throw new HttpError(409, "Você já mandou 5 comprovantes neste pedido.", "limite");
+    throw new HttpError(409, "Este pedido já foi finalizado e não recebe mais comprovantes.", "finalizado");
+  }
+  return json({ id }, 201, ctx);
+});
+
+// POST /api/pedido/comprovante/ver: URL assinada de 60 s, só para o dono do pedido.
+export const postVerComprovante = mutacao("pedido/comprovante/ver", async (ctx) => {
+  const s = exigirSessao(ctx.req);
+  const d = await lerCorpo(ctx.req, z.object({ id: zId }), 256);
+  const lim = await contarOuPermitir("comprovante-ver", s.idRl, 60, 600);
+  if (!lim.permitido) throw new HttpError(429, MSG.muitasTentativas, "rate_limit");
+  const caminho = await rpc<string | null>("srv_viewer_attachment_path", { p_session_hash: s.hash, p_attachment: d.id }, "servico");
+  if (!caminho) throw new HttpError(404, "Comprovante não encontrado.", "anexo");
+  return json({ url: await urlAssinada(nomeNoBucket(caminho), 60) }, 200, ctx);
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/pedido/excluir: "Excluir meus dados" (D-018)
+// ---------------------------------------------------------------------------
+export const postExcluirDados = mutacao("pedido/excluir", async (ctx) => {
+  const s = exigirSessao(ctx.req);
+  await lerCorpo(ctx.req, z.object({ confirmar: z.literal(true) }), 64);
+  const r = await rpc<string>("srv_viewer_delete", { p_session_hash: s.hash }, "servico");
+  if (r !== "ok") semSessao(ctx);
+  // A sessão deixou de existir: apaga os cookies deste navegador também.
+  ctx.setCookies.push(apagarCookie(COOKIE_PEDIDO), apagarCookie(COOKIE_PEDIDO_RT));
+  // Comprovantes e conta anônima saem do Storage/Auth logo em seguida.
+  agendarLimpeza();
+  return json({ ok: true }, 200, ctx);
 });

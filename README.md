@@ -109,7 +109,9 @@ Estes valores espelham o `supabase/config.toml` e precisam ser aplicados à mão
 | Authentication → Password | Mínimo de **12** caracteres | O servidor também confere e checa senha vazada |
 | Data API → Exposed schemas | **somente `api`** | Tabelas ficam fora da API (D-002) |
 | Realtime → Settings | **"Allow public access": desligado** | Só canais privados, autorizados pela RLS de `realtime.messages` (D-008) |
-| Database → Extensions | **pg_cron** ligado (a migration cria o job de 15 s) | Expira pedidos sem resposta (D-043) |
+| Database → Extensions | **pg_cron** e **pg_net** ligados (a migration cria os jobs) | Prazo de 5 min (D-043), encerramento automático, retenção e chamada da limpeza |
+| Project Settings → Vault | Segredos `limpeza_url` (`https://SEU-SITE/api/interno/limpeza`) e `limpeza_segredo` (mesmo valor de `LIMPEZA_SECRET`) | O pg_cron chama a limpeza a cada hora (D-075) |
+| Storage | Bucket **`comprovantes`** privado, 5 MB, só `image/webp` (a migration cria; confira) | Comprovantes (D-077) |
 | Database → Migrations | `supabase link` + `supabase db push` | Aplica as migrations deste repositório |
 
 Depois do primeiro deploy, rode `pnpm seed:owner` com as variáveis de produção, entre em `/painel/entrar` e cadastre o app autenticador.

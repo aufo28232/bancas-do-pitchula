@@ -115,6 +115,7 @@ jobs:
             echo "HMAC_ACTIVE=1"
             echo "DATA_ENC_KEYS={\"1\":\"$(openssl rand -base64 32)\"}"
             echo "DATA_ENC_ACTIVE=1"
+            echo "LIMPEZA_SECRET=$(openssl rand -hex 32)"
           } >> "$GITHUB_ENV"
           echo "variáveis exportadas (valores não são exibidos)"
 
