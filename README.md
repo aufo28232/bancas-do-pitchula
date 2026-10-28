@@ -10,7 +10,7 @@ Aplicação para o streamer Pitchula e seus moderadores receberem pedidos de ban
 | Etapa | Situação |
 |---|---|
 | Arquitetura | Aprovada em 27/10/2026 |
-| 1. Fundação (estrutura, Supabase local, migrations, RLS) | Em validação no CI |
+| 1. Fundação (estrutura, Supabase local, migrations, RLS) | **Concluída em 27/10/2026.** CI verde: lint, typecheck, 20 testes Vitest, 83 testes pgTAP, build e `pnpm audit` sem vulnerabilidades |
 | 2 a 7 | Não iniciadas |
 
 O que a Etapa 1 entrega:
