@@ -83,7 +83,7 @@ test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pag
   await expect(page.getByRole("heading", { name: /^Pedido #\d+$/ })).toBeVisible();
   await expect(page.locator('[data-campo="cpf"]')).toHaveText("***.***.***-**");
   await page.getByRole("button", { name: "Assumir" }).click();
-  await expect(page.getByText("Com você")).toBeVisible();
+  await expect(page.locator("[data-status]")).toContainText("Com você");
 
   // Espectador vê que foi assumido, ao vivo.
   await expect(espectador.getByText(/assumiu seu pedido/)).toBeVisible();
@@ -129,7 +129,7 @@ test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pag
   await page.getByRole("button", { name: "Marcar pago" }).click();
   await expect(page.getByRole("alertdialog", { name: "Confirmar pagamento" })).toContainText(/Confirmar Pix de R\$\s?30 para Z\*\*\* P\*\*\* T\*\*\*\?/);
   await page.getByRole("button", { name: "Confirmar pagamento" }).click();
-  await expect(page.getByText("Pagamento registrado.")).toBeVisible();
+  await expect(page.getByText("Pagamento registrado.", { exact: true })).toBeVisible();
   await expect(page.locator("[data-fila] button", { hasText: mascarado })).toHaveCount(0);
   await expect(espectador.getByRole("heading", { name: "Pagamento registrado" })).toBeVisible();
 
