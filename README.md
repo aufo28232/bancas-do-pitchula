@@ -42,7 +42,12 @@ A Etapa 3 entrega:
 - **Criptografia dos dados pessoais** (AES-256-GCM, chave só no servidor) e HMAC para duplicidade e banimentos.
 - **Política de privacidade** (texto a validar com advogado).
 
-Ainda **não há** a página do pedido (`/pedido`), o chat nem o tempo real (Etapa 4). O link de pedido gerado hoje só passa a abrir na Etapa 4.
+A Etapa 4 entrega:
+
+- **Página do pedido** `/pedido#token`: o token sai da barra de endereço na hora e vira uma sessão em cookie httpOnly. Mostra posição na fila, quem está atendendo, os próprios dados **mascarados** e o chat com a equipe.
+- **Tempo real** (Supabase Realtime, canais privados, só leitura): posição, mensagens, "pedido assumido" com **bipe**, vibração e título piscando, contagem regressiva do **prazo de 5 min** e volta para "Aguardando banca..." quando a banca é encerrada. Sem conexão, a página continua atualizando por polling.
+- **Prazo de resposta:** depois que o moderador manda mensagem, o espectador tem 5 min; senão o pedido é encerrado (job a cada 15 s + checagem a cada acesso).
+- **Vagas ao vivo** na página da banca, com animação.
 
 ## Pré-requisitos (desenvolvimento local)
 
@@ -91,6 +96,8 @@ Estes valores espelham o `supabase/config.toml` e precisam ser aplicados à mão
 | Authentication → Sessions / JWT | **JWT expiry: 300 s** | Revogação vale rápido (D-028) |
 | Authentication → Password | Mínimo de **12** caracteres | O servidor também confere e checa senha vazada |
 | Data API → Exposed schemas | **somente `api`** | Tabelas ficam fora da API (D-002) |
+| Realtime → Settings | **"Allow public access": desligado** | Só canais privados, autorizados pela RLS de `realtime.messages` (D-008) |
+| Database → Extensions | **pg_cron** ligado (a migration cria o job de 15 s) | Expira pedidos sem resposta (D-043) |
 | Database → Migrations | `supabase link` + `supabase db push` | Aplica as migrations deste repositório |
 
 Depois do primeiro deploy, rode `pnpm seed:owner` com as variáveis de produção, entre em `/painel/entrar` e cadastre o app autenticador.

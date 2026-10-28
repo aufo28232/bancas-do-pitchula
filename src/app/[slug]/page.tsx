@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { FormPedido } from "@/components/banca/form-pedido";
+import { VagasAoVivo } from "@/components/banca/vagas-ao-vivo";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
 import { formatarReais } from "@/lib/dinheiro";
-import { getSecurityEnv, getServerEnv } from "@/lib/env";
+import { getSecurityEnv, getServerEnv, getSupabaseEnv } from "@/lib/env";
 import { codigoDoSlug } from "@/lib/server/codigo-banca";
 import { bancaPublica } from "@/lib/server/publico/banca";
 import { theme } from "@/theme/theme";
@@ -57,7 +58,8 @@ export default async function PaginaBanca({ params }: Props) {
 
   const { PLATFORM_NAME, PLATFORM_SIGNUP_URL } = getServerEnv();
   const { TURNSTILE_SITE_KEY } = getSecurityEnv();
-  const pagas = banca.slots - banca.restantes;
+  // Chave PÚBLICA (anon): só abre o canal de leitura das vagas.
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = getSupabaseEnv();
 
   return (
     <main className="relative z-[1] min-h-svh lg:grid lg:grid-cols-[45fr_55fr]">
@@ -92,20 +94,14 @@ export default async function PaginaBanca({ params }: Props) {
             <span className="mt-2 block text-base font-extrabold uppercase tracking-[0.2em] text-fg-muted">por pessoa</span>
           </p>
 
-          <div className="mt-8">
-            <p className="flex items-baseline justify-between text-sm">
-              <span>
-                <strong className="font-mono text-lg">{banca.restantes}</strong> vagas restantes
-              </span>
-              <span className="font-mono text-fg-muted">de {banca.slots}</span>
-            </p>
-            <progress
-              value={pagas}
-              max={banca.slots}
-              aria-label={`${banca.restantes} de ${banca.slots} vagas restantes`}
-              className="mt-2 block h-1 w-full appearance-none overflow-hidden rounded-none bg-line [&::-moz-progress-bar]:bg-accent [&::-webkit-progress-bar]:bg-line [&::-webkit-progress-value]:bg-accent"
-            />
-          </div>
+          <VagasAoVivo
+            codigo={codigo}
+            restantesIniciais={banca.restantes}
+            slots={banca.slots}
+            statusInicial={banca.status}
+            url={SUPABASE_URL}
+            chavePublica={SUPABASE_ANON_KEY}
+          />
 
           {banca.status === "aberta" ? (
             <div className="mt-10">

@@ -124,7 +124,7 @@ Proposta original (mantida como registro):
 
 - **Conflito:** o enunciado pede "um canal público de Broadcast". No Supabase, canal público aceita que **qualquer cliente envie** mensagens, e alguém poderia transmitir "0 vagas" ou "100 vagas" falsos para todos os espectadores.
 - **Decisão:** canal **privado** `vagas:{code}`, com política de leitura para todos (anon e autenticados) e **nenhuma** política de escrita. Também desligar "Allow public access" no Realtime do projeto. Só os triggers do banco emitem eventos, e o payload é só `{restantes, total, status}`.
-- **Não verificado:** se o Realtime aceita política para o papel `anon`. Se não aceitar, o plano B é a página pública buscar o número no servidor a cada 10 s (sem Realtime para quem só está olhando a página) até o espectador enviar o pedido. Isso será validado no início da Etapa 4.
+- **Verificação (Etapa 4):** o teste de integração entra no canal `vagas:{código}` só com a chave pública (papel `anon`) contra o Realtime local e confere que o evento chega, e que o mesmo cliente é recusado em `staff:*` e `pedido:*`. A página pública ainda faz `router.refresh()` a cada 30 s se o Realtime não conectar.
 
 ## D-009 · Posição na fila
 
@@ -499,6 +499,22 @@ Testado na integração (sem token, outra origem, cross-site).
 - Duplicidade e banimento comparam com o HMAC em todas as versões de chave aceitas (D-013).
 - O banco recusa texto não cifrado nos campos `*_enc` (check `is_ciphertext`, testado).
 
+## D-067 · Leitura do fragmento pelo próprio app, não por script inline
+
+**Status:** Implementada (Etapa 4). A ARCHITECTURE previa um `<script>` inline com nonce. Na prática, o primeiro efeito do componente da página lê o fragmento e o apaga com `history.replaceState` antes de montar o Turnstile, que é o único script de terceiro de `/pedido`. Os scripts que carregam antes são do próprio site. Evita um segundo ponto de leitura do token e um script inline a mais na CSP. O E2E confere que a barra de endereço fica sem `#`.
+
+## D-068 · Posição na fila enviada só a quem muda
+
+**Status:** Implementada (Etapa 4). Pedido novo entra no fim, então só ele recebe a posição. Quando um pendente sai da fila (pago, recusado, expirado), só os que estavam atrás dele recebem a nova posição. Antes, D-009 previa reenviar para todos a cada mudança.
+
+## D-069 · Sessão do espectador em dois cookies
+
+**Status:** Implementada (Etapa 4). `__Host-bp_ped` guarda a sessão do pedido (o banco tem só o hash, validade de 30 dias). `__Host-bp_ped_rt` guarda o refresh token da conta anônima do Supabase. A cada `POST /api/pedido/realtime` o servidor renova a conta anônima e devolve só o access token de 5 min; o refresh token novo volta para o cookie. Link inválido apaga a conta anônima criada na tentativa. Contas anônimas antigas serão limpas pela rotina de retenção (Etapa 6).
+
+## D-070 · E2E da Etapa 4 simula o painel pelo banco
+
+**Status:** Implementada (Etapa 4). Assumir o pedido, mandar a mensagem que inicia o prazo e encerrar a banca ainda não têm tela (Etapa 5). O E2E faz essas mudanças direto no Postgres local, e todo o resto passa pelo caminho real: os triggers emitem o Broadcast, o Realtime entrega e a página reage. Na Etapa 5 esses passos passam a ser feitos pela tela do painel.
+
 ---
 
 ## Registro de mudanças
@@ -510,3 +526,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 27/10/2026 | Etapa 1: cadastro/anônimo no Auth (D-048), fixação de versões via CI (D-049), RLS sem FORCE (D-050), tsconfig (D-051), pasta de tema (D-052) |
 | 27/10/2026 | Etapa 2: D-048 revisada (trigger no banco), D-053 a D-062 |
 | 28/10/2026 | Etapa 3: D-063 a D-066 |
+| 28/10/2026 | Etapa 4: D-008 verificada, D-067 a D-070 |

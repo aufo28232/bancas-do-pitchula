@@ -572,12 +572,13 @@ Normalização antes do HMAC:
 
 ### 5.5. Acesso do espectador ao pedido e tempo real
 
-1. `/pedido` carrega com `Referrer-Policy: no-referrer` e `noindex`. Um script inline (com nonce), **antes de qualquer script de terceiro**, lê `location.hash`, guarda o token na memória e executa `history.replaceState` removendo o fragmento.
+1. `/pedido` carrega com `Referrer-Policy: no-referrer` e `noindex`. O primeiro código da página (antes de qualquer script de terceiro) lê `location.hash`, guarda o token na memória e executa `history.replaceState`, removendo o fragmento (D-067).
 2. Só então o Turnstile é carregado. POST `/api/pedido/sessao` com `{token, turnstile}`.
-3. Servidor: rate limit por IP → SHA-256(token) → `api.viewer_open_session(token_hash, session_hash)`, que confere `token_revoked_at is null` → cookie `__Host-pedido` httpOnly, Secure, SameSite=Strict, com valor de 256 bits do qual só o hash fica no banco.
-4. Para o Realtime: o servidor faz `signInAnonymously` com o token do Turnstile (captcha do Supabase Auth). Os tokens de refresh ficam em cookie httpOnly e o `viewer_uid` é vinculado ao pedido. O navegador recebe só o access token curto via `GET /api/pedido/realtime-token` e entra no canal privado `pedido:{id}`.
-5. Mostra o link com o aviso "Salve este link para voltar ao seu pedido. Não mostre na live nem mande print dele." O link aparece só na tela de confirmação, a partir da memória, com botão de copiar.
-6. Revogar o token (ban ou exclusão) apaga as `order_sessions`, zera `viewer_uid` e encerra a sessão anônima.
+3. Servidor: rate limit por IP (Redis fora = bloqueia) → login **anônimo** no Supabase Auth com o token do Turnstile no captcha nativo → SHA-256(token) → `api.srv_open_order_session(token_hash, session_hash)`, que confere `token_revoked_at is null` → `api.srv_bind_viewer` vincula o usuário anônimo ao pedido → cookies `__Host-bp_ped` (sessão, 256 bits, só o hash fica no banco) e `__Host-bp_ped_rt` (refresh token do usuário anônimo), ambos httpOnly, Secure e SameSite=Strict. Token inválido: 404 e a conta anônima recém-criada é apagada.
+4. `POST /api/pedido/estado` devolve estado, posição e chat. Os dados pessoais saem decifrados e **mascarados** (D-023): o valor completo nunca chega ao navegador.
+5. `POST /api/pedido/realtime` renova a sessão anônima no servidor e devolve só o access token curto (5 min), a URL e a chave pública, para o navegador **ouvir** os canais privados `pedido:{id}` e `vagas:{código}`. A página renova 1 min antes de vencer. Sem Realtime, a página faz polling do estado (8 s; 60 s com o Realtime conectado).
+6. `POST /api/pedido/mensagem` grava a resposta do espectador e zera o prazo de 5 min. Depois do prazo, o pedido é encerrado antes e a mensagem é recusada (409).
+7. Revogar o token (ban ou exclusão, Etapa 5) apaga as `order_sessions`, zera `viewer_uid` e encerra a sessão anônima.
 
 Eventos no canal `pedido:{id}` (payload mínimo):
 - `status` → `{status, em_atendimento, atendente, motivo}`
@@ -587,9 +588,11 @@ Eventos no canal `pedido:{id}` (payload mínimo):
 - `prazo` → `{expira_em}` ou `{expira_em: null}`: contagem regressiva de 5 min na tela (D-043)
 - `banca_encerrada` → `{}`: o navegador apaga o estado local e vai para `/` ("Aguardando banca...") (D-044)
 
-Som (D-046): beep gerado pela Web Audio API (oscilador, sem arquivo de áudio). Os navegadores só liberam som depois de um toque na página, então o `/pedido` mostra o botão "Ativar som 🔔" logo na chegada. O primeiro toque em qualquer lugar da página também libera. No Android, o som vem junto com `navigator.vibrate`. A mensagem do moderador que inicia o prazo de 5 min toca um segundo beep, mais curto. Sem som liberado, o aviso aparece visualmente: título da aba piscando e destaque na tela.
+Som (D-046): beep gerado pela Web Audio API (oscilador, sem arquivo de áudio). Os navegadores só liberam som depois de um toque na página, então o `/pedido` mostra o botão "Ativar som" logo na chegada. O primeiro toque em qualquer lugar da página também libera. No Android, o som vem junto com `navigator.vibrate`. A mensagem do moderador que inicia o prazo de 5 min toca um segundo beep, mais curto. Sem som liberado, o aviso aparece visualmente: título da aba piscando e destaque na tela.
 
-A posição é recalculada no banco (`count(*)` de pendentes com `seq` menor + 1) e reenviada a cada pendente da banca quando a fila muda. Custo O(n) por mudança, aceitável para centenas de pedidos. Teto e alternativa estão em D-009.
+A posição é recalculada no banco e enviada só a quem muda de lugar: o pedido novo (que entra no fim) e, quando um pendente sai da fila, os que estavam atrás dele (D-068). Teto e alternativa estão em D-009.
+
+Prazo de 5 min (D-043): `app.expire_unanswered()` roda a cada 15 s no pg_cron e encerra (recusado, `sem_resposta`) o pedido cujo prazo venceu. Toda leitura ou mensagem do espectador também confere o prazo antes (checagem preguiçosa), então a regra vale mesmo se o job atrasar.
 
 ### 5.6. Atendimento
 

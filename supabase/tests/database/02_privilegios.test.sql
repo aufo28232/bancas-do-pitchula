@@ -70,13 +70,13 @@ select set_eq(
        from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname in ('app', 'api') and has_function_privilege('authenticated', p.oid, 'EXECUTE') $$,
   array[
-    'app.current_staff_role',
+    'app.current_staff_role', 'app.viewer_owns_topic',
     'api.staff_whoami', 'api.preauth_whoami', 'api.preauth_end_session', 'api.staff_list_sessions', 'api.staff_revoke_session',
     'api.owner_list_alerts', 'api.owner_ack_alert', 'api.owner_list_staff', 'api.owner_deactivate_staff',
     'api.owner_prepare_mfa_reset', 'api.owner_create_invite', 'api.owner_revoke_invite', 'api.owner_list_invites',
     'api.owner_create_banca', 'api.owner_update_banca', 'api.owner_set_banca_status', 'api.staff_list_bancas'
   ],
-  'authenticated só executa a função das políticas e as funções staff_/owner_/preauth_ (que conferem o papel por dentro)'
+  'authenticated só executa as funções das políticas e as funções staff_/owner_/preauth_ (que conferem o papel por dentro)'
 );
 
 select set_eq(
@@ -86,7 +86,8 @@ select set_eq(
   array[
     'api.srv_register_staff_session', 'api.srv_login_failed',
     'api.srv_check_invite', 'api.srv_consume_invite', 'api.srv_seed_owner', 'api.srv_allow_account',
-    'api.public_get_banca', 'api.public_create_order'
+    'api.public_get_banca', 'api.public_create_order',
+    'api.srv_open_order_session', 'api.srv_bind_viewer', 'api.srv_viewer_state', 'api.srv_viewer_post_message'
   ],
   'service_role só executa as funções srv_ e public_ (nada de app.* direto)'
 );

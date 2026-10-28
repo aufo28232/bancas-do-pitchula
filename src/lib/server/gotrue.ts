@@ -69,6 +69,19 @@ export async function entrarComSenha(email: string, senha: string, captcha: stri
   return r.status === 200 ? comoTokens(r.dados) : null;
 }
 
+/**
+ * Login ANÔNIMO do espectador (D-003), feito pelo servidor. O token do Turnstile
+ * vai para o captcha nativo do Supabase Auth. A conta anônima não acessa nenhuma
+ * tabela; serve só para o Realtime autorizar o canal do próprio pedido.
+ */
+export async function entrarAnonimo(captcha: string): Promise<(Tokens & { userId: string }) | null> {
+  const r = await chamar("/signup", "POST", { corpo: { data: {}, gotrue_meta_security: { captcha_token: captcha } } });
+  if (r.status !== 200) return null;
+  const tokens = comoTokens(r.dados);
+  const userId = (r.dados as { user?: { id?: unknown } } | null)?.user?.id;
+  return tokens && typeof userId === "string" ? { ...tokens, userId } : null;
+}
+
 export async function renovar(refreshToken: string): Promise<Tokens | null> {
   const r = await chamar("/token?grant_type=refresh_token", "POST", { corpo: { refresh_token: refreshToken } });
   return r.status === 200 ? comoTokens(r.dados) : null;
