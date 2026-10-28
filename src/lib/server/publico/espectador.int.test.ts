@@ -186,7 +186,6 @@ describe("tempo real (Supabase Realtime de verdade)", () => {
     const meu = await novoPedido();
     const outro = await novoPedido();
     const nav = meu.nav;
-    const navOutro = outro.nav;
 
     const cred = await nav.post(postRealtimePedido, {});
     expect(cred.status).toBe(200);

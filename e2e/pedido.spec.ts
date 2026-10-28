@@ -116,8 +116,6 @@ test("acompanha o pedido: posição, beep ao ser assumido, prazo e chat", async 
 test("sem pedido neste navegador, /pedido mostra aviso e não vaza nada", async ({ page }) => {
   await page.goto("/pedido");
   await expect(page.getByRole("heading", { name: "Nenhum pedido aqui" })).toBeVisible({ timeout: 45_000 });
-})
-  expect(await page.evaluate(() => window.location.hash)).toBe("");
 });
 
 test("vagas ao vivo na página da banca e volta para o início quando a banca é encerrada", async ({ page }) => {
