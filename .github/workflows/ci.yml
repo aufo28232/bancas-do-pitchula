@@ -142,6 +142,15 @@ jobs:
           git commit -m "chore: fixar versões exatas das dependências e lockfile"
           git push
 
+      - name: Diagnóstico do Supabase Auth em caso de falha (contas de teste apenas)
+        if: failure()
+        run: |
+          docker ps --format '{{.Names}}' > "$LOGS/diag-containers.txt" || true
+          AUTH=$(docker ps --format '{{.Names}}' | grep -m1 supabase_auth || true)
+          if [ -n "$AUTH" ]; then
+            docker logs "$AUTH" 2>&1 | grep -iE 'error|captcha|invalid|grant|status' | grep -viE 'jwt_secret|service_role' | tail -60 > "$LOGS/diag-auth.log" || true
+          fi
+
       - name: Publicar saída dos passos no branch ci-logs
         if: always() && github.event_name != 'pull_request'
         env:
