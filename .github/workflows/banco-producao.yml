@@ -1,0 +1,73 @@
+name: Banco de produção
+
+# Roda SÓ quando você manda (Actions -> "Banco de produção" -> Run workflow).
+# Usa os segredos do repositório (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_ACCESS_TOKEN  token pessoal do Supabase (supabase.com/dashboard/account/tokens)
+#   SUPABASE_PROJECT_REF   o "ref" do projeto (o pedaço xxxx de https://xxxx.supabase.co)
+#   SUPABASE_DB_PASSWORD   senha do banco criada junto com o projeto
+#   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY   (só para criar o streamer)
+#   SEED_OWNER_PASSWORD    senha do streamer (só para criar o streamer; apague o segredo depois)
+# Nenhum valor aparece nos logs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      acao:
+        description: "O que fazer"
+        type: choice
+        options: [aplicar-migrations, criar-streamer]
+        default: aplicar-migrations
+      email:
+        description: "E-mail do streamer (só para criar-streamer)"
+        required: false
+      apelido:
+        description: "Apelido do streamer (só para criar-streamer)"
+        required: false
+        default: Pitchula
+
+permissions:
+  contents: read
+
+concurrency:
+  group: banco-producao
+  cancel-in-progress: false
+
+jobs:
+  banco:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Aplicar migrations no Supabase de produção
+        if: inputs.acao == 'aplicar-migrations'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: supabase link + db push
+        if: inputs.acao == 'aplicar-migrations'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          supabase link --project-ref "$PROJECT_REF" -p "$SUPABASE_DB_PASSWORD"
+          supabase db push -p "$SUPABASE_DB_PASSWORD" --include-all
+
+      - uses: actions/setup-node@v4
+        if: inputs.acao == 'criar-streamer'
+        with:
+          node-version-file: .nvmrc
+      - name: Criar a conta do streamer
+        if: inputs.acao == 'criar-streamer'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SEED_OWNER_PASSWORD: ${{ secrets.SEED_OWNER_PASSWORD }}
+          EMAIL: ${{ inputs.email }}
+          APELIDO: ${{ inputs.apelido }}
+        run: |
+          npm install -g "$(node -p "require('./package.json').packageManager")"
+          pnpm install --frozen-lockfile
+          pnpm seed:owner --email "$EMAIL" --apelido "$APELIDO"

@@ -200,3 +200,26 @@ jobs:
       - name: Parar Supabase
         if: always()
         run: supabase stop --no-backup || true
+
+  node24:
+    # A Vercel (usada para testes) roda Node 24; o servidor e o Docker usam Node 26.
+    name: build e testes de unidade no Node 24
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Instalar pnpm
+        run: npm install -g "$(node -p "require('./package.json').packageManager")"
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Testes de unidade (sem os de integração)
+        run: pnpm exec vitest run --exclude "**/*.int.test.ts"
+      - name: Build
+        run: pnpm build

@@ -178,6 +178,10 @@ A imagem roda como usuário sem privilégio (uid 10001), sem npm, e não leva ne
 
 **Cloudflare Access (recomendado nos três modos).** Crie uma aplicação *Self-hosted* para `seu-dominio/painel*` e `seu-dominio/api/painel*` com a política de quem pode entrar (e-mails do streamer e dos moderadores). Copie o *Application Audience (AUD) Tag* para `CF_ACCESS_AUD` e o domínio da equipe para `CF_ACCESS_TEAM_DOMAIN`. O servidor confere o JWT do Access em toda requisição do painel; no modo 1 isso fecha o caminho de quem chega direto na origem.
 
+**Vercel (só para testes).** Importe o repositório na Vercel (New Project → GitHub). Em *Settings → Environment Variables*, cadastre as mesmas variáveis do `.env.example` com `DEPLOY_MODE=managed`, `TRUSTED_PROXY_HOPS=1`, `SITE_URL=https://<projeto>.vercel.app` e `ENABLE_EXPERIMENTAL_COREPACK=1` (para usar o pnpm do `package.json`). A região das funções já fica em São Paulo (`vercel.json`). Limitações na Vercel: o plano grátis (Hobby) não permite uso comercial, e o corpo das requisições vai até 4,5 MB (comprovante maior que isso falha). A Vercel roda Node 24; o CI confere build e testes de unidade nessa versão.
+
+**Banco de produção pelo GitHub.** Em vez de instalar o Supabase CLI, use o workflow **"Banco de produção"** (Actions → Run workflow): `aplicar-migrations` aplica as migrations e `criar-streamer` cria a conta do streamer. Os segredos que ele usa estão listados no topo de `.github/workflows/banco-producao.yml`.
+
 ### 4. Backups e exclusão
 
 Os backups do Supabase guardam o banco como estava: um pedido apagado (encerramento ou exclusão a pedido) continua no backup até ele expirar, conforme o plano contratado. A política de privacidade precisa dizer isso. Restaurar um backup traz de volta dados já apagados; nesse caso, encerre as bancas restauradas logo em seguida.
