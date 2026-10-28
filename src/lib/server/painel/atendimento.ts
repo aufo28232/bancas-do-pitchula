@@ -490,3 +490,16 @@ export function listarAuditoria(staff: ContextoStaff, antes: number | null): Pro
 export function verificarAuditoria(staff: ContextoStaff): Promise<{ integra: boolean; quebra_em: number | null; registros: number }> {
   return chamar(staff, "owner_verify_audit", {});
 }
+
+// ---------------------------------------------------------------------------
+// Apagar os dados a pedido do titular (o espectador pede pelo chat; D-083)
+// ---------------------------------------------------------------------------
+export const postApagarDados = mutacao("painel/pedidos/apagar-dados", async (ctx) => {
+  const d = await lerCorpo(ctx.req, corpoId, 256);
+  const staff = await exigirStaff(ctx.req);
+  await limitePainel(staff.userId);
+  await chamar(staff, "staff_erase_order", { p_order: d.id });
+  // Comprovantes e conta anônima saem do Storage/Auth logo em seguida.
+  agendarLimpeza();
+  return json({ ok: true }, 200, ctx);
+});

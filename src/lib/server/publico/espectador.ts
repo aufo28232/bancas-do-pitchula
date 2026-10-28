@@ -10,7 +10,6 @@ import { renovar } from "../gotrue";
 import { json, lerCorpo, mutacao } from "../http";
 import { ipDoCliente } from "../ip";
 import { getKeyring, hmac, toPgBytea } from "../keys";
-import { agendarLimpeza } from "../limpeza";
 import { log } from "../log";
 import { rpc } from "../postgrest";
 import { contarOuFalhar, contarOuPermitir } from "../ratelimit";
@@ -318,19 +317,4 @@ export const postVerComprovante = mutacao("pedido/comprovante/ver", async (ctx) 
   const caminho = await rpc<string | null>("srv_viewer_attachment_path", { p_session_hash: s.hash, p_attachment: d.id }, "servico");
   if (!caminho) throw new HttpError(404, "Comprovante não encontrado.", "anexo");
   return json({ url: await urlAssinada(nomeNoBucket(caminho), 60) }, 200, ctx);
-});
-
-// ---------------------------------------------------------------------------
-// POST /api/pedido/excluir: "Excluir meus dados" (D-018)
-// ---------------------------------------------------------------------------
-export const postExcluirDados = mutacao("pedido/excluir", async (ctx) => {
-  const s = exigirSessao(ctx.req);
-  await lerCorpo(ctx.req, z.object({ confirmar: z.literal(true) }), 64);
-  const r = await rpc<string>("srv_viewer_delete", { p_session_hash: s.hash }, "servico");
-  if (r !== "ok") semSessao(ctx);
-  // A sessão deixou de existir: apaga os cookies deste navegador também.
-  ctx.setCookies.push(apagarCookie(COOKIE_PEDIDO), apagarCookie(COOKIE_PEDIDO_RT));
-  // Comprovantes e conta anônima saem do Storage/Auth logo em seguida.
-  agendarLimpeza();
-  return json({ ok: true }, 200, ctx);
 });

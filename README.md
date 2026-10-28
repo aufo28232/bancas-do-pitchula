@@ -68,7 +68,7 @@ A Etapa 6 entrega:
 - **Encerrar banca** (streamer ou moderador, digitando o nome): apaga na hora pedidos, conversas, comprovantes e contas anônimas; o link morre e todo mundo conectado volta para "Aguardando banca...".
 - **Encerramento automático:** pausada há 7 dias, esgotada há 24h ou aberta sem movimento há 7 dias.
 - **Retenção de hora em hora:** bans vencidos, revisão anual vencida (D-020), chaves de idempotência, sessões, contas anônimas sem pedido e auditoria com mais de 12 meses.
-- **"Excluir meus dados"** na página do pedido (D-018, D-076).
+- **Apagar dados a pedido do titular:** o espectador pede pelo chat e a equipe clica em "Apagar dados" no pedido (D-083).
 
 ## Pré-requisitos (desenvolvimento local)
 

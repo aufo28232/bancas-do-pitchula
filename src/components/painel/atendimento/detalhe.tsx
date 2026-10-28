@@ -42,7 +42,7 @@ const TIPOS_BAN = [
   ["ip", "IP (até 7 dias)"],
 ] as const;
 
-type Painel = "nenhum" | "pagar" | "recusar" | "banir" | "forcar";
+type Painel = "nenhum" | "pagar" | "recusar" | "banir" | "forcar" | "apagar";
 
 const botao =
   "rounded-sm border px-3 py-1.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60";
@@ -283,6 +283,11 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
           <button type="button" disabled={ocupado} className={`${botao} border-line text-fg-muted`} onClick={() => setPainel("banir")}>
             Banir
           </button>
+          {!p.apagado ? (
+            <button type="button" disabled={ocupado} className={`${botao} border-line text-fg-muted`} onClick={() => setPainel("apagar")}>
+              Apagar dados
+            </button>
+          ) : null}
         </div>
 
         {painel === "pagar" ? (
@@ -352,6 +357,28 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
               </button>
             </div>
           </form>
+        ) : null}
+
+        {painel === "apagar" ? (
+          <div role="alertdialog" aria-label="Apagar dados" className="flex flex-col gap-3 border border-line p-4">
+            <p className="text-sm">
+              Use quando o espectador pedir no chat para apagar os dados dele. Nome, CPF, Pix, ID, conversa e comprovantes somem
+              agora{pendente ? " e o pedido é encerrado" : ""}. Não dá para desfazer e fica registrado na auditoria.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={ocupado}
+                className={`${botao} border-accent text-accent`}
+                onClick={() => void executar("/api/painel/pedidos/apagar-dados", { id: p.id }, "Dados apagados.")}
+              >
+                Apagar dados
+              </button>
+              <button type="button" className={`${botao} border-line`} onClick={() => setPainel("nenhum")}>
+                Cancelar
+              </button>
+            </div>
+          </div>
         ) : null}
 
         {painel === "banir" ? <FormBanir ocupado={ocupado} aoEnviar={aoBanir} aoCancelar={() => setPainel("nenhum")} /> : null}

@@ -704,7 +704,7 @@ Cron a cada 5 min chama a mesma rotina como "sistema": `fechada` com `closed_at 
 5. Usuários anônimos do Supabase sem pedido vinculado → apagados via `auth.admin.deleteUser` pela Edge Function.
 6. `idempotency_keys` com mais de 24h, `order_sessions` expiradas.
 
-**A pedido do titular:** no `/pedido` há um botão "Excluir meus dados" (D-018). Pendente → recusado (`exclusao_a_pedido`), depois apagado. Pago/recusado → dados pessoais apagados na hora; fica só a linha mínima para os agregados até o encerramento da banca. Pedidos por outros canais (e-mail de contato) são tratados pelo streamer no painel, com auditoria `exclusao_dados`.
+**A pedido do titular:** o espectador pede pelo chat e a equipe usa "Apagar dados" no painel (D-083; o botão no `/pedido` saiu a pedido do streamer). Pendente → recusado (`exclusao_a_pedido`), depois apagado. Pago/recusado → dados pessoais apagados na hora; fica só a linha mínima para os agregados até o encerramento da banca. Pedidos por outros canais (e-mail de contato) são tratados pelo streamer no painel, com auditoria `exclusao_dados`.
 
 **Teste obrigatório:** o arquivo precisa sumir de verdade do Storage (`download` retorna 404 depois do job).
 

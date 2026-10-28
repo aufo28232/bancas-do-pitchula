@@ -7,12 +7,11 @@ import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { postCriarBanca } from "@/lib/server/painel/bancas";
-import { postComprovanteStaff, postEncerrarBanca } from "@/lib/server/painel/atendimento";
+import { postApagarDados, postComprovanteStaff, postEncerrarBanca } from "@/lib/server/painel/atendimento";
 import { bancaPublica } from "@/lib/server/publico/banca";
 import {
   postComprovante,
   postEstadoPedido,
-  postExcluirDados,
   postVerComprovante,
 } from "@/lib/server/publico/espectador";
 import { postCriarPedido } from "@/lib/server/publico/pedido";
@@ -137,14 +136,14 @@ describe("encerrar banca (D-044)", () => {
   });
 });
 
-describe("exclusão a pedido do titular (D-018)", () => {
-  it("apaga dados, chat e comprovante; o mesmo CPF não volta a pedir na mesma banca", async () => {
+describe("exclusão a pedido do titular (D-018, D-083)", () => {
+  it("a equipe apaga dados, chat e comprovante; o link do espectador para de funcionar", async () => {
     const banca = await novaBanca("Banca Exclusao");
     const e = await espectadorComPedido(banca.codigo);
     expect((await e.nav.post(postComprovante, new Uint8Array(await imagem()))).status).toBe(201);
     const [a] = await caminhos(e.id);
 
-    expect((await e.nav.post(postExcluirDados, { confirmar: true })).status).toBe(200);
+    expect((await dono.nav.post(postApagarDados, { id: e.id })).status).toBe(200);
     expect((await e.nav.post(postEstadoPedido, {})).status).toBe(401);
     await executarLimpeza();
     expect(await existeArquivo(nomeNoBucket(a?.storage_path ?? ""))).toBe(false);

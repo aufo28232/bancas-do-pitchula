@@ -1,7 +1,7 @@
 -- Etapa 7: alerta de encerramento por moderador, sinais de fraude e auditoria para o streamer.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(12);
 
 set local app.audit_purge = 'on';
 delete from app.audit_log;
@@ -74,6 +74,15 @@ select is(api.staff_get_order('00000000-0000-0000-0000-0000000000b1') -> 'sinais
 select is(api.staff_get_order('00000000-0000-0000-0000-0000000000b1') -> 'sinais' ->> 'comprovante_repetido', '1',
   'o mesmo comprovante (sha256) aparece em outro pedido');
 select is(api.staff_get_order('00000000-0000-0000-0000-0000000000b2') -> 'sinais' ->> 'comprovante_repetido', '0', 'pedido sem comprovante repetido');
+
+-- 1b. Exclusão a pedido feita pela equipe -------------------------------------------
+select is(api.staff_erase_order('00000000-0000-0000-0000-0000000000b2') ->> 'resultado', 'ok', 'moderador apaga os dados a pedido do titular');
+reset role;
+select is((select status::text || '/' || refusal_reason::text from app.orders where id = '00000000-0000-0000-0000-0000000000b2'),
+  'recusado/exclusao_a_pedido', 'pedido pendente vira recusado por exclusão a pedido');
+select ok((select cpf_enc like 'v0:%' and data_erased_at is not null from app.orders where id = '00000000-0000-0000-0000-0000000000b2'),
+  'dados pessoais substituídos por valores que não decifram');
+do $$ begin perform pg_temp.como('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000005b'); end $$;
 
 -- 2. Auditoria só para o streamer ---------------------------------------------------
 select throws_ok($$ select api.owner_list_audit(50, null) $$, '42501', null, 'moderador NÃO lê a auditoria');

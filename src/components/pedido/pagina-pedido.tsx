@@ -13,7 +13,7 @@ import { ROTULO_TIPO_PIX } from "@/lib/validacao/pedido";
 import type { EstadoPedido } from "@/lib/server/publico/espectador";
 
 type Mensagem = EstadoPedido["mensagens"][number];
-type Fase = "carregando" | "pronto" | "invalido" | "erro" | "excluido";
+type Fase = "carregando" | "pronto" | "invalido" | "erro";
 
 type RespostaRealtime = {
   url: string;
@@ -55,7 +55,6 @@ export function PaginaPedido() {
   const [enviando, setEnviando] = useState(false);
   const [erroMsg, setErroMsg] = useState("");
   const [enviandoArquivo, setEnviandoArquivo] = useState(false);
-  const [confirmarExclusao, setConfirmarExclusao] = useState(false);
   const ultimoAlerta = useRef(0);
   const atendimentoAnterior = useRef<boolean | null>(null);
   const fimDaLista = useRef<HTMLDivElement>(null);
@@ -265,39 +264,7 @@ export function PaginaPedido() {
     void carregar(false);
   }
 
-  async function aoExcluir() {
-    if (!confirmarExclusao) {
-      setConfirmarExclusao(true);
-      return;
-    }
-    const r = await enviar("/api/pedido/excluir", { confirmar: true });
-    if (r.ok) {
-      esquecerPedido();
-      setEstado(null);
-      setFase("excluido");
-    } else {
-      setErroMsg(r.erro);
-      setConfirmarExclusao(false);
-    }
-  }
-
   // -------------------------------------------------------------------------
-  if (fase === "excluido") {
-    return (
-      <section aria-labelledby="t-excluido" className="mt-12 max-w-md">
-        <h1 id="t-excluido" className="font-display text-4xl font-black uppercase">
-          Dados apagados
-        </h1>
-        <p className="mt-3 text-fg-muted">
-          Seus dados e o chat deste pedido foram apagados.
-        </p>
-        <Link href="/" className="mt-6 inline-block underline underline-offset-4">
-          Ir para o início
-        </Link>
-      </section>
-    );
-  }
-
   if (fase === "carregando") {
     return (
       <p role="status" className="mt-16 text-fg-muted">
@@ -406,25 +373,6 @@ export function PaginaPedido() {
           <dd className="font-mono">{estado.dados.plataformaId}</dd>
         </dl>
         <p className="mt-2 text-xs text-fg-muted">Seus dados aparecem incompletos de propósito.</p>
-        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-          <button
-            type="button"
-            onClick={() => void aoExcluir()}
-            className="rounded-sm border border-line px-2 py-1 text-fg-muted hover:text-fg"
-          >
-            {confirmarExclusao ? "Confirmar: apagar meus dados" : "Excluir meus dados"}
-          </button>
-          {confirmarExclusao ? (
-            <>
-              <span className="text-fg-muted">
-                {p.status === "pendente" ? "O pedido será encerrado. " : ""}Não dá para desfazer.
-              </span>
-              <button type="button" onClick={() => setConfirmarExclusao(false)} className="underline underline-offset-2">
-                Cancelar
-              </button>
-            </>
-          ) : null}
-        </div>
         <p className="mt-6 text-xs text-fg-muted" aria-live="polite">
           {conectado ? "Atualizando ao vivo." : "Reconectando… a página continua se atualizando."}
         </p>

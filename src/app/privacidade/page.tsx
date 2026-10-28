@@ -81,8 +81,8 @@ export default function Privacidade() {
         <section aria-labelledby="t-direitos">
           <h2 id="t-direitos" className="font-display text-2xl font-black uppercase">Seus direitos</h2>
           <p className="mt-4 text-fg-muted">
-            Você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento pelo chat do seu pedido. A
-            exclusão cancela o pedido, se ele ainda não foi pago. Nunca pedimos senha nem pagamento antecipado.
+            Você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento pelo chat do seu pedido: a
+            equipe apaga na hora. A exclusão cancela o pedido, se ele ainda não foi pago. Nunca pedimos senha nem pagamento antecipado.
           </p>
         </section>
       </div>

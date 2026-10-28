@@ -573,6 +573,10 @@ Testado na integração (sem token, outra origem, cross-site).
 - **Troca:** quem limpar os dados do navegador ou trocar de aparelho perde o acesso ao pedido (o pedido continua na fila do painel). Era o preço de não ter link.
 - **Limites do Supabase Auth:** como todas as chamadas saem do nosso servidor (um IP só), os limites por IP do Auth valem para o site inteiro. Em produção, suba em Authentication → Rate Limits: usuários anônimos (ex.: 3000/h) e renovação de token (ex.: 3000/5 min). Os limites por espectador continuam no app (Redis). Alternativa a avaliar: o encaminhamento de IP do Supabase (`Sb-Forwarded-For`, exige chave secreta nova).
 
+## D-083 · Exclusão a pedido feita pela equipe, não por botão
+
+**Status:** Implementada (28/10/2026, pedido do streamer). O botão "Excluir meus dados" saiu da página do pedido. O espectador pede pelo chat (a política de privacidade diz isso) e o moderador clica em "Apagar dados" no pedido: mesmo efeito de D-076, com auditoria `exclusao_dados` e o autor. O direito de pedir a exclusão continua (LGPD art. 18): só mudou quem aperta o botão. **[ADVOGADO]** confirmar se o canal pelo chat basta.
+
 ---
 
 ## Registro de mudanças
@@ -589,3 +593,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Etapa 6: D-075 a D-077 |
 | 28/10/2026 | Etapa 7: D-078 a D-081 |
 | 28/10/2026 | Pedido direto para o chat (D-082) e fila sem teto (D-032 revista) |
+| 28/10/2026 | Exclusão a pedido pela equipe (D-083) |
