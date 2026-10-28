@@ -33,7 +33,25 @@
 
 ## D-001 · Stack e versões
 
-**Status:** Proposta (versões exatas fixadas na Etapa 1)
+**Status:** Implementada na Etapa 1 (27/10/2026). Versões exatas resolvidas pelo CI a partir das faixas de `scripts/deps.intent.json` (D-049):
+
+| Pacote | Versão fixada |
+|---|---|
+| Node.js (CI e `.nvmrc`) | 26.12.1 (linha 26 LTS) |
+| pnpm (`packageManager`) | 12.15.0 |
+| next / eslint-config-next | 16.4.3 |
+| react / react-dom | 19.2.9 |
+| zod | 4.6.7 |
+| typescript | 6.0.3 |
+| tailwindcss / @tailwindcss/postcss | 4.3.3 |
+| eslint | 9.39.5 |
+| vitest | 4.1.12 |
+| @types/node | 26.6.5 |
+| @types/react / @types/react-dom | 19.3.0 |
+| Supabase CLI (CI) | `latest` no momento (a fixar por versão na Etapa 7) |
+| pg_prove (imagem do Supabase CLI) | 3.36 |
+
+Proposta original (mantida como registro):
 
 | Item | Escolha | Observação |
 |---|---|---|
@@ -186,7 +204,7 @@
 
 **Status:** Proposta (sujeita aos arquivos de marca)
 
-- Display: **Big Shoulders Display** (800/900), condensada e pesada, com cara de pôster de evento, para o valor e os títulos
+- Display: **Big Shoulders** (800/900), condensada e pesada, com cara de pôster de evento, para o valor e os títulos. A "Big Shoulders Display" foi unificada pelo Google Fonts na família "Big Shoulders", nome que o Next 16.4 usa (confirmado no CI em 27/10/2026)
 - Texto: **Instrument Sans**, neutra e legível, menos óbvia que Inter
 - Dados no painel: **IBM Plex Mono**, com algarismos tabulares para valores e posições
 - **Alternativas consideradas:** Anton + Inter (comum demais); Bebas Neue (excessivamente usada em sites gerados); Archivo Black (boa, mas menos condensada).
