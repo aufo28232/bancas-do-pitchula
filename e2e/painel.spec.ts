@@ -97,7 +97,7 @@ test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pag
 
   // Espectador responde: o relógio para dos dois lados e o painel recebe a mensagem.
   await espectador.getByLabel("Sua mensagem").fill(`Segue de novo, meu cpf ${cpf}`);
-  await espectador.getByRole("button", { name: "Enviar" }).click();
+  await espectador.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(espectador.locator("[data-prazo]")).toHaveCount(0);
   await expect(page.getByText("Segue de novo, meu cpf")).toBeVisible();
   await expect(page.locator("[data-prazo-painel]")).toHaveCount(0);

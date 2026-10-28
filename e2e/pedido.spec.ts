@@ -100,7 +100,7 @@ test("acompanha o pedido: posição, beep ao ser assumido, prazo e chat", async 
 
   // Resposta do espectador para o relógio.
   await page.getByLabel("Sua mensagem").fill("Enviando agora!");
-  await page.getByRole("button", { name: "Enviar" }).click();
+  await page.getByRole("button", { name: "Enviar", exact: true }).click();
   await expect(page.getByText("Enviando agora!")).toBeVisible();
   await expect(relogio).toHaveCount(0);
 
