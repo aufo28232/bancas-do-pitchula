@@ -1,11 +1,12 @@
 # Versões fixadas
 
-Geradas por `scripts/pin-deps.mjs` em 2026-10-28T11:14:22.615Z.
+Geradas por `scripts/pin-deps.mjs` em 2026-10-28T15:50:25.235Z.
 
 | Pacote | Versão | Faixa pretendida |
 |---|---|---|
 | node (CI) | 26.12.1 | .nvmrc |
 | pnpm | 12.15.0 | latest |
+| @supabase/realtime-js | 2.118.0 | ^2.15.0 |
 | next | 16.4.3 | ^16.4.0 |
 | react | 19.2.9 | ^19.2.0 |
 | react-dom | 19.2.9 | ^19.2.0 |
