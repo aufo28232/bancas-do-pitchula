@@ -44,7 +44,8 @@ test("páginas com token ou dados pessoais: sem Referer e sem indexação", asyn
 });
 
 test("cookie de CSRF com __Host-, Secure e SameSite=Strict", async ({ request }) => {
-  const r = await request.get("/");
+  // Página sem redirecionamento: "/" pode levar à banca atual (D-084) e o cookie já viria do 1º salto.
+  const r = await request.get("/privacidade");
   const cookie = r.headersArray().find((x) => x.name.toLowerCase() === "set-cookie" && x.value.startsWith("__Host-bp_csrf="));
   expect(cookie?.value).toMatch(/; Secure/);
   expect(cookie?.value).toMatch(/SameSite=Strict/);
