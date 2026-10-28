@@ -1,6 +1,6 @@
 # Relatório final · Bancas do Pitchula
 
-Data: 28/10/2026. Base: commit `__SHA__` (CI `__RUN__`).
+Data: 28/10/2026. Base: commit `6f0a2b1` (CI run 40750011704, verde).
 
 Este relatório separa o que está **implementado e testado**, o que **depende de configuração** sua, o que **não foi verificado** e o que é **decisão jurídica**. Nenhum item afirma conformidade legal ou imunidade a ataques.
 
@@ -10,14 +10,14 @@ Comando de pronto: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && 
 
 | Verificação | Resultado |
 |---|---|
-| ESLint (`--max-warnings=0`) | __LINT__ |
-| TypeScript (`tsc --noEmit`, estrito) | __TYPECHECK__ |
-| Vitest (unidade + integração com Supabase local, Redis e Storage reais) | __VITEST__ |
-| pgTAP (`supabase test db`) | __PGTAP__ |
-| Build de produção (`.next/standalone`) | __BUILD__ |
-| Playwright (Chromium, desktop e celular, contra o build de produção) | __E2E__ |
-| `pnpm audit --audit-level high` | __AUDIT__ |
-| Imagem Docker (build, uid 10001, responde com os cabeçalhos) | __DOCKER__ |
+| ESLint (`--max-warnings=0`) | Passou, 0 avisos |
+| TypeScript (`tsc --noEmit`, estrito) | Passou |
+| Vitest (unidade + integração com Supabase local, Redis e Storage reais) | **153 testes passaram** em 16 arquivos |
+| pgTAP (`supabase test db`) | **294 testes passaram** em 12 arquivos |
+| Build de produção (`.next/standalone`) | Passou |
+| Playwright (Chromium, desktop e celular, contra o build de produção) | **26 passaram**; 11 pulados de propósito (fluxos completos só no desktop, teclado e cabeçalhos não dependem do celular) |
+| `pnpm audit --audit-level high` | Nenhuma vulnerabilidade conhecida |
+| Imagem Docker (build, uid 10001, responde com os cabeçalhos) | Passou: roda como uid 10001, responde com CSP, HSTS e X-Frame-Options; imagem de 413 MB |
 
 Saída completa de cada passo: branch `ci-logs` do repositório (capturas de tela em `capturas/`).
 

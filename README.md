@@ -16,7 +16,7 @@ Aplicação para o streamer Pitchula e seus moderadores receberem pedidos de ban
 | 4. Página do pedido, chat, prazo de 5 min e tempo real | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 120 testes Vitest (44 de integração, incluindo o Realtime de verdade), 184 testes pgTAP, build, **16 testes E2E** (desktop e celular) e `pnpm audit` sem vulnerabilidades |
 | 5. Painel de atendimento | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 130 testes Vitest (incluindo concorrência real), 242 testes pgTAP, build, **18 testes E2E** (streamer e espectador em navegadores separados) e `pnpm audit` sem vulnerabilidades |
 | 6. Comprovantes, encerramento, retenção | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 145 testes Vitest (com Storage real: o arquivo some depois do encerramento), 285 testes pgTAP, build, **19 testes E2E** e `pnpm audit` sem vulnerabilidades |
-| 7. Endurecimento e entrega | Em andamento |
+| 7. Endurecimento e entrega | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 153 testes Vitest, 294 testes pgTAP, build, 26 testes E2E, `pnpm audit` sem vulnerabilidades e imagem Docker não-root. Ver [`RELATORIO-FINAL.md`](RELATORIO-FINAL.md) |
 
 O que a Etapa 1 entrega:
 
