@@ -248,7 +248,8 @@ describe("regras da banca", () => {
   });
 
   it("toPgBytea gera o formato que o Postgres entende", async () => {
-    const [r] = await sql<{ ok: boolean }[]>`select ${toPgBytea(Buffer.from([1, 2, 255]))}::bytea = '\\x0102ff'::bytea as ok`;
+    const bytes = Buffer.from([1, 2, 255]);
+    const [r] = await sql<{ ok: boolean }[]>`select ${toPgBytea(bytes)}::bytea = ${bytes} as ok`;
     expect(r?.ok).toBe(true);
   });
 });

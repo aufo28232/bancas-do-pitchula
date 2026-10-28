@@ -29,25 +29,32 @@ export function problemaDeTamanho(senha: string): ProblemaSenha | null {
   return null;
 }
 
-/** true = a senha aparece em vazamentos conhecidos. */
+/**
+ * true = a senha aparece em vazamentos conhecidos.
+ * Tenta duas vezes (falhas de rede passageiras); se as duas falharem, lança
+ * HibpIndisponivelError e quem chama RECUSA a senha (falha fechada).
+ */
 export async function senhaVazada(senha: string, baseUrl = "https://api.pwnedpasswords.com"): Promise<boolean> {
   const sha1 = createHash("sha1").update(senha, "utf8").digest("hex").toUpperCase();
   const prefixo = sha1.slice(0, 5);
   const sufixo = sha1.slice(5);
 
-  let resposta: Response;
-  try {
-    resposta = await fetch(`${baseUrl.replace(/\/$/, "")}/range/${prefixo}`, {
-      headers: { "Add-Padding": "true", "User-Agent": "bancas-do-pitchula" },
-      signal: AbortSignal.timeout(4000),
-      cache: "no-store",
-    });
-  } catch {
-    throw new HibpIndisponivelError();
+  let texto: string | null = null;
+  for (let tentativa = 0; tentativa < 2 && texto === null; tentativa++) {
+    if (tentativa > 0) await new Promise((r) => setTimeout(r, 400));
+    try {
+      const resposta = await fetch(`${baseUrl.replace(/\/$/, "")}/range/${prefixo}`, {
+        headers: { "Add-Padding": "true", "User-Agent": "bancas-do-pitchula" },
+        signal: AbortSignal.timeout(4000),
+        cache: "no-store",
+      });
+      if (resposta.ok) texto = await resposta.text();
+    } catch {
+      texto = null;
+    }
   }
-  if (!resposta.ok) throw new HibpIndisponivelError();
+  if (texto === null) throw new HibpIndisponivelError();
 
-  const texto = await resposta.text();
   for (const linha of texto.split("\n")) {
     const [suf, contagem] = linha.trim().split(":");
     // Com padding, entradas falsas vêm com contagem 0.
