@@ -13,11 +13,11 @@ export default async function PaginaAtendimento({ params }: { params: Promise<{ 
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
 
-  try {
-    const [fila, respostas] = await Promise.all([carregarFila(staff, id, false), listarRespostas(staff)]);
-    return <Atendimento inicial={fila} respostas={respostas} dono={staff.role === "owner"} />;
-  } catch (e) {
-    if (e instanceof HttpError && e.status === 404) notFound();
+  const dados = await Promise.all([carregarFila(staff, id, false), listarRespostas(staff)]).catch((e: unknown) => {
+    if (e instanceof HttpError && e.status === 404) return null;
     throw e;
-  }
+  });
+  if (!dados) notFound();
+  const [fila, respostas] = dados;
+  return <Atendimento inicial={fila} respostas={respostas} dono={staff.role === "owner"} />;
 }
