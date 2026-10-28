@@ -1,6 +1,6 @@
 # Versões fixadas
 
-Geradas por `scripts/pin-deps.mjs` em 2026-10-28T00:57:49.605Z.
+Geradas por `scripts/pin-deps.mjs` em 2026-10-28T01:26:52.135Z.
 
 | Pacote | Versão | Faixa pretendida |
 |---|---|---|
@@ -16,6 +16,8 @@ Geradas por `scripts/pin-deps.mjs` em 2026-10-28T00:57:49.605Z.
 | @types/react-dom | 19.3.0 | ^19.2.0 |
 | eslint | 9.39.5 | ^9.30.0 |
 | eslint-config-next | 16.4.3 | =next |
+| postgres | 3.4.9 | ^3.4.0 |
 | tailwindcss | 4.3.3 | ^4.1.0 |
+| tsx | 4.23.15 | ^4.19.0 |
 | typescript | 6.0.3 | >=5.9.0 <7.0.0 |
 | vitest | 4.1.12 | >=3.2.0 <5.0.0 |
