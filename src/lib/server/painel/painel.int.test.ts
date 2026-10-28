@@ -372,3 +372,46 @@ describe("permissões, sessões e revogação", () => {
     expect(await renovar(refresh)).toBeNull();
   });
 });
+
+describe("cadastro público bloqueado no banco (D-048)", () => {
+  const url = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  const anon = process.env.SUPABASE_ANON_KEY ?? "";
+  const servico = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  const contas = async (email: string) =>
+    (await sql<{ n: number }[]>`select count(*)::int as n from auth.users where email = ${email}`)[0]?.n;
+
+  it("cadastro por e-mail pela API pública do Auth é recusado", async () => {
+    const email = emailNovo("publico");
+    const r = await fetch(`${url}/auth/v1/signup`, {
+      method: "POST",
+      headers: { apikey: anon, "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: senhaForte(), gotrue_meta_security: { captcha_token: TURNSTILE_TESTE } }),
+    });
+    expect(r.ok).toBe(false);
+    expect(await contas(email)).toBe(0);
+  });
+
+  it("nem a API admin cria conta sem a pré-autorização do servidor", async () => {
+    const email = emailNovo("admin-direto");
+    const headers: Record<string, string> = { apikey: servico, "Content-Type": "application/json" };
+    if (!servico.startsWith("sb_")) headers.Authorization = `Bearer ${servico}`;
+    const r = await fetch(`${url}/auth/v1/admin/users`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ email, password: senhaForte(), email_confirm: true }),
+    });
+    expect(r.ok).toBe(false);
+    expect(await contas(email)).toBe(0);
+  });
+
+  it("login anônimo (que o espectador vai usar) continua funcionando", async () => {
+    const r = await fetch(`${url}/auth/v1/signup`, {
+      method: "POST",
+      headers: { apikey: anon, "Content-Type": "application/json" },
+      body: JSON.stringify({ gotrue_meta_security: { captcha_token: TURNSTILE_TESTE } }),
+    });
+    expect(r.status).toBe(200);
+    const dados = (await r.json()) as { user?: { is_anonymous?: boolean } };
+    expect(dados.user?.is_anonymous).toBe(true);
+  });
+});

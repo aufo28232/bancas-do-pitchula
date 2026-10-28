@@ -1,5 +1,6 @@
 import { getSupabaseEnv } from "@/lib/env";
 import { DependencyUnavailableError } from "./errors";
+import { rpc } from "./postgrest";
 
 /**
  * Cliente mínimo da API REST do Supabase Auth (GoTrue), usado SÓ no servidor (D-056).
@@ -123,7 +124,12 @@ export async function verificarTotp(accessToken: string, fatorId: string, codigo
 // --------------------------------------------------------------------------
 // Admin (service role): só convites, seed e reset de MFA.
 // --------------------------------------------------------------------------
+/**
+ * Cria conta pela API admin. Antes, autoriza o e-mail no banco: sem isso o
+ * trigger que bloqueia cadastro público recusa a criação (D-048).
+ */
 export async function adminCriarUsuario(email: string, senha: string): Promise<{ id: string } | "conflito" | null> {
+  await rpc("srv_allow_account", { p_email: email }, "servico");
   const r = await chamar("/admin/users", "POST", {
     servico: true,
     corpo: { email, password: senha, email_confirm: true },

@@ -38,7 +38,8 @@ jwt_expiry = 300
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
 # Precisa ficar ligado para o login anônimo do espectador (D-003).
-# O cadastro público por e-mail/telefone fica DESLIGADO abaixo (D-048).
+# O cadastro público é barrado NO BANCO por um trigger em auth.users (D-048):
+# só o servidor, no seed e no aceite de convite, consegue criar conta com e-mail.
 enable_signup = true
 enable_anonymous_sign_ins = true
 enable_manual_linking = false
@@ -56,7 +57,8 @@ enroll_enabled = false
 verify_enabled = false
 
 [auth.email]
-enable_signup = false
+# true = provedor de e-mail LIGADO. Desligar aqui desliga também o LOGIN por e-mail.
+enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
 

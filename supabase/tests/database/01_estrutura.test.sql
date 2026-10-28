@@ -11,7 +11,8 @@ select tables_are(
   array[
     'staff', 'staff_invites', 'known_devices', 'staff_sessions', 'security_alerts',
     'bancas', 'banca_stats', 'orders', 'order_sessions', 'order_attachments', 'order_messages',
-    'storage_purge_queue', 'bans', 'quick_replies', 'idempotency_keys', 'audit_log', 'audit_anchor'
+    'storage_purge_queue', 'bans', 'quick_replies', 'idempotency_keys', 'audit_log', 'audit_anchor',
+    'auth_provisioning'
   ],
   'app contém exatamente as tabelas do modelo'
 );

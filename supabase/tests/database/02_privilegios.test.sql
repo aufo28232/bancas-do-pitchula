@@ -38,7 +38,7 @@ select set_eq(
     'bancas', 'banca_stats', 'orders', 'order_attachments', 'order_messages',
     'bans', 'quick_replies', 'audit_log', 'audit_anchor'
   ],
-  'authenticated: SELECT só nas tabelas que o staff lê'
+  'authenticated: SELECT só nas tabelas que o staff lê (auth_provisioning fica de fora)'
 );
 
 select ok(
@@ -84,7 +84,7 @@ select set_eq(
       where n.nspname in ('app', 'api') and has_function_privilege('service_role', p.oid, 'EXECUTE') $$,
   array[
     'api.srv_register_staff_session', 'api.srv_login_failed',
-    'api.srv_check_invite', 'api.srv_consume_invite', 'api.srv_seed_owner'
+    'api.srv_check_invite', 'api.srv_consume_invite', 'api.srv_seed_owner', 'api.srv_allow_account'
   ],
   'service_role só executa as funções srv_ (nada de app.* direto)'
 );
