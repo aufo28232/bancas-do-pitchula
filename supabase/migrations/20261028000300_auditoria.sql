@@ -209,7 +209,9 @@ begin
 end;
 $$;
 
--- Retenção: apaga o que tem mais de 12 meses e ancora a cadeia. Chamada pelo pg_cron (Etapa 6).
+-- Retenção: apaga o trecho INICIAL contínuo da cadeia com mais de 12 meses e ancora
+-- a cadeia. Nunca apaga uma linha recente, mesmo que existam linhas antigas depois
+-- dela (a cadeia continua verificável). Chamada pelo pg_cron (Etapa 6).
 create function app.purge_audit_log()
 returns integer
 language plpgsql
@@ -217,16 +219,21 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_last app.audit_log;
-  v_n    integer;
+  v_corte          timestamptz := now() - interval '12 months';
+  v_primeiro_novo  bigint;
+  v_last           app.audit_log;
+  v_n              integer;
 begin
   perform pg_advisory_xact_lock(app.audit_lock_key());
 
+  select min(chain_pos) into v_primeiro_novo from app.audit_log where at >= v_corte;
+
   select * into v_last
-  from app.audit_log
-  where at < now() - interval '12 months'
-  order by chain_pos desc
-  limit 1;
+    from app.audit_log
+   where at < v_corte
+     and (v_primeiro_novo is null or chain_pos < v_primeiro_novo)
+   order by chain_pos desc
+   limit 1;
 
   if not found then
     return 0;

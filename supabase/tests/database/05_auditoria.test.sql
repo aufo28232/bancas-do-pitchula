@@ -3,6 +3,26 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(12);
 
+-- Isola este arquivo de dados deixados por outros testes (o rollback no fim desfaz tudo).
+set local app.audit_purge = 'on';
+delete from app.audit_log;
+delete from app.audit_anchor;
+delete from app.security_alerts;
+delete from app.staff_sessions;
+delete from app.known_devices;
+delete from app.staff_invites;
+delete from app.order_messages;
+delete from app.order_attachments;
+delete from app.order_sessions;
+delete from app.orders;
+delete from app.bans;
+delete from app.banca_stats;
+delete from app.bancas;
+delete from app.idempotency_keys;
+update app.quick_replies set created_by = null;
+delete from app.staff;
+set local app.audit_purge = 'off';
+
 insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000a1', 'owner@teste.local');
 insert into app.staff (user_id, role, display_name) values ('00000000-0000-0000-0000-0000000000a1', 'owner', 'Pitchula');
 
