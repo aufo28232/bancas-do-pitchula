@@ -163,6 +163,9 @@ describe("estado e chat", () => {
     const nav = new Navegador();
     await abrir(nav, p.token);
     expect((await nav.post(postMensagemPedido, { texto: "   " })).status).toBe(400);
+    // O limite de 1 mensagem a cada 2 s conta também a tentativa inválida (o limite vem antes da validação).
+    expect((await nav.post(postMensagemPedido, { texto: "rápido demais" })).status).toBe(429);
+    await esperar(2100);
     expect((await nav.post(postMensagemPedido, { texto: "Oi, já depositei <b>ok</b>" })).status).toBe(201);
     const r = await nav.post(postEstadoPedido, {});
     const msgs = r.dados.mensagens as { autor: string; texto: string }[];
@@ -176,13 +179,12 @@ describe("estado e chat", () => {
 
     await sql`update app.orders set locked_by = ${dono.id}, locked_at = now(), lock_activity_at = now(),
                      reply_deadline_at = now() + interval '5 minutes' where id = ${p.id}`;
-    await esperar(1100);
     expect((await nav.post(postMensagemPedido, { texto: "Respondendo no prazo" })).status).toBe(201);
     const [o1] = await sql<{ prazo: Date | null }[]>`select reply_deadline_at as prazo from app.orders where id = ${p.id}`;
     expect(o1?.prazo).toBeNull();
 
     await sql`update app.orders set reply_deadline_at = now() - interval '1 second' where id = ${p.id}`;
-    await esperar(1100);
+    await esperar(2100); // janela de 1 mensagem a cada 2 s
     const tarde = await nav.post(postMensagemPedido, { texto: "Atrasado" });
     expect(tarde.status).toBe(409);
     const e = await nav.post(postEstadoPedido, {});
