@@ -15,7 +15,8 @@ Aplicação para o streamer Pitchula e seus moderadores receberem pedidos de ban
 | 3. Bancas, página pública e pedido do espectador | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 105 testes Vitest (35 de integração), 149 testes pgTAP, build, **10 testes E2E no Chromium** (desktop e celular) e `pnpm audit` sem vulnerabilidades |
 | 4. Página do pedido, chat, prazo de 5 min e tempo real | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 120 testes Vitest (44 de integração, incluindo o Realtime de verdade), 184 testes pgTAP, build, **16 testes E2E** (desktop e celular) e `pnpm audit` sem vulnerabilidades |
 | 5. Painel de atendimento | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 130 testes Vitest (incluindo concorrência real), 242 testes pgTAP, build, **18 testes E2E** (streamer e espectador em navegadores separados) e `pnpm audit` sem vulnerabilidades |
-| 6 e 7 | Não iniciadas |
+| 6. Comprovantes, encerramento, retenção | **Concluída em 28/10/2026.** CI verde: lint, typecheck, 145 testes Vitest (com Storage real: o arquivo some depois do encerramento), 285 testes pgTAP, build, **19 testes E2E** e `pnpm audit` sem vulnerabilidades |
+| 7. Endurecimento e entrega | Em andamento |
 
 O que a Etapa 1 entrega:
 
@@ -60,6 +61,14 @@ A Etapa 5 entrega:
 - **Modo live** ligado em todo login: os dados saem mascarados do servidor (inclusive CPF/Pix digitados no chat). Revelar mostra por 5 s e fica na auditoria; copiar Pix vai direto para a área de transferência.
 - **Atalho de pânico** `Alt+Q` (ou o botão no canto) esconde a tela inteira.
 - **Respostas rápidas** editáveis pelo streamer.
+
+A Etapa 6 entrega:
+
+- **Comprovante no chat:** JPG, PNG ou WEBP até 5 MB (máximo 5 por pedido). O servidor confere pelos bytes, re-encoda em WEBP sem metadados e guarda num bucket privado; ver é sempre por URL assinada de 60 s (no painel, fica na auditoria).
+- **Encerrar banca** (streamer ou moderador, digitando o nome): apaga na hora pedidos, conversas, comprovantes e contas anônimas; o link morre e todo mundo conectado volta para "Aguardando banca...".
+- **Encerramento automático:** pausada há 7 dias, esgotada há 24h ou aberta sem movimento há 7 dias.
+- **Retenção de hora em hora:** bans vencidos, revisão anual vencida (D-020), chaves de idempotência, sessões, contas anônimas sem pedido e auditoria com mais de 12 meses.
+- **"Excluir meus dados"** na página do pedido (D-018, D-076).
 
 ## Pré-requisitos (desenvolvimento local)
 
