@@ -1,7 +1,7 @@
 -- D-089: foto da banca, pedido sem ID na casa, número por banca e apagar histórico.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(14);
 
 set local app.audit_purge = 'on';
 delete from app.audit_log;
@@ -67,6 +67,17 @@ select is((select foto from api.public_get_banca('fotoaaaa-0001')), '1win', 'pá
 select is(pg_temp.pedido('fotoaaaa-0001', '1'), 'ok', 'pedido sem ID na casa entra');
 select is(pg_temp.pedido('fotoaaaa-0001', '2'), 'ok', 'segundo pedido na banca A');
 select is(pg_temp.pedido('fotobbbb-0002', '3'), 'ok', 'primeiro pedido na banca B');
+-- D-090: mesma chave Pix com outro CPF, na mesma banca: bloqueado; em outra banca, entra.
+select is(api.public_create_order(
+    'fotoaaaa-0001', gen_random_uuid(),
+    'v1:' || repeat('A', 32), 'v1:' || repeat('B', 32), 'cpf', 'v1:' || repeat('C', 32), null,
+    pg_temp.h('cpf:99'), pg_temp.h('pix:1'), null, pg_temp.h('ip:99'), 1::smallint,
+    array[pg_temp.h('cpf:99')], array[pg_temp.h('pix:1')], array[]::bytea[], array[pg_temp.h('ip:99')],
+    pg_temp.h('token:99')), 'bloqueado', 'mesmo Pix com outro CPF na mesma banca é bloqueado');
+reset role;
+select is((select detail ->> 'motivo' from app.audit_log where action = 'pedido_bloqueado' order by id desc limit 1),
+  'pix_repetido', 'auditoria registra o motivo pix_repetido');
+set local role service_role;
 reset role;
 select is((select array_agg(numero order by seq) from app.orders o join app.bancas b on b.id = o.banca_id where b.code = 'fotoaaaa-0001'),
   array[1, 2], 'banca A: pedidos #1 e #2');

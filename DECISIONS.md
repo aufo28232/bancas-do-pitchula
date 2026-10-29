@@ -623,6 +623,12 @@ Testado na integração (sem token, outra origem, cross-site).
 - **Número do pedido:** cada banca conta do #1 (`orders.numero`, atribuído por trigger com a linha da banca travada: dois pedidos simultâneos nunca pegam o mesmo número). A ordem da fila continua pela sequência global.
 - **Apagar histórico:** botão só do streamer na lista de bancas. Apaga as bancas **encerradas** (pedidos, chat e comprovantes já tinham sido apagados no encerramento), o resumo delas e os bans "só desta banca". A auditoria fica (registro `historico_apagado`). Bancas abertas não são tocadas: encerre antes.
 
+## D-090 · Pix único por banca e fila andando para o espectador
+
+**Status:** Implementada (29/10/2026, pedido do streamer).
+- **Pix repetido:** a mesma chave Pix não entra duas vezes na mesma banca, mesmo com CPF diferente. Mesma regra e mesma mensagem genérica do CPF repetido (não diz qual dado repetiu); auditoria `pedido_bloqueado` com motivo `pix_repetido`. A linha da banca já é travada na criação do pedido, então dois envios simultâneos não passam juntos. Em outra banca, o mesmo Pix entra normalmente.
+- **Fila andando:** a posição já descia ao vivo (broadcast `posicao` quando um pedido da frente sai, D-043/Etapa 4); agora há um teste E2E disso. Como reserva, a página do pedido também consulta o servidor a cada 20 s mesmo com o tempo real ligado (antes 60 s), para a posição nunca ficar parada se um aviso ao vivo se perder.
+
 ---
 
 ## Registro de mudanças
@@ -646,3 +652,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 29/10/2026 | Kit de produção: VPS + Cloudflare Tunnel (D-087) |
 | 29/10/2026 | Moderadores criam e gerenciam bancas (D-088) |
 | 29/10/2026 | Foto por banca, sem ID, Enter no chat, número por banca, apagar histórico (D-089) |
+| 29/10/2026 | Pix único por banca; fila andando com reserva de 20 s (D-090) |

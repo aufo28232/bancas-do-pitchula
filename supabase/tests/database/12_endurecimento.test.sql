@@ -60,9 +60,12 @@ reset role;
 set local role service_role;
 do $$ begin
   perform pg_temp.pedido('00000000-0000-0000-0000-0000000000b1', 'sinaisaa-0001', '1', 'mesmo-pix', 'id-1');
-  perform pg_temp.pedido('00000000-0000-0000-0000-0000000000b2', 'sinaisaa-0001', '2', 'mesmo-pix', 'id-1');
+  perform pg_temp.pedido('00000000-0000-0000-0000-0000000000b2', 'sinaisaa-0001', '2', 'pix-do-b2', 'id-1');
   perform pg_temp.pedido('00000000-0000-0000-0000-0000000000b3', 'sinaisaa-0001', '3', 'outro-pix', 'id-3'); end $$;
 reset role;
+-- Pix repetido na mesma banca não entra mais (D-090); simula um pedido antigo com o mesmo Pix.
+update app.orders set pix_hmac = (select pix_hmac from app.orders where id = '00000000-0000-0000-0000-0000000000b1')
+ where id = '00000000-0000-0000-0000-0000000000b2';
 insert into app.order_attachments (order_id, storage_path, bytes, width, height, sha256) values
   ('00000000-0000-0000-0000-0000000000b1', 'comprovantes/' || gen_random_uuid() || '/' || gen_random_uuid() || '/' || gen_random_uuid() || '.webp', 10, 1, 1, pg_temp.h('print')),
   ('00000000-0000-0000-0000-0000000000b3', 'comprovantes/' || gen_random_uuid() || '/' || gen_random_uuid() || '/' || gen_random_uuid() || '.webp', 10, 1, 1, pg_temp.h('print'));

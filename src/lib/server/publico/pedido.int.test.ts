@@ -141,6 +141,13 @@ describe("pedido do espectador", () => {
     expect(r.dados.erro).toBe(MSG_BLOQUEADO);
   });
 
+  it("mesma chave Pix com outro CPF, na mesma banca: recusado com a MESMA mensagem (D-090)", async () => {
+    await esperar(1100);
+    const r = await new Navegador().post(postCriarPedido, pedido(banca.codigo, gerarCpf(), { pixChave: `maria.${cpf}@exemplo.com` }));
+    expect(r.status).toBe(409);
+    expect(r.dados.erro).toBe(MSG_BLOQUEADO);
+  });
+
   it("mesmo IP com outro CPF (regra ligada): recusado com a MESMA mensagem", async () => {
     await esperar(1100);
     const r = await nav.post(postCriarPedido, pedido(banca.codigo));
