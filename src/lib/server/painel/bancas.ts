@@ -21,6 +21,15 @@ export async function limitePainel(userId: string): Promise<void> {
 }
 
 const zNomeBanca = z.string().trim().min(1).max(80);
+/** Casa de apostas da banca (D-086): aparece em "ID na …" e "Ainda não tem conta na …?". */
+const zCasa = z.string().trim().min(1).max(40);
+/** Link de afiliado: só https, sem espaço, até 500 caracteres (o banco confere de novo). */
+const zLinkAfiliado = z
+  .string()
+  .trim()
+  .max(500)
+  .regex(/^https:\/\/[^\s<>"]+$/)
+  .pipe(z.url({ protocol: /^https$/ }));
 const zCents = z.number().int().positive();
 const zVagas = z.number().int().min(1).max(10_000);
 
@@ -40,10 +49,13 @@ const corpoCriar = z.object({
   vagas: zVagas,
   ipLimit: z.boolean(),
   idem: zId,
+  // Sem casa/link (chamadas antigas): a página usa PLATFORM_NAME/PLATFORM_SIGNUP_URL.
+  casa: zCasa.optional(),
+  linkAfiliado: zLinkAfiliado.optional(),
 });
 
 export const postCriarBanca = mutacao("painel/bancas/criar", async (ctx) => {
-  const d = await lerCorpo(ctx.req, corpoCriar, 1024);
+  const d = await lerCorpo(ctx.req, corpoCriar, 2048);
   const staff = await exigirStaff(ctx.req, { owner: true });
   await limitePainel(staff.userId);
   validarValores(d.totalCents, d.vagas);
@@ -60,6 +72,8 @@ export const postCriarBanca = mutacao("painel/bancas/criar", async (ctx) => {
           p_slots: d.vagas,
           p_ip_limit: d.ipLimit,
           p_idem: d.idem,
+          p_platform_name: d.casa ?? null,
+          p_signup_url: d.linkAfiliado ?? null,
         },
         { token: staff.token },
       );
@@ -82,10 +96,12 @@ const corpoEditar = z.object({
   totalCents: zCents.optional(),
   vagas: zVagas.optional(),
   ipLimit: z.boolean().optional(),
+  casa: zCasa.optional(),
+  linkAfiliado: zLinkAfiliado.optional(),
 });
 
 export const postEditarBanca = mutacao("painel/bancas/editar", async (ctx) => {
-  const d = await lerCorpo(ctx.req, corpoEditar, 1024);
+  const d = await lerCorpo(ctx.req, corpoEditar, 2048);
   const staff = await exigirStaff(ctx.req, { owner: true });
   await limitePainel(staff.userId);
   validarValores(d.totalCents, d.vagas);
@@ -99,13 +115,15 @@ export const postEditarBanca = mutacao("painel/bancas/editar", async (ctx) => {
         p_total_cents: d.totalCents ?? null,
         p_slots: d.vagas ?? null,
         p_ip_limit: d.ipLimit ?? null,
+        p_platform_name: d.casa ?? null,
+        p_signup_url: d.linkAfiliado ?? null,
       },
       { token: staff.token },
     );
     return json({ versao }, 200, ctx);
   } catch (e) {
     if (e instanceof RpcError && e.code === "55000") {
-      throw new HttpError(409, "Valor e vagas ficam travados depois do primeiro pedido. Para mudar, crie outra banca.", "travado");
+      throw new HttpError(409, "Valor, vagas e casa ficam travados depois do primeiro pedido. Para mudar, crie outra banca.", "travado");
     }
     if (e instanceof RpcError && e.code === "40001") {
       throw new HttpError(409, "Esta banca foi alterada em outra aba. Recarregue a página.", "versao");

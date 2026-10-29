@@ -15,6 +15,8 @@ export type BancaPainel = {
   pendentes: number;
   version: number;
   created_at: string;
+  platform_name: string | null;
+  signup_url: string | null;
 };
 
 export function listarBancas(token: string): Promise<BancaPainel[]> {

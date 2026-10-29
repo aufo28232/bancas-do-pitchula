@@ -144,7 +144,7 @@ Depois do primeiro deploy, rode `pnpm seed:owner` com as variáveis de produçã
 | `SITE_URL` | Seu domínio, com `https://` | Usado no CSRF e nos links |
 | `DEPLOY_MODE`, `TRUSTED_PROXY_HOPS` | Ver os modos abaixo | Decide em qual IP confiar |
 | `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` | Cloudflare Zero Trust → Access → aplicação do `/painel` | Opcional, recomendado (D-079) |
-| `PLATFORM_NAME`, `PLATFORM_SIGNUP_URL` | Texto e link da plataforma | Link vazio = some da página |
+| `PLATFORM_NAME`, `PLATFORM_SIGNUP_URL` | Casa e link padrão, só para bancas antigas | Cada banca nova tem a própria casa e o próprio link de afiliado (D-086) |
 
 Nenhuma chave é `NEXT_PUBLIC_`: trocar um valor exige só reiniciar o processo. **Nunca** versione `.env` com valores reais.
 

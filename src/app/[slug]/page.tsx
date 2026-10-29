@@ -57,7 +57,10 @@ export default async function PaginaBanca({ params }: Props) {
   // Banca encerrada ou inexistente: o link deixou de existir (D-044).
   if (!banca) redirect("/");
 
-  const { PLATFORM_NAME, PLATFORM_SIGNUP_URL } = getServerEnv();
+  // Casa e link da banca (D-086); banca antiga sem casa usa o padrão do ambiente.
+  const env = getServerEnv();
+  const casa = banca.platform_name ?? env.PLATFORM_NAME;
+  const linkCadastro = banca.platform_name ? (banca.signup_url ?? "") : env.PLATFORM_SIGNUP_URL;
   const { TURNSTILE_SITE_KEY } = getSecurityEnv();
   // Chave PÚBLICA (anon): só abre o canal de leitura do estado da banca.
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = getSupabaseEnv();
@@ -106,20 +109,20 @@ export default async function PaginaBanca({ params }: Props) {
 
           {banca.status === "aberta" ? (
             <div className="mt-10">
-              {PLATFORM_SIGNUP_URL ? (
+              {linkCadastro ? (
                 <p className="mb-6 text-sm text-fg-muted">
                   <a
-                    href={PLATFORM_SIGNUP_URL}
+                    href={linkCadastro}
                     target="_blank"
                     rel="noopener noreferrer nofollow sponsored"
                     className="underline decoration-line underline-offset-4 hover:text-fg"
                   >
-                    Ainda não tem conta na {PLATFORM_NAME}? Cadastre-se aqui
+                    Ainda não tem conta na {casa}? Cadastre-se aqui
                     <span className="sr-only"> (abre em nova aba)</span>
                   </a>
                 </p>
               ) : null}
-              <FormPedido codigo={codigo} siteKey={TURNSTILE_SITE_KEY} plataforma={PLATFORM_NAME} />
+              <FormPedido codigo={codigo} siteKey={TURNSTILE_SITE_KEY} plataforma={casa} />
             </div>
           ) : (
             <div role="status" className="mt-10 border-l-2 border-accent pl-4">

@@ -17,6 +17,7 @@ import {
   TURNSTILE_TESTE,
 } from "@/test/integracao";
 import { gerarCpf, mascararCpf } from "@/test/util";
+import { bancaPublica } from "./banca";
 import { COOKIE_PEDIDO } from "./espectador";
 import { MSG_BLOQUEADO, postCriarPedido } from "./pedido";
 
@@ -82,6 +83,23 @@ describe("bancas no painel", () => {
   it("valor acima do teto e valor por pessoa zero são recusados", async () => {
     expect((await dono.nav.post(postCriarBanca, { nome: "X", totalCents: 999_999_999, vagas: 1, ipLimit: true, idem: randomUUID() })).status).toBe(400);
     expect((await dono.nav.post(postCriarBanca, { nome: "X", totalCents: 5, vagas: 10, ipLimit: true, idem: randomUUID() })).status).toBe(400);
+  });
+});
+
+describe("casa e link de afiliado por banca (D-086)", () => {
+  it("guarda casa e link da banca; link que não é https é recusado", async () => {
+    const base = { nome: "Banca Casa", totalCents: 30000, vagas: 3, ipLimit: false };
+    for (const linkAfiliado of ["http://teste.com/x", "javascript:alert(1)", "https://teste.com/a b"]) {
+      const r = await dono.nav.post(postCriarBanca, { ...base, idem: randomUUID(), casa: "Teste", linkAfiliado });
+      expect(r.status).toBe(400);
+    }
+    const ok = await dono.nav.post(postCriarBanca, {
+      ...base, idem: randomUUID(), casa: "Teste", linkAfiliado: "https://teste.com/iujdnsajdas",
+    });
+    expect(ok.status).toBe(201);
+    const codigo = /\/([a-z0-9]{8}-[0-9]{4})-banca$/.exec(String(ok.dados.link))?.[1] ?? "";
+    const pub = await bancaPublica(codigo);
+    expect(pub).toMatchObject({ platform_name: "Teste", signup_url: "https://teste.com/iujdnsajdas" });
   });
 });
 

@@ -591,6 +591,15 @@ Testado na integração (sem token, outra origem, cross-site).
 - **Prazo:** o espectador passa a ter **10 minutos** (antes 5, D-043) para responder depois da mensagem do moderador. Cada nova mensagem do moderador reinicia os 10 min. A trava do moderador continua caindo com 10 min sem atividade.
 - **Tela inicial depois do encerramento:** sem banca aberta, pausada ou esgotada, e com alguma encerrada há menos de **30 min**, a tela inicial mostra "Bancas encerradas · Até a próxima!". Passados os 30 min, volta para "Aguardando banca...". Uma banca que ainda existe tem prioridade sobre o aviso. Função `api.public_home()` (substitui `public_current_banca`, D-084), só para o servidor.
 
+## D-086 · Casa de apostas e link de afiliado por banca
+
+**Status:** Implementada (29/10/2026, pedido do streamer). As bancas vão alternar entre casas diferentes.
+- Ao criar a banca, o streamer informa o **nome da casa** e o **link de afiliado**. A página da banca usa os dois: "Ainda não tem conta na {casa}? Cadastre-se aqui" (link com `rel="sponsored"`), "ID na {casa}" e "CPF cadastrado na {casa}".
+- O link só aceita `https://`, sem espaço, até 500 caracteres: conferido no navegador, no servidor (Zod) e no banco (CHECK). Nunca vira HTML: é só o `href` de um link.
+- **Edição:** o link pode mudar a qualquer momento; a casa trava depois do primeiro pedido (o ID e o CPF pedidos são daquela casa), como valor e vagas. A auditoria registra a troca da casa e só "link alterado", sem o link.
+- `PLATFORM_NAME` e `PLATFORM_SIGNUP_URL` viram só o padrão das bancas criadas antes desta mudança. A política de privacidade passa a dizer "na casa indicada na banca".
+- **[ADVOGADO]** D-034 continua valendo para cada casa usada: conferir se a casa é autorizada pela SPA/MF e as regras de publicidade de afiliado.
+
 ---
 
 ## Registro de mudanças
@@ -610,3 +619,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Exclusão a pedido pela equipe (D-083) |
 | 28/10/2026 | Tela inicial abre a banca atual; vagas restantes ocultas (D-084) |
 | 29/10/2026 | Prazo de resposta de 10 min; tela "Bancas encerradas" por 30 min (D-085) |
+| 29/10/2026 | Casa e link de afiliado por banca (D-086) |

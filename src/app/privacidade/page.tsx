@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
-import { getServerEnv } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Política de privacidade",
@@ -14,7 +13,6 @@ export const metadata: Metadata = {
  * (DECISIONS D-035) e precisam ser validadas por um advogado antes da produção.
  */
 export default function Privacidade() {
-  const { PLATFORM_NAME } = getServerEnv();
   return (
     <main className="relative z-[1] mx-auto w-full max-w-2xl px-4 py-12 sm:py-16">
       <p className="font-display text-sm font-extrabold uppercase tracking-[0.35em] text-fg-muted">
@@ -33,8 +31,8 @@ export default function Privacidade() {
             {[
               ["Nome completo", "Conferir se bate com o titular da chave Pix na hora do pagamento."],
               ["Chave Pix", "Fazer o pagamento."],
-              [`ID na ${PLATFORM_NAME}`, "Conferir o comprovante de depósito e impedir pedidos duplicados."],
-              [`CPF cadastrado na ${PLATFORM_NAME}`, "Conferir o comprovante de depósito e impedir pedidos duplicados."],
+              ["ID na casa indicada na banca", "Conferir o comprovante de depósito e impedir pedidos duplicados."],
+              ["CPF cadastrado na casa indicada na banca", "Conferir o comprovante de depósito e impedir pedidos duplicados."],
               ["Comprovante de depósito (imagem)", "Conferir que você cumpriu a condição da banca."],
               ["Mensagens do chat do pedido", "Atender o seu pedido."],
               ["Endereço IP", "Segurança, prevenção a fraude e limite de pedidos."],

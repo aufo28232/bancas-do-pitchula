@@ -25,6 +25,8 @@ export default async function EditarBanca({ params }: { params: Promise<{ id: st
           ip_limit: banca.ip_limit,
           order_count: banca.order_count,
           version: banca.version,
+          platform_name: banca.platform_name,
+          signup_url: banca.signup_url,
         }}
       />
     </section>

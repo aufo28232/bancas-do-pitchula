@@ -32,8 +32,10 @@ test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genéric
   // Sem rolagem horizontal (celular e desktop).
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
-  // Link de cadastro na plataforma, com os atributos exigidos.
-  const cadastro = page.getByRole("link", { name: /Cadastre-se aqui/ });
+  // Link de cadastro da casa DESTA banca (D-086), com os atributos exigidos.
+  const cadastro = page.getByRole("link", { name: /Ainda não tem conta na Casa Teste\? Cadastre-se aqui/ });
+  await expect(cadastro).toHaveAttribute("href", "https://casa-teste.example/afiliado-e2e");
+  await expect(page.getByLabel("ID na Casa Teste")).toBeVisible();
   await expect(cadastro).toHaveAttribute("target", "_blank");
   await expect(cadastro).toHaveAttribute("rel", "noopener noreferrer nofollow sponsored");
 

@@ -167,6 +167,8 @@ test("comprovante no chat e encerramento: tudo é apagado e todos voltam para o 
   await page.getByLabel("Nome da banca").fill("Banca Relampago");
   await page.getByLabel("Valor total (R$)").fill("500");
   await page.getByLabel("Quantidade de vagas").fill("5");
+  await page.getByLabel("Nome da casa").fill("Casa Teste");
+  await page.getByLabel("Link de afiliado").fill("https://casa-teste.example/afiliado-e2e");
   await page.getByLabel(/Limitar a 1 pedido por IP/).uncheck();
   await page.getByRole("button", { name: "Criar banca" }).click();
   await expect(page.getByText("Banca criada")).toBeVisible();

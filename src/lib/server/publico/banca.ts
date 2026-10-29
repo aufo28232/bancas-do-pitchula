@@ -7,6 +7,9 @@ export type BancaPublica = {
   slots: number;
   restantes: number;
   status: "aberta" | "fechada" | "esgotada";
+  /** Casa e link de afiliado da banca (D-086). Null = banca antiga: usa o padrão do ambiente. */
+  platform_name: string | null;
+  signup_url: string | null;
 };
 
 /** Dados públicos da banca (só número de vagas, valor e estado). Encerrada = não existe. */

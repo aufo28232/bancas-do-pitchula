@@ -15,7 +15,19 @@ export type BancaEditavel = {
   ip_limit: boolean;
   order_count: number;
   version: number;
+  platform_name: string | null;
+  signup_url: string | null;
 };
+
+/** Mesmo critério do servidor e do banco: só https, sem espaço (D-086). */
+function linkValido(link: string): boolean {
+  if (!/^https:\/\/[^\s<>"]+$/.test(link) || link.length > 500) return false;
+  try {
+    return new URL(link).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 function centsParaTexto(c: number): string {
   return formatarReais(c).replace("R$ ", "");
@@ -29,6 +41,8 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
   const [valor, setValor] = useState(banca ? centsParaTexto(banca.total_cents) : "");
   const [vagas, setVagas] = useState(banca ? String(banca.slots) : "");
   const [ipLimit, setIpLimit] = useState(banca?.ip_limit ?? true);
+  const [casa, setCasa] = useState(banca?.platform_name ?? "");
+  const [link, setLink] = useState(banca?.signup_url ?? "");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [criada, setCriada] = useState<{ link: string } | null>(null);
@@ -49,12 +63,14 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
     if (totalCents === null || totalCents <= 0) return setErro("Valor total inválido. Ex.: 3.000 ou 3.000,50");
     if (!Number.isInteger(nVagas) || nVagas < 1 || nVagas > 10_000) return setErro("Vagas: de 1 a 10.000.");
     if (previa && previa.porPessoa < 1) return setErro("O valor por pessoa ficaria abaixo de R$ 0,01.");
+    if (!casa.trim()) return setErro("Informe o nome da casa.");
+    if (!linkValido(link.trim())) return setErro("Link de afiliado inválido. Use o link completo, começando com https://");
 
     setEnviando(true);
     setErro("");
     if (!banca) {
       const r = await enviar<{ link: string }>("/api/painel/bancas/criar", {
-        nome, totalCents, vagas: nVagas, ipLimit, idem,
+        nome, totalCents, vagas: nVagas, ipLimit, idem, casa: casa.trim(), linkAfiliado: link.trim(),
       });
       setEnviando(false);
       if (r.ok) {
@@ -68,7 +84,8 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
       versao: banca.version,
       nome,
       ipLimit,
-      ...(travado ? {} : { totalCents, vagas: nVagas }),
+      linkAfiliado: link.trim(),
+      ...(travado ? {} : { totalCents, vagas: nVagas, casa: casa.trim() }),
     });
     setEnviando(false);
     if (r.ok) {
@@ -127,6 +144,34 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
         disabled={travado}
         required
       />
+
+      <Campo
+        id="casa"
+        name="casa"
+        rotulo="Nome da casa"
+        placeholder="Ex.: Teste"
+        value={casa}
+        onChange={(e) => setCasa(e.target.value)}
+        maxLength={40}
+        disabled={travado}
+        required
+      />
+      <Campo
+        id="link-afiliado"
+        name="linkAfiliado"
+        rotulo="Link de afiliado"
+        inputMode="url"
+        placeholder="https://"
+        value={link}
+        onChange={(e) => setLink(e.target.value)}
+        maxLength={500}
+        required
+      />
+      {casa.trim() ? (
+        <p className="-mt-3 text-sm text-fg-muted">
+          Na página: &quot;Ainda não tem conta na {casa.trim()}? Cadastre-se aqui&quot;
+        </p>
+      ) : null}
 
       <div aria-live="polite" className="border border-line p-4 font-mono text-sm">
         {previa && totalCents !== null ? (
