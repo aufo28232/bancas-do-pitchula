@@ -1,0 +1,88 @@
+$ next build && node scripts/standalone.mjs
+▲ Next.js 16.4.3 (Turbopack)
+✓ Running next.config.ts took 20ms
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.8s
+  Running TypeScript ...
+  Finished TypeScript in 4.0s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/61) ...
+  Generating static pages using 3 workers (15/61) 
+  Generating static pages using 3 workers (30/61) 
+  Generating static pages using 3 workers (45/61) 
+✓ Generating static pages using 3 workers (61/61) in 144ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /[slug]
+├ ƒ /api/bancas/pedido
+├ ƒ /api/interno/limpeza
+├ ƒ /api/painel/alertas/ciente
+├ ƒ /api/painel/auth/entrar
+├ ƒ /api/painel/auth/mfa/inscrever
+├ ƒ /api/painel/auth/mfa/verificar
+├ ƒ /api/painel/auth/sair
+├ ƒ /api/painel/bancas/apagar-historico
+├ ƒ /api/painel/bancas/criar
+├ ƒ /api/painel/bancas/editar
+├ ƒ /api/painel/bancas/encerrar
+├ ƒ /api/painel/bancas/status
+├ ƒ /api/painel/banidos/desbanir
+├ ƒ /api/painel/convites/aceitar
+├ ƒ /api/painel/convites/criar
+├ ƒ /api/painel/convites/revogar
+├ ƒ /api/painel/equipe/remover
+├ ƒ /api/painel/equipe/resetar-mfa
+├ ƒ /api/painel/fila
+├ ƒ /api/painel/modo-live
+├ ƒ /api/painel/pedidos/apagar-dados
+├ ƒ /api/painel/pedidos/assumir
+├ ƒ /api/painel/pedidos/banir
+├ ƒ /api/painel/pedidos/comprovante
+├ ƒ /api/painel/pedidos/copiar-pix
+├ ƒ /api/painel/pedidos/detalhe
+├ ƒ /api/painel/pedidos/forcar
+├ ƒ /api/painel/pedidos/liberar
+├ ƒ /api/painel/pedidos/mensagem
+├ ƒ /api/painel/pedidos/pagar
+├ ƒ /api/painel/pedidos/recusar
+├ ƒ /api/painel/pedidos/revelar
+├ ƒ /api/painel/realtime
+├ ƒ /api/painel/respostas
+├ ƒ /api/painel/respostas/remover
+├ ƒ /api/painel/respostas/salvar
+├ ƒ /api/painel/sessoes/revogar
+├ ƒ /api/pedido/comprovante
+├ ƒ /api/pedido/comprovante/ver
+├ ƒ /api/pedido/estado
+├ ƒ /api/pedido/mensagem
+├ ƒ /api/pedido/realtime
+├ ○ /apple-icon.png
+├ ○ /icon.png
+├ ƒ /painel
+├ ƒ /painel/auditoria
+├ ƒ /painel/bancas/[id]
+├ ƒ /painel/bancas/[id]/atendimento
+├ ƒ /painel/bancas/nova
+├ ƒ /painel/banidos
+├ ƒ /painel/convite
+├ ƒ /painel/diagnostico
+├ ƒ /painel/entrar
+├ ƒ /painel/equipe
+├ ƒ /painel/mfa
+├ ƒ /painel/respostas
+├ ƒ /painel/sessoes
+├ ƒ /pedido
+└ ƒ /privacidade
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+standalone pronto: .next/standalone (public e .next/static copiados)

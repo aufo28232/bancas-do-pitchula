@@ -1,0 +1,8 @@
+
+added 2 packages in 1s
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   pnpm@12.15.0 (preinstall: node install.js; postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install -g --allow-scripts=pnpm` to allow these scripts once, or `npm config set allow-scripts=pnpm --location=user` to allow them for all global installs.
+v26.13.0
+12.15.0
