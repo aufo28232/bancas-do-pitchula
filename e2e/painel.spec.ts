@@ -87,10 +87,10 @@ test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pag
   // Espectador vê que foi assumido, ao vivo.
   await expect(espectador.getByText(/assumiu seu pedido/)).toBeVisible();
 
-  // Resposta rápida + enviar: começa o prazo de 5 min dos dois lados.
+  // Resposta rápida + enviar: começa o prazo de 10 min dos dois lados (D-085).
   await page.getByRole("group", { name: "Respostas rápidas" }).getByRole("button", { name: "Comprovante ilegível" }).click();
   await page.getByRole("button", { name: "Enviar", exact: true }).click();
-  await expect(page.locator("[data-prazo-painel]")).toContainText(/^[45]:\d\d/);
+  await expect(page.locator("[data-prazo-painel]")).toContainText(/^(10|9):\d\d/);
   await expect(espectador.getByText(/Não deu pra ler o comprovante/)).toBeVisible();
   await expect(espectador.locator("[data-prazo]")).toBeVisible();
 
