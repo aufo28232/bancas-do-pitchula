@@ -101,9 +101,7 @@ test("dá para preencher e enviar só com o teclado", async ({ page, isMobile })
   await page.keyboard.press("Tab");
   await expect(page.getByLabel("Chave Pix (E-mail)")).toBeFocused();
   await page.keyboard.type(`teclado.${cpf}@exemplo.com`);
-  await page.keyboard.press("Tab");
-  await page.keyboard.type(`tec${cpf.slice(0, 5)}`);
-  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab"); // sem campo de ID (D-089): vai direto para o CPF
   await expect(page.getByLabel(/^CPF cadastrado na /)).toBeFocused();
   await page.keyboard.type(cpf);
   await page.keyboard.press("Tab");
