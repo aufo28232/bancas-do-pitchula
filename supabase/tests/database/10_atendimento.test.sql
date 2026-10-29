@@ -122,12 +122,12 @@ select throws_ok($$ select api.owner_force_claim('00000000-0000-0000-0000-000000
   'moderador NÃO força assumir');
 reset role;
 
--- 4. Prazo de 5 min iniciado pela mensagem de quem tem a trava (D-043) ---------------------
+-- 4. Prazo de 10 min (D-085, era 5 em D-043) iniciado pela mensagem de quem tem a trava (D-043) ---------------------
 do $$ begin perform pg_temp.mod1(); end $$;
 select ok(api.staff_send_message('00000000-0000-0000-0000-0000000000b1', 'Manda o comprovante') is not null, 'Mod Um manda mensagem');
 reset role;
-select ok((select reply_deadline_at between now() + interval '4 minutes 59 seconds' and now() + interval '5 minutes 1 second'
-             from app.orders where id = '00000000-0000-0000-0000-0000000000b1'), 'mensagem do moderador inicia o prazo de 5 min');
+select ok((select reply_deadline_at between now() + interval '9 minutes 59 seconds' and now() + interval '10 minutes 1 second'
+             from app.orders where id = '00000000-0000-0000-0000-0000000000b1'), 'mensagem do moderador inicia o prazo de 10 min');
 do $$ begin perform pg_temp.mod1(); end $$;
 select throws_ok($$ select api.staff_send_message('00000000-0000-0000-0000-0000000000b1', '   ') $$, 'BP005', null,
   'mensagem vazia é recusada');

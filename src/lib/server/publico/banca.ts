@@ -15,15 +15,21 @@ export const bancaPublica = cache(async (codigo: string): Promise<BancaPublica |
   return linhas[0] ?? null;
 });
 
+export type EstadoInicio = { codigo: string | null; encerrada: boolean };
+
 /**
- * Código da banca criada por último que ainda existe (D-084): a tela inicial
- * abre direto nela. Supabase fora do ar = null (mostra "Aguardando banca...").
+ * Tela inicial (D-084, D-085): código da banca criada por último que ainda existe
+ * e, sem banca, se alguma foi encerrada há menos de 30 min ("Bancas encerradas").
+ * Supabase fora do ar = "Aguardando banca...".
  */
-export async function bancaAtual(): Promise<string | null> {
+export async function estadoInicio(): Promise<EstadoInicio> {
   try {
-    const codigo = await rpc<unknown>("public_current_banca", {}, "servico");
-    return typeof codigo === "string" ? codigo : null;
+    const r = await rpc<{ codigo?: unknown; encerrada?: unknown } | null>("public_home", {}, "servico");
+    return {
+      codigo: typeof r?.codigo === "string" ? r.codigo : null,
+      encerrada: r?.encerrada === true,
+    };
   } catch {
-    return null;
+    return { codigo: null, encerrada: false };
   }
 }

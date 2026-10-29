@@ -151,7 +151,7 @@ export function PaginaPedido() {
               ),
             prazo: (p) => {
               const expira = typeof p.expira_em === "string" ? p.expira_em : null;
-              // Começou a contar o prazo de 5 min: um bipe curto (D-046).
+              // Começou a contar o prazo de 10 min (D-085): um bipe curto (D-046).
               if (expira) bipe(1);
               setEstado((e) => (e ? { ...e, pedido: { ...e.pedido, prazo: expira } } : e));
             },

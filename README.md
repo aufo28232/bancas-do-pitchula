@@ -49,13 +49,13 @@ A Etapa 4 entrega:
 
 - **Página do pedido** `/pedido`: ao enviar o pedido, o espectador vai **direto para o chat** (sessão em cookie httpOnly, sem link para copiar; voltar ao site leva de volta ao pedido, D-082). Mostra posição na fila, quem está atendendo, os próprios dados **mascarados** e o chat com a equipe.
 - **Tempo real** (Supabase Realtime, canais privados, só leitura): posição, mensagens, "pedido assumido" com **bipe**, vibração e título piscando, contagem regressiva do **prazo de 5 min** e volta para "Aguardando banca..." quando a banca é encerrada. Sem conexão, a página continua atualizando por polling.
-- **Prazo de resposta:** depois que o moderador manda mensagem, o espectador tem 5 min; senão o pedido é encerrado (job a cada 15 s + checagem a cada acesso).
+- **Prazo de resposta:** depois que o moderador manda mensagem, o espectador tem 10 min (D-085); senão o pedido é encerrado (job a cada 15 s + checagem a cada acesso).
 - **Vagas ao vivo** na página da banca, com animação.
 
 A Etapa 5 entrega:
 
 - **Atendimento** (`/painel/bancas/{id}/atendimento`): fila ao vivo (pendentes por padrão, filtro "sem comprovante", aba de finalizados), resumo da banca, chat com respostas rápidas e bipe para pedido novo e resposta do espectador.
-- **Travas:** assumir, liberar e (só o streamer) forçar assumir. A trava cai com 10 min sem atividade. A mensagem do moderador inicia o prazo de 5 min do espectador.
+- **Travas:** assumir, liberar e (só o streamer) forçar assumir. A trava cai com 10 min sem atividade. A mensagem do moderador inicia o prazo de 10 min do espectador.
 - **Pagar** com confirmação em 2 passos. A última vaga esgota a banca e recusa na hora os pendentes que sobraram. Recusar com motivo e nota. Clique duplo não paga duas vezes.
 - **Banir** a partir do pedido (CPF, Pix, ID ou IP por até 7 dias, global ou só na banca), sem ninguém digitar o dado. Lista de banidos sem o valor; desbanir segue D-014.
 - **Modo live** ligado em todo login: os dados saem mascarados do servidor (inclusive CPF/Pix digitados no chat). Revelar mostra por 5 s e fica na auditoria; copiar Pix vai direto para a área de transferência.
@@ -119,7 +119,7 @@ Estes valores espelham o `supabase/config.toml` e precisam ser aplicados à mão
 | Authentication → Password | Mínimo de **12** caracteres | O servidor também confere e checa senha vazada |
 | Data API → Exposed schemas | **somente `api`** | Tabelas ficam fora da API (D-002) |
 | Realtime → Settings | **"Allow public access": desligado** | Só canais privados, autorizados pela RLS de `realtime.messages` (D-008) |
-| Database → Extensions | **pg_cron** e **pg_net** ligados (a migration cria os jobs) | Prazo de 5 min (D-043), encerramento automático, retenção e chamada da limpeza |
+| Database → Extensions | **pg_cron** e **pg_net** ligados (a migration cria os jobs) | Prazo de 10 min (D-043, D-085), encerramento automático, retenção e chamada da limpeza |
 | Project Settings → Vault | Segredos `limpeza_url` (`https://SEU-SITE/api/interno/limpeza`) e `limpeza_segredo` (mesmo valor de `LIMPEZA_SECRET`) | O pg_cron chama a limpeza a cada hora (D-075) |
 | Storage | Bucket **`comprovantes`** privado, 5 MB, só `image/webp` (a migration cria; confira) | Comprovantes (D-077) |
 | Database → Migrations | `supabase link` + `supabase db push` | Aplica as migrations deste repositório |

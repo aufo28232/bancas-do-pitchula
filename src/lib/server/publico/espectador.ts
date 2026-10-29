@@ -190,7 +190,7 @@ export const postRealtimePedido = mutacao("pedido/realtime", async (ctx) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/pedido/mensagem: resposta do espectador (zera o prazo de 5 min)
+// POST /api/pedido/mensagem: resposta do espectador (zera o prazo de 10 min)
 // ---------------------------------------------------------------------------
 const corpoMensagem = z.object({
   texto: z

@@ -27,7 +27,7 @@ const MOTIVOS_RECUSA = [
 const MOTIVO_TEXTO: Record<string, string> = {
   vagas_esgotadas: "vagas esgotadas",
   banido: "banido",
-  sem_resposta: "sem resposta em 5 min",
+  sem_resposta: "sem resposta em 10 min",
   comprovante_ilegivel: "comprovante ilegível",
   deposito_nao_encontrado: "depósito não encontrado",
   dados_divergentes: "dados não conferem",
@@ -450,7 +450,7 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
               maxLength={1000}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
-              placeholder="Mensagem para o espectador (começa o prazo de 5 min)"
+              placeholder="Mensagem para o espectador (começa o prazo de 10 min)"
               className="block w-full resize-none border-0 border-b border-line bg-transparent py-2 outline-none focus:border-accent"
             />
             <div className="flex items-center justify-between">

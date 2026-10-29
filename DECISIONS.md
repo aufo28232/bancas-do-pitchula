@@ -337,7 +337,7 @@ Pontos para o advogado:
 
 **Recomendação:** o banco aceita até R$ 1.000.000 (`check`) como proteção contra erro de digitação absurdo. A aplicação limita a **R$ 100.000** por padrão, configurável. Valores acima pedem confirmação extra.
 
-## D-043 · Prazo de 5 min para o espectador responder
+## D-043 · Prazo de 5 min para o espectador responder (10 min desde D-085)
 
 **Status:** Aprovada (requisito novo do streamer, 27/10/2026)
 
@@ -585,6 +585,12 @@ Testado na integração (sem token, outra origem, cross-site).
 - **Vagas restantes:** a contagem saiu da página pública e da descrição do link. A página continua acompanhando o estado ao vivo (pausada, esgotada, encerrada). O canal `vagas:{código}` ainda transmite a contagem, então quem souber inspecionar a página consegue vê-la: é ocultação visual, não sigilo.
 - **Painel:** saíram textos de explicação que a equipe já conhece (banidos, banir, convite, cadastro do autenticador, encerrar banca, limite por IP). As confirmações (digitar o nome para encerrar etc.) continuam.
 
+## D-085 · Prazo de resposta de 10 min e tela "Bancas encerradas"
+
+**Status:** Implementada (29/10/2026, pedido do streamer).
+- **Prazo:** o espectador passa a ter **10 minutos** (antes 5, D-043) para responder depois da mensagem do moderador. Cada nova mensagem do moderador reinicia os 10 min. A trava do moderador continua caindo com 10 min sem atividade.
+- **Tela inicial depois do encerramento:** sem banca aberta, pausada ou esgotada, e com alguma encerrada há menos de **30 min**, a tela inicial mostra "Bancas encerradas · Até a próxima!". Passados os 30 min, volta para "Aguardando banca...". Uma banca que ainda existe tem prioridade sobre o aviso. Função `api.public_home()` (substitui `public_current_banca`, D-084), só para o servidor.
+
 ---
 
 ## Registro de mudanças
@@ -603,3 +609,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Pedido direto para o chat (D-082) e fila sem teto (D-032 revista) |
 | 28/10/2026 | Exclusão a pedido pela equipe (D-083) |
 | 28/10/2026 | Tela inicial abre a banca atual; vagas restantes ocultas (D-084) |
+| 29/10/2026 | Prazo de resposta de 10 min; tela "Bancas encerradas" por 30 min (D-085) |
