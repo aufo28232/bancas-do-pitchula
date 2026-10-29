@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEv
 import { Botao } from "@/components/ui/botao";
 import { alertarAssumido, ativarSom, bipe } from "@/lib/client/alerta";
 import { enviar, enviarArquivo } from "@/lib/client/api";
+import { enterEnvia } from "@/lib/client/enter-envia";
 import { esquecerPedido } from "@/lib/client/pedido-salvo";
 import { VerComprovante } from "@/components/ui/ver-comprovante";
 import { TempoReal } from "@/lib/client/tempo-real";
@@ -369,8 +370,12 @@ export function PaginaPedido() {
           <dd className="font-mono">{estado.dados.cpf}</dd>
           <dt className="text-fg-muted">Pix ({ROTULO_TIPO_PIX[estado.dados.pixTipo]})</dt>
           <dd className="font-mono break-all">{estado.dados.pix}</dd>
-          <dt className="text-fg-muted">ID na plataforma</dt>
-          <dd className="font-mono">{estado.dados.plataformaId}</dd>
+          {estado.dados.plataformaId !== null ? (
+            <>
+              <dt className="text-fg-muted">ID na plataforma</dt>
+              <dd className="font-mono">{estado.dados.plataformaId}</dd>
+            </>
+          ) : null}
         </dl>
         <p className="mt-2 text-xs text-fg-muted">Seus dados aparecem incompletos de propósito.</p>
         <p className="mt-6 text-xs text-fg-muted" aria-live="polite">
@@ -420,6 +425,7 @@ export function PaginaPedido() {
               maxLength={1000}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
+              onKeyDown={enterEnvia}
               aria-describedby={erroMsg ? "mensagem-erro" : undefined}
               className="block w-full resize-none border-0 border-b border-line bg-transparent px-0 py-2 text-base outline-none focus:border-accent"
               placeholder="Escreva para a equipe"

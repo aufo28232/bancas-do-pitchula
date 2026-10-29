@@ -27,7 +27,7 @@ beforeAll(async () => {
     const cpf = gerarCpf();
     cpfs.push(cpf);
     const p = await new Navegador().post(postCriarPedido, {
-      codigo, nome: "Rita Rotacao Chave", pixTipo: "cpf", pixChave: mascararCpf(cpf), plataformaId: `rr${i}`,
+      codigo, nome: "Rita Rotacao Chave", pixTipo: "cpf", pixChave: mascararCpf(cpf), 
       cpf: mascararCpf(cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
     });
     expect(p.status).toBe(201);

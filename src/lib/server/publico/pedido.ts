@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { getSecurityEnv } from "@/lib/env";
-import { normalizarPix, normalizarPlataformaId, pedidoSchema, soDigitos } from "@/lib/validacao/pedido";
+import { normalizarPix, pedidoSchema, soDigitos } from "@/lib/validacao/pedido";
 import { cifrar, getChavesDeCifra, hmacsDeDado } from "../cripto";
 import { HttpError, MSG } from "../errors";
 import { json, lerCorpo, mutacao } from "../http";
@@ -59,13 +59,11 @@ export const postCriarPedido = mutacao("bancas/pedido", async (ctx) => {
   const pix = normalizarPix(d.pixTipo, d.pixChave);
   if (!pix) throw new HttpError(400, MSG.dadosInvalidos, "pix");
   const cpf = soDigitos(d.cpf);
-  const plataformaId = normalizarPlataformaId(d.plataformaId);
 
   const cifras = getChavesDeCifra();
   const id = randomUUID();
   const hCpf = hmacsDeDado(anel, "cpf", cpf);
   const hPix = hmacsDeDado(anel, "pix", `${d.pixTipo}:${pix}`);
-  const hPid = hmacsDeDado(anel, "pid", plataformaId);
   const hIp = hmacsDeDado(anel, "ip", ip);
 
   // 4. Token de acesso ao pedido: 256 bits; o banco guarda só o SHA-256.
@@ -93,15 +91,16 @@ export const postCriarPedido = mutacao("bancas/pedido", async (ctx) => {
         p_cpf_enc: cifrar(cifras, "orders.cpf_enc", id, cpf),
         p_pix_type: d.pixTipo,
         p_pix_key_enc: cifrar(cifras, "orders.pix_key_enc", id, pix),
-        p_platform_id_enc: cifrar(cifras, "orders.platform_id_enc", id, d.plataformaId),
+        // O ID na casa deixou de ser pedido (D-089).
+        p_platform_id_enc: null,
         p_cpf_hmac: toPgBytea(hCpf.ativo),
         p_pix_hmac: toPgBytea(hPix.ativo),
-        p_platform_id_hmac: toPgBytea(hPid.ativo),
+        p_platform_id_hmac: null,
         p_ip_hmac: toPgBytea(hIp.ativo),
         p_hmac_version: anel.active,
         p_cpf_hmacs: hCpf.todos.map(toPgBytea),
         p_pix_hmacs: hPix.todos.map(toPgBytea),
-        p_platform_id_hmacs: hPid.todos.map(toPgBytea),
+        p_platform_id_hmacs: [],
         p_ip_hmacs: hIp.todos.map(toPgBytea),
         p_access_token_hash: toPgBytea(hashToken),
       },

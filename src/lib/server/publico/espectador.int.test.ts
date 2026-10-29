@@ -31,7 +31,6 @@ async function novoPedido(): Promise<{ cpf: string; email: string; id: string; n
     nome: "Joana Prado Lima",
     pixTipo: "email",
     pixChave: email,
-    plataformaId: `jo${cpf.slice(0, 6)}`,
     cpf: mascararCpf(cpf),
     privacidade: true,
     maioridade: true,
@@ -116,7 +115,7 @@ describe("sessão do pedido", () => {
     const [antes] = await sql<{ n: number }[]>`select count(*)::int as n from auth.users where is_anonymous`;
     const nav = new Navegador();
     const r = await nav.post(postCriarPedido, {
-      codigo: banca.codigo, nome: "Joana Prado Lima", pixTipo: "email", pixChave: `x${p.email}`, plataformaId: "outro1",
+      codigo: banca.codigo, nome: "Joana Prado Lima", pixTipo: "email", pixChave: `x${p.email}`, 
       cpf: mascararCpf(p.cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
     });
     expect(r.status).toBe(409);

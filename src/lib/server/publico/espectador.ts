@@ -93,7 +93,7 @@ type EstadoBruto = {
     prazo: string | null;
     criado_em: string;
     pix_tipo: TipoPix;
-    enc: { nome: string; cpf: string; pix: string; pid: string };
+    enc: { nome: string; cpf: string; pix: string; pid: string | null };
   };
   banca: { id: string; nome: string; codigo: string | null; status: string };
   mensagens: {
@@ -109,7 +109,7 @@ type EstadoBruto = {
 
 export type EstadoPedido = {
   pedido: Omit<EstadoBruto["pedido"], "enc" | "pix_tipo">;
-  dados: { nome: string; cpf: string; pixTipo: TipoPix; pix: string; plataformaId: string };
+  dados: { nome: string; cpf: string; pixTipo: TipoPix; pix: string; plataformaId: string | null };
   banca: EstadoBruto["banca"];
   mensagens: EstadoBruto["mensagens"];
 };
@@ -133,7 +133,7 @@ export function montarEstado(b: EstadoBruto): EstadoPedido {
       cpf: decifrarMascarado(pedido.id, "orders.cpf_enc", enc.cpf, mascararCpf),
       pixTipo: pix_tipo,
       pix: decifrarMascarado(pedido.id, "orders.pix_key_enc", enc.pix, (v) => mascararPix(pix_tipo, v)),
-      plataformaId: decifrarMascarado(pedido.id, "orders.platform_id_enc", enc.pid, mascararPlataformaId),
+      plataformaId: enc.pid ? decifrarMascarado(pedido.id, "orders.platform_id_enc", enc.pid, mascararPlataformaId) : null,
     },
     banca: b.banca,
     mensagens: b.mensagens,

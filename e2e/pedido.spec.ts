@@ -46,7 +46,6 @@ async function fazerPedido(page: Page): Promise<void> {
   await page.getByLabel("Nome completo").fill("Paula Fila Viva");
   await page.getByText("E-mail", { exact: true }).click();
   await page.getByLabel("Chave Pix (E-mail)").fill(`fila.${cpf}@exemplo.com`);
-  await page.getByLabel(/^ID na /).fill(`fila${cpf.slice(0, 6)}`);
   await page.getByLabel(/^CPF cadastrado na /).fill(cpf);
   await page.getByLabel(/política de privacidade/).check();
   await page.getByLabel("Tenho 18 anos ou mais.").check();

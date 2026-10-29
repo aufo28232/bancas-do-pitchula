@@ -614,6 +614,15 @@ Testado na integração (sem token, outra origem, cross-site).
 - Moderadores passam a **criar, editar, pausar e reabrir** bancas (encerrar já podiam, D-044). Equipe, respostas rápidas, auditoria e diagnóstico continuam só do streamer.
 - **Risco (T22):** quem cria a banca escolhe o link de afiliado, então um moderador poderia pôr o próprio link. Mitigação: toda criação ou troca de link/casa feita por moderador gera um alerta para o streamer (`banca_por_moderador`) e fica na auditoria com o papel real (`moderator`). Só convide moderadores de confiança.
 
+## D-089 · Foto por banca, pedido sem ID, Enter no chat, número por banca e apagar histórico
+
+**Status:** Implementada (29/10/2026, pedido do streamer).
+- **Foto da banca:** ao criar ou editar, escolhe-se entre **1win** e **Chillbet** (só essas duas; o banco recusa outra). Banca antiga sem escolha usa a foto padrão.
+- **ID na casa:** sai do formulário do espectador. Revê D-030/§5 (o enunciado pedia o ID). Menos dado pessoal coletado (LGPD, minimização); a conferência passa a ser só por CPF e comprovante. Pedidos antigos continuam com o ID guardado e o painel ainda mostra; "banir por ID" só aparece nesses pedidos.
+- **Chat:** Enter envia e Shift+Enter quebra a linha, no espectador e no painel.
+- **Número do pedido:** cada banca conta do #1 (`orders.numero`, atribuído por trigger com a linha da banca travada: dois pedidos simultâneos nunca pegam o mesmo número). A ordem da fila continua pela sequência global.
+- **Apagar histórico:** botão só do streamer na lista de bancas. Apaga as bancas **encerradas** (pedidos, chat e comprovantes já tinham sido apagados no encerramento), o resumo delas e os bans "só desta banca". A auditoria fica (registro `historico_apagado`). Bancas abertas não são tocadas: encerre antes.
+
 ---
 
 ## Registro de mudanças
@@ -636,3 +645,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 29/10/2026 | Casa e link de afiliado por banca (D-086) |
 | 29/10/2026 | Kit de produção: VPS + Cloudflare Tunnel (D-087) |
 | 29/10/2026 | Moderadores criam e gerenciam bancas (D-088) |
+| 29/10/2026 | Foto por banca, sem ID, Enter no chat, número por banca, apagar histórico (D-089) |

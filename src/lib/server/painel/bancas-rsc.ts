@@ -17,6 +17,7 @@ export type BancaPainel = {
   created_at: string;
   platform_name: string | null;
   signup_url: string | null;
+  foto: "1win" | "chillbet" | null;
 };
 
 export function listarBancas(token: string): Promise<BancaPainel[]> {

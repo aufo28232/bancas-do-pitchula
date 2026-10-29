@@ -54,6 +54,7 @@ test("streamer entra com MFA pela tela e cria uma banca", async ({ page }) => {
   // Casa e link de afiliado da banca (D-086).
   await page.getByLabel("Nome da casa").fill("Casa Teste");
   await page.getByLabel("Link de afiliado").fill("https://casa-teste.example/afiliado-e2e");
+  await page.getByRole("radio", { name: "1win" }).check({ force: true });
   await expect(page.getByText("R$ 30 por pessoa")).toBeVisible();
   await page.getByLabel(/Limitar a 1 pedido por IP/).uncheck(); // todos os testes saem do mesmo IP
   await page.getByRole("button", { name: "Criar banca" }).click();

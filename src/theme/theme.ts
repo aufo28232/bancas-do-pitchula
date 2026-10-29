@@ -31,6 +31,23 @@ export const theme = {
     objectPosition: "52% 18%",
     alt: "Pitchula, de moletom preto, em frente a uma fumaça laranja",
   },
+  /** Fotos que o streamer escolhe ao criar a banca (D-089). Sem escolha: `photo`. */
+  fotosBanca: {
+    "1win": {
+      rotulo: "1win",
+      src: "/banca-1win.jpg",
+      width: 933,
+      height: 1024,
+      alt: "Pitchula, de moletom preto com o logo da 1win, em frente a uma fumaça laranja",
+    },
+    chillbet: {
+      rotulo: "Chillbet",
+      src: "/banca-chillbet.jpg",
+      width: 933,
+      height: 1024,
+      alt: "Pitchula, de moletom preto com o logo da Chillbet, em frente a uma fumaça laranja",
+    },
+  },
   /** Logo oficial ainda não recebido. Enquanto for null, usa-se o nome em texto. */
   logo: null as null | { src: string; width: number; height: number; alt: string },
   radius: {

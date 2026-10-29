@@ -8,7 +8,6 @@ const valido = {
   nome: "  Maria   da Silva ",
   pixTipo: "email",
   pixChave: "Maria@Exemplo.com",
-  plataformaId: "user_123",
   cpf: "529.982.247-25",
   privacidade: true,
   maioridade: true,
@@ -81,8 +80,7 @@ describe("formulário de pedido (mesmo schema no cliente e no servidor)", () => 
     expect(pedidoSchema.safeParse({ ...valido, maioridade: false }).success).toBe(false);
   });
 
-  it("recusa ID com caracteres estranhos e CPF inválido", () => {
-    expect(pedidoSchema.safeParse({ ...valido, plataformaId: "id com espaço" }).success).toBe(false);
+  it("recusa CPF inválido", () => {
     expect(pedidoSchema.safeParse({ ...valido, cpf: "111.111.111-11" }).success).toBe(false);
   });
 });

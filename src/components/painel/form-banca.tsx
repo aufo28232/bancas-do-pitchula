@@ -1,11 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { Botao } from "@/components/ui/botao";
 import { Campo } from "@/components/ui/campo";
 import { enviar } from "@/lib/client/api";
 import { dividir, formatarReais, lerReais } from "@/lib/dinheiro";
+import { theme } from "@/theme/theme";
+
+type Foto = keyof typeof theme.fotosBanca;
+const FOTOS = Object.keys(theme.fotosBanca) as Foto[];
 
 export type BancaEditavel = {
   id: string;
@@ -17,6 +22,7 @@ export type BancaEditavel = {
   version: number;
   platform_name: string | null;
   signup_url: string | null;
+  foto: Foto | null;
 };
 
 /** Mesmo critério do servidor e do banco: só https, sem espaço (D-086). */
@@ -43,6 +49,7 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
   const [ipLimit, setIpLimit] = useState(banca?.ip_limit ?? true);
   const [casa, setCasa] = useState(banca?.platform_name ?? "");
   const [link, setLink] = useState(banca?.signup_url ?? "");
+  const [foto, setFoto] = useState<Foto | null>(banca?.foto ?? null);
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [criada, setCriada] = useState<{ link: string } | null>(null);
@@ -65,12 +72,13 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
     if (previa && previa.porPessoa < 1) return setErro("O valor por pessoa ficaria abaixo de R$ 0,01.");
     if (!casa.trim()) return setErro("Informe o nome da casa.");
     if (!linkValido(link.trim())) return setErro("Link de afiliado inválido. Use o link completo, começando com https://");
+    if (!foto) return setErro("Escolha a foto da banca.");
 
     setEnviando(true);
     setErro("");
     if (!banca) {
       const r = await enviar<{ link: string }>("/api/painel/bancas/criar", {
-        nome, totalCents, vagas: nVagas, ipLimit, idem, casa: casa.trim(), linkAfiliado: link.trim(),
+        nome, totalCents, vagas: nVagas, ipLimit, idem, casa: casa.trim(), linkAfiliado: link.trim(), foto,
       });
       setEnviando(false);
       if (r.ok) {
@@ -85,6 +93,7 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
       nome,
       ipLimit,
       linkAfiliado: link.trim(),
+      foto,
       ...(travado ? {} : { totalCents, vagas: nVagas, casa: casa.trim() }),
     });
     setEnviando(false);
@@ -172,6 +181,33 @@ export function FormBanca({ banca }: { banca?: BancaEditavel }) {
           Na página: &quot;Ainda não tem conta na {casa.trim()}? Cadastre-se aqui&quot;
         </p>
       ) : null}
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm text-fg-muted">Foto da banca</legend>
+        <div className="grid grid-cols-2 gap-3">
+          {FOTOS.map((f) => {
+            const item = theme.fotosBanca[f];
+            const marcada = foto === f;
+            return (
+              <label
+                key={f}
+                className={`flex cursor-pointer flex-col gap-2 border p-2 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${marcada ? "border-accent" : "border-line hover:border-fg-muted"}`}
+              >
+                <input
+                  type="radio"
+                  name="foto"
+                  value={f}
+                  checked={marcada}
+                  onChange={() => setFoto(f)}
+                  className="sr-only"
+                />
+                <Image src={item.src} alt="" width={item.width} height={item.height} sizes="200px" className="aspect-square w-full object-cover object-top" />
+                <span className={`text-center text-sm ${marcada ? "text-accent" : ""}`}>{item.rotulo}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <div aria-live="polite" className="border border-line p-4 font-mono text-sm">
         {previa && totalCents !== null ? (

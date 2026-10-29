@@ -17,7 +17,7 @@ import {
   type TipoPix,
 } from "@/lib/validacao/pedido";
 
-type Erros = Partial<Record<"nome" | "pixChave" | "plataformaId" | "cpf" | "privacidade" | "maioridade" | "turnstile", string>>;
+type Erros = Partial<Record<"nome" | "pixChave" | "cpf" | "privacidade" | "maioridade" | "turnstile", string>>;
 
 const PLACEHOLDER_PIX: Record<TipoPix, string> = {
   cpf: "000.000.000-00",
@@ -26,7 +26,7 @@ const PLACEHOLDER_PIX: Record<TipoPix, string> = {
   aleatoria: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 };
 
-const ORDEM_CAMPOS = ["nome", "pixChave", "plataformaId", "cpf", "privacidade", "maioridade"] as const;
+const ORDEM_CAMPOS = ["nome", "pixChave", "cpf", "privacidade", "maioridade"] as const;
 
 export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; siteKey: string; plataforma: string }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -58,7 +58,6 @@ export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; si
       nome: String(f.get("nome") ?? ""),
       pixTipo: tipoPix,
       pixChave,
-      plataformaId: String(f.get("plataformaId") ?? ""),
       cpf,
       privacidade: f.get("privacidade") === "on",
       maioridade: f.get("maioridade") === "on",
@@ -139,18 +138,6 @@ export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; si
         spellCheck={false}
         required
         erro={erroDe("pixChave")}
-      />
-
-      <Campo
-        id="plataformaId"
-        name="plataformaId"
-        rotulo={`ID na ${plataforma}`}
-        autoComplete="off"
-        autoCapitalize="none"
-        spellCheck={false}
-        maxLength={40}
-        required
-        erro={erroDe("plataformaId")}
       />
 
       <Campo

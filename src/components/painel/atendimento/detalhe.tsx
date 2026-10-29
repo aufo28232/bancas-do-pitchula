@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { VerComprovante } from "@/components/ui/ver-comprovante";
 import { enviar } from "@/lib/client/api";
+import { enterEnvia } from "@/lib/client/enter-envia";
 import { formatarReais } from "@/lib/dinheiro";
 import type { DetalhePedido, RespostaRapida } from "@/lib/server/painel/atendimento";
 import { ROTULO_TIPO_PIX } from "@/lib/validacao/pedido";
@@ -192,7 +193,7 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
             Voltar para a fila
           </button>
           <h2 id="t-pedido" className="font-display text-3xl font-black uppercase leading-none">
-            Pedido #{p.seq}
+            Pedido #{p.numero}
           </h2>
           <p className="mt-1 text-sm text-fg-muted" data-status={p.status}>
             {p.status === "pendente"
@@ -227,7 +228,7 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
             Copiar Pix
           </button>,
         )}
-        {linhaDado("ID na plataforma", "pid", detalhe.dados.plataformaId)}
+        {detalhe.dados.plataformaId !== null ? linhaDado("ID na plataforma", "pid", detalhe.dados.plataformaId) : null}
       </dl>
       {detalhe.sinais.mesmo_pix + detalhe.sinais.mesmo_id + detalhe.sinais.comprovante_repetido > 0 ? (
         <ul role="note" aria-label="Sinais de atenção" className="-mt-2 flex flex-col gap-1 border-l-2 border-accent pl-3 text-sm" data-sinais="">
@@ -381,7 +382,14 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
           </div>
         ) : null}
 
-        {painel === "banir" ? <FormBanir ocupado={ocupado} aoEnviar={aoBanir} aoCancelar={() => setPainel("nenhum")} /> : null}
+        {painel === "banir" ? (
+          <FormBanir
+            ocupado={ocupado}
+            temId={detalhe.dados.plataformaId !== null}
+            aoEnviar={aoBanir}
+            aoCancelar={() => setPainel("nenhum")}
+          />
+        ) : null}
 
         <p aria-live="polite" className="min-h-5 text-sm text-fg-muted">
           {aviso}
@@ -450,6 +458,7 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
               maxLength={1000}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
+              onKeyDown={enterEnvia}
               placeholder="Mensagem para o espectador (começa o prazo de 10 min)"
               className="block w-full resize-none border-0 border-b border-line bg-transparent py-2 outline-none focus:border-accent"
             />
@@ -472,10 +481,13 @@ export function Detalhe({ detalhe, respostas, dono, agora, aoVoltar, aoMudar }: 
 
 function FormBanir({
   ocupado,
+  temId,
   aoEnviar,
   aoCancelar,
 }: {
   ocupado: boolean;
+  /** Pedido antigo, com ID na casa (D-089): só aí dá para banir pelo ID. */
+  temId: boolean;
   aoEnviar: (e: FormEvent<HTMLFormElement>) => Promise<void>;
   aoCancelar: () => void;
 }) {
@@ -485,7 +497,7 @@ function FormBanir({
       <label className="flex flex-col gap-1 text-sm">
         <span className="text-fg-muted">O que banir</span>
         <select name="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} className="border border-line bg-bg px-2 py-2">
-          {TIPOS_BAN.map(([v, r]) => (
+          {TIPOS_BAN.filter(([v]) => temId || v !== "platform_id").map(([v, r]) => (
             <option key={v} value={v}>
               {r}
             </option>

@@ -47,7 +47,7 @@ function semDetalhes(dados: Record<string, unknown>): void {
 const pedido = () => {
   const cpf = gerarCpf();
   return {
-    codigo, nome: "Caio Falha Total", pixTipo: "cpf", pixChave: mascararCpf(cpf), plataformaId: "caio123",
+    codigo, nome: "Caio Falha Total", pixTipo: "cpf", pixChave: mascararCpf(cpf), 
     cpf: mascararCpf(cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
   };
 };

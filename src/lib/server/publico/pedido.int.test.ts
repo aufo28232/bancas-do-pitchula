@@ -49,7 +49,6 @@ function pedido(codigo: string, cpf = gerarCpf(), extra: Record<string, unknown>
     nome: "Maria da Silva",
     pixTipo: "email",
     pixChave: `maria.${cpf}@exemplo.com`,
-    plataformaId: `id${cpf.slice(0, 6)}`,
     cpf: mascararCpf(cpf),
     privacidade: true,
     maioridade: true,

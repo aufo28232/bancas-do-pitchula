@@ -26,6 +26,7 @@ export default async function EditarBanca({ params }: { params: Promise<{ id: st
           version: banca.version,
           platform_name: banca.platform_name,
           signup_url: banca.signup_url,
+          foto: banca.foto,
         }}
       />
     </section>

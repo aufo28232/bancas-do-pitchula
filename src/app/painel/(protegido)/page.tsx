@@ -38,6 +38,19 @@ export default async function InicioPainel() {
         </p>
       ) : null}
 
+      {dono && bancas.some((b) => b.status === "encerrada") ? (
+        <div className="flex flex-wrap items-center gap-3 text-sm text-fg-muted">
+          <span>{bancas.filter((b) => b.status === "encerrada").length} banca(s) encerrada(s) no histórico.</span>
+          <BotaoAcao
+            url="/api/painel/bancas/apagar-historico"
+            corpo={{}}
+            rotulo="Apagar histórico"
+            variante="perigo"
+            confirmar="Apagar da lista todas as bancas encerradas? Não dá para desfazer."
+          />
+        </div>
+      ) : null}
+
       {bancas.length === 0 ? (
         <p className="text-fg-muted">Nenhuma banca ainda.</p>
       ) : (

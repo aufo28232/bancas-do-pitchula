@@ -43,7 +43,6 @@ async function pedidoDoEspectador(page: Page, nome: string): Promise<{ cpf: stri
   await page.getByLabel("Nome completo").fill(nome);
   await page.getByText("E-mail", { exact: true }).click();
   await page.getByLabel("Chave Pix (E-mail)").fill(`painel.${cpf}@exemplo.com`);
-  await page.getByLabel(/^ID na /).fill(`pn${cpf.slice(0, 6)}`);
   await page.getByLabel(/^CPF cadastrado na /).fill(cpf);
   await page.getByLabel(/política de privacidade/).check();
   await page.getByLabel("Tenho 18 anos ou mais.").check();
@@ -95,8 +94,9 @@ test("streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pag
   await expect(espectador.locator("[data-prazo]")).toBeVisible();
 
   // Espectador responde: o relógio para dos dois lados e o painel recebe a mensagem.
+  // Enter envia (Shift+Enter quebra a linha, D-089).
   await espectador.getByLabel("Sua mensagem").fill(`Segue de novo, meu cpf ${cpf}`);
-  await espectador.getByRole("button", { name: "Enviar", exact: true }).click();
+  await espectador.getByLabel("Sua mensagem").press("Enter");
   await expect(espectador.locator("[data-prazo]")).toHaveCount(0);
   await expect(page.getByText("Segue de novo, meu cpf")).toBeVisible();
   await expect(page.locator("[data-prazo-painel]")).toHaveCount(0);
@@ -169,6 +169,7 @@ test("comprovante no chat e encerramento: tudo é apagado e todos voltam para o 
   await page.getByLabel("Quantidade de vagas").fill("5");
   await page.getByLabel("Nome da casa").fill("Casa Teste");
   await page.getByLabel("Link de afiliado").fill("https://casa-teste.example/afiliado-e2e");
+  await page.getByRole("radio", { name: "1win" }).check({ force: true });
   await page.getByLabel(/Limitar a 1 pedido por IP/).uncheck();
   await page.getByRole("button", { name: "Criar banca" }).click();
   await expect(page.getByText("Banca criada")).toBeVisible();
@@ -180,7 +181,6 @@ test("comprovante no chat e encerramento: tudo é apagado e todos voltam para o 
   const cpf = gerarCpf();
   await espectador.goto(linkBanca);
   await espectador.getByLabel("Nome completo").fill("Otavio Comprovante");
-  await espectador.getByLabel(/^ID na /).fill(`ot${cpf.slice(0, 6)}`);
   await espectador.getByLabel(/^CPF cadastrado na /).fill(cpf);
   await espectador.getByLabel("Chave Pix (CPF)").fill(cpf);
   await espectador.getByLabel(/política de privacidade/).check();

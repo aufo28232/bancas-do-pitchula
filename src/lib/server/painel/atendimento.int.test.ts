@@ -54,7 +54,6 @@ async function novoPedido(codigo: string) {
     nome: "Renata Quintas Lobo",
     pixTipo: "email",
     pixChave: email,
-    plataformaId: `re${cpf.slice(0, 6)}`,
     cpf: mascararCpf(cpf),
     privacidade: true,
     maioridade: true,
@@ -220,7 +219,7 @@ describe("permissões e banimento", () => {
     const outra = await novaBanca(5);
     const r = await new Navegador().post(postCriarPedido, {
       codigo: outra.codigo, nome: "Renata Quintas Lobo", pixTipo: "email", pixChave: `x${p.email}`,
-      plataformaId: "outroid", cpf: mascararCpf(p.cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
+      cpf: mascararCpf(p.cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
     });
     expect(r.status).toBe(409);
 

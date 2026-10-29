@@ -16,7 +16,7 @@ const CAMPOS = [
   ["platform_id_enc", "orders.platform_id_enc"],
 ] as const satisfies readonly (readonly [string, Campo])[];
 
-type Linha = { id: string; full_name_enc: string; cpf_enc: string; pix_key_enc: string; platform_id_enc: string };
+type Linha = { id: string; full_name_enc: string; cpf_enc: string; pix_key_enc: string; platform_id_enc: string | null };
 
 export async function rotacionarCifra(
   sql: Sql,
@@ -42,6 +42,7 @@ export async function rotacionarCifra(
         const novo: Record<string, string> = {};
         for (const [coluna, campo] of CAMPOS) {
           const atual = l[coluna];
+          if (atual === null) continue; // pedido sem ID na casa (D-089)
           novo[coluna] = versaoDoCifrado(atual) === ring.active ? atual : cifrar(ring, campo, l.id, decifrar(ring, campo, l.id, atual));
         }
         await tx`

@@ -10,7 +10,6 @@ async function preencher(page: Page, cpf: string): Promise<void> {
   await page.getByLabel("Nome completo").fill("Maria da Silva");
   await page.getByText("E-mail", { exact: true }).click();
   await page.getByLabel("Chave Pix (E-mail)").fill(`e2e.${cpf}@exemplo.com`);
-  await page.getByLabel(/^ID na /).fill(`e2e${cpf.slice(0, 6)}`);
   await page.getByLabel(/^CPF cadastrado na /).fill(cpf);
   await page.getByLabel(/política de privacidade/).check();
   await page.getByLabel("Tenho 18 anos ou mais.").check();
@@ -35,7 +34,9 @@ test("mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genéric
   // Link de cadastro da casa DESTA banca (D-086), com os atributos exigidos.
   const cadastro = page.getByRole("link", { name: /Ainda não tem conta na Casa Teste\? Cadastre-se aqui/ });
   await expect(cadastro).toHaveAttribute("href", "https://casa-teste.example/afiliado-e2e");
-  await expect(page.getByLabel("ID na Casa Teste")).toBeVisible();
+  // O ID na casa não é mais pedido (D-089); o CPF continua sendo "da casa".
+  await expect(page.getByLabel(/^ID na /)).toHaveCount(0);
+  await expect(page.getByLabel("CPF cadastrado na Casa Teste")).toBeVisible();
   await expect(cadastro).toHaveAttribute("target", "_blank");
   await expect(cadastro).toHaveAttribute("rel", "noopener noreferrer nofollow sponsored");
 

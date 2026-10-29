@@ -14,9 +14,15 @@ import { theme } from "@/theme/theme";
 
 type Props = { params: Promise<{ slug: string }> };
 
+/** Foto escolhida na criação da banca (D-089); banca antiga usa a padrão. */
+function fotoDaBanca(f: "1win" | "chillbet" | null) {
+  return f ? theme.fotosBanca[f] : theme.photo;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const codigo = codigoDoSlug((await params).slug);
   const banca = codigo ? await bancaPublica(codigo) : null;
+  const foto = fotoDaBanca(banca?.foto ?? null);
   const titulo = banca ? `Banca do ${site.streamer} · ${banca.name}` : `Bancas do ${site.streamer}`;
   const descricao = banca
     ? `${formatarReais(banca.per_person_cents)} por pessoa. Site oficial.`
@@ -39,9 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       locale: "pt_BR",
       siteName: site.name,
-      images: [{ url: theme.photo.src, width: theme.photo.width, height: theme.photo.height, alt: theme.photo.alt }],
+      images: [{ url: foto.src, width: foto.width, height: foto.height, alt: foto.alt }],
     },
-    twitter: { card: "summary_large_image", title: titulo, description: descricao, images: [theme.photo.src] },
+    twitter: { card: "summary_large_image", title: titulo, description: descricao, images: [foto.src] },
   };
 }
 
@@ -56,6 +62,7 @@ export default async function PaginaBanca({ params }: Props) {
   const banca = await bancaPublica(codigo);
   // Banca encerrada ou inexistente: o link deixou de existir (D-044).
   if (!banca) redirect("/");
+  const foto = fotoDaBanca(banca.foto);
 
   // Casa e link da banca (D-086); banca antiga sem casa usa o padrão do ambiente.
   const env = getServerEnv();
@@ -72,8 +79,8 @@ export default async function PaginaBanca({ params }: Props) {
       {/* Foto: banner no celular, metade direita sangrando no desktop */}
       <div className="relative h-[40svh] w-full lg:sticky lg:top-0 lg:order-2 lg:h-svh">
         <Image
-          src={theme.photo.src}
-          alt={theme.photo.alt}
+          src={foto.src}
+          alt={foto.alt}
           fill
           priority
           sizes="(min-width: 1024px) 55vw, 100vw"

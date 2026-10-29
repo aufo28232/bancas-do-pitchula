@@ -30,6 +30,8 @@ const zLinkAfiliado = z
   .max(500)
   .regex(/^https:\/\/[^\s<>"]+$/)
   .pipe(z.url({ protocol: /^https$/ }));
+/** Foto da página da banca: só as duas da lista (D-089); o banco confere de novo. */
+const zFoto = z.enum(["1win", "chillbet"]);
 const zCents = z.number().int().positive();
 const zVagas = z.number().int().min(1).max(10_000);
 
@@ -52,6 +54,7 @@ const corpoCriar = z.object({
   // Sem casa/link (chamadas antigas): a página usa PLATFORM_NAME/PLATFORM_SIGNUP_URL.
   casa: zCasa.optional(),
   linkAfiliado: zLinkAfiliado.optional(),
+  foto: zFoto.optional(),
 });
 
 export const postCriarBanca = mutacao("painel/bancas/criar", async (ctx) => {
@@ -75,6 +78,7 @@ export const postCriarBanca = mutacao("painel/bancas/criar", async (ctx) => {
           p_idem: d.idem,
           p_platform_name: d.casa ?? null,
           p_signup_url: d.linkAfiliado ?? null,
+          p_foto: d.foto ?? null,
         },
         { token: staff.token },
       );
@@ -99,6 +103,7 @@ const corpoEditar = z.object({
   ipLimit: z.boolean().optional(),
   casa: zCasa.optional(),
   linkAfiliado: zLinkAfiliado.optional(),
+  foto: zFoto.optional(),
 });
 
 export const postEditarBanca = mutacao("painel/bancas/editar", async (ctx) => {
@@ -119,6 +124,7 @@ export const postEditarBanca = mutacao("painel/bancas/editar", async (ctx) => {
         p_ip_limit: d.ipLimit ?? null,
         p_platform_name: d.casa ?? null,
         p_signup_url: d.linkAfiliado ?? null,
+        p_foto: d.foto ?? null,
       },
       { token: staff.token },
     );
@@ -151,4 +157,14 @@ export const postStatusBanca = mutacao("painel/bancas/status", async (ctx) => {
     }
     throw e;
   }
+});
+
+// POST /api/painel/bancas/apagar-historico (só streamer, D-089) -------------------------
+// Apaga as bancas ENCERRADAS da lista (os pedidos já foram apagados no encerramento).
+export const postApagarHistorico = mutacao("painel/bancas/apagar-historico", async (ctx) => {
+  await lerCorpo(ctx.req, z.object({}).strict(), 256);
+  const staff = await exigirStaff(ctx.req, { owner: true });
+  await limitePainel(staff.userId);
+  const apagadas = await rpc<number>("owner_clear_history", {}, { token: staff.token });
+  return json({ apagadas }, 200, ctx);
 });

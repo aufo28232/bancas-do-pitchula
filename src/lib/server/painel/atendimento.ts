@@ -131,6 +131,8 @@ export const postFila = mutacao("painel/fila", async (ctx) => {
 export type PedidoPainel = {
   id: string;
   seq: number;
+  /** Número do pedido dentro da banca (#1, #2...; D-089). */
+  numero: number;
   status: "pendente" | "pago" | "recusado";
   criado_em: string;
   atendente: string | null;
@@ -163,13 +165,13 @@ export type DetalhePedido = {
   live: boolean;
   pedido: PedidoPainel;
   sinais: SinaisFraude;
-  dados: { nome: string; cpf: string; pixTipo: TipoPix; pix: string; plataformaId: string };
+  dados: { nome: string; cpf: string; pixTipo: TipoPix; pix: string; plataformaId: string | null };
   banca: { id: string; nome: string; status: string; por_pessoa_cents: number; restantes: number };
   mensagens: MensagemPainel[];
 };
 
 type DetalheBruto = Omit<DetalhePedido, "live" | "dados" | "pedido"> & {
-  pedido: PedidoPainel & { enc: { nome: string; cpf: string; pix: string; pid: string } };
+  pedido: PedidoPainel & { enc: { nome: string; cpf: string; pix: string; pid: string | null } };
 };
 
 export async function carregarPedido(staff: ContextoStaff, id: string): Promise<DetalhePedido> {
@@ -180,15 +182,16 @@ export async function carregarPedido(staff: ContextoStaff, id: string): Promise<
   const nome = decifrarCampo(id, "orders.full_name_enc", enc.nome) ?? "********";
   const APAGADO = "(apagado a pedido do titular)";
   const dados = pedido.apagado
-    ? { nome: APAGADO, cpf: APAGADO, pixTipo: tipo, pix: APAGADO, plataformaId: APAGADO }
+    ? { nome: APAGADO, cpf: APAGADO, pixTipo: tipo, pix: APAGADO, plataformaId: enc.pid ? APAGADO : null }
     : live
-    ? { nome: mascararNomeLive(nome), cpf: CPF_LIVE, pixTipo: tipo, pix: mascararPixLive(tipo), plataformaId: ID_LIVE }
+    ? { nome: mascararNomeLive(nome), cpf: CPF_LIVE, pixTipo: tipo, pix: mascararPixLive(tipo), plataformaId: enc.pid ? ID_LIVE : null }
     : {
         nome,
         cpf: mascaraCpf(decifrarCampo(id, "orders.cpf_enc", enc.cpf) ?? ""),
         pixTipo: tipo,
         pix: formatarPix(tipo, decifrarCampo(id, "orders.pix_key_enc", enc.pix) ?? ""),
-        plataformaId: decifrarCampo(id, "orders.platform_id_enc", enc.pid) ?? "",
+        // Pedidos novos não têm ID na casa (D-089).
+        plataformaId: enc.pid ? (decifrarCampo(id, "orders.platform_id_enc", enc.pid) ?? "") : null,
       };
   return {
     live,

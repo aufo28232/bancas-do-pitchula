@@ -92,15 +92,9 @@ export function normalizarNome(entrada: string): string {
   return entrada.normalize("NFC").replace(/\s+/g, " ").trim();
 }
 
-/** ID na plataforma: comparado sem diferenciar maiúsculas. */
-export function normalizarPlataformaId(entrada: string): string {
-  return entrada.trim().toLowerCase();
-}
-
 export const MENSAGENS = {
   nome: "Escreva seu nome completo (nome e sobrenome).",
   pixChave: "Chave Pix inválida para o tipo escolhido.",
-  plataformaId: "Confira o seu ID (letras, números, ponto, hífen ou sublinhado).",
   cpf: "CPF inválido. Confira os números.",
   privacidade: "Você precisa marcar que leu a política de privacidade.",
   maioridade: "Só maiores de 18 anos podem participar.",
@@ -122,12 +116,6 @@ export const pedidoSchema = z
       ),
     pixTipo: z.enum(TIPOS_PIX),
     pixChave: z.string().max(120, MENSAGENS.pixChave),
-    plataformaId: z
-      .string()
-      .trim()
-      .min(1, MENSAGENS.plataformaId)
-      .max(40, MENSAGENS.plataformaId)
-      .regex(/^[A-Za-z0-9._-]+$/, MENSAGENS.plataformaId),
     cpf: z.string().max(20, MENSAGENS.cpf).refine(cpfValido, MENSAGENS.cpf),
     privacidade: z.literal(true, MENSAGENS.privacidade),
     maioridade: z.literal(true, MENSAGENS.maioridade),

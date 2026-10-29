@@ -6,7 +6,7 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { postCriarBanca } from "@/lib/server/painel/bancas";
+import { postApagarHistorico, postCriarBanca } from "@/lib/server/painel/bancas";
 import { postApagarDados, postComprovanteStaff, postEncerrarBanca } from "@/lib/server/painel/atendimento";
 import { bancaPublica } from "@/lib/server/publico/banca";
 import {
@@ -44,7 +44,7 @@ async function espectadorComPedido(codigo: string) {
   const cpf = gerarCpf();
   const nav = new Navegador();
   const r = await nav.post(postCriarPedido, {
-    codigo, nome: "Bruna Arquivo Teste", pixTipo: "cpf", pixChave: mascararCpf(cpf), plataformaId: `br${cpf.slice(0, 5)}`,
+    codigo, nome: "Bruna Arquivo Teste", pixTipo: "cpf", pixChave: mascararCpf(cpf), 
     cpf: mascararCpf(cpf), privacidade: true, maioridade: true, turnstile: TURNSTILE_TESTE,
   });
   expect(r.status).toBe(201);
@@ -151,6 +151,19 @@ describe("exclusão a pedido do titular (D-018, D-083)", () => {
     const [o] = await sql<{ status: string; motivo: string; enc: string; apagado: boolean }[]>`
       select status, refusal_reason as motivo, cpf_enc as enc, data_erased_at is not null as apagado from app.orders where id = ${e.id}`;
     expect(o).toEqual({ status: "recusado", motivo: "exclusao_a_pedido", enc: expect.stringMatching(/^v0:/), apagado: true });
+  });
+});
+
+describe("apagar histórico (D-089)", () => {
+  it("o streamer tira da lista as bancas encerradas; as abertas ficam", async () => {
+    const aberta = await novaBanca("Banca Fica Aberta");
+    const velha = await novaBanca("Banca Velha");
+    expect((await dono.nav.post(postEncerrarBanca, { id: velha.id, nome: "banca velha", idem: randomUUID() })).status).toBe(200);
+    const r = await dono.nav.post(postApagarHistorico, {});
+    expect(r.status).toBe(200);
+    expect(Number(r.dados.apagadas)).toBeGreaterThanOrEqual(1);
+    const linhas = await sql<{ id: string }[]>`select id from app.bancas where id in (${aberta.id}, ${velha.id})`;
+    expect(linhas.map((l) => l.id)).toEqual([aberta.id]);
   });
 });
 

@@ -10,6 +10,8 @@ export type BancaPublica = {
   /** Casa e link de afiliado da banca (D-086). Null = banca antiga: usa o padrão do ambiente. */
   platform_name: string | null;
   signup_url: string | null;
+  /** Foto escolhida (D-089). Null = foto padrão. */
+  foto: "1win" | "chillbet" | null;
 };
 
 /** Dados públicos da banca (só número de vagas, valor e estado). Encerrada = não existe. */
