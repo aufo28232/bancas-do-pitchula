@@ -202,10 +202,11 @@ export function PaginaPedido() {
     return () => document.removeEventListener("pointerdown", liberar);
   }, [pronto]);
 
-  // 3. Polling de reserva: rápido sem tempo real, lento com ele.
+  // 3. Polling de reserva: rápido sem tempo real; com ele, a cada 20 s, para a posição
+  //    nunca ficar parada se algum aviso ao vivo se perder (D-090).
   useEffect(() => {
     if (!pronto) return;
-    const id = setInterval(() => void carregar(false), conectado ? 60_000 : 8_000);
+    const id = setInterval(() => void carregar(false), conectado ? 20_000 : 8_000);
     return () => clearInterval(id);
   }, [pronto, conectado, carregar]);
 

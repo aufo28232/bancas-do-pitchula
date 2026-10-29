@@ -54,6 +54,30 @@ async function fazerPedido(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/pedido$/);
 }
 
+test("a fila anda ao vivo: quando o pedido da frente sai, a posição desce", async ({ browser, page }) => {
+  // Pedido A (da frente), num navegador separado.
+  const ctxA = await browser.newContext({ baseURL: "http://localhost:3000", locale: "pt-BR" });
+  const frente = await ctxA.newPage();
+  await fazerPedido(frente);
+  const [a] = await sql<{ id: string }[]>`select id from app.orders order by seq desc limit 1`;
+
+  // Pedido B (o nosso), atrás de A.
+  await fazerPedido(page);
+  await expect(page.getByText("Sua posição na fila")).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText("Atualizando ao vivo.")).toBeVisible();
+  const posicao = page.locator("[data-posicao]");
+  await expect(posicao).toHaveAttribute("data-posicao", /^\d+$/);
+  const antes = Number(await posicao.getAttribute("data-posicao"));
+  expect(antes).toBeGreaterThanOrEqual(2);
+
+  // A sai da fila (recusado): B desce sem recarregar a página, pelo tempo real.
+  const [staff] = await sql<{ user_id: string }[]>`select user_id from app.staff where active and role = 'owner' limit 1`;
+  await sql`update app.orders set status = 'recusado', refused_at = now(), refused_by = ${staff?.user_id ?? ""},
+              refusal_reason = 'outro' where id = ${a?.id ?? ""}`;
+  await expect.poll(async () => Number(await posicao.getAttribute("data-posicao")), { timeout: 10_000 }).toBeLessThan(antes);
+  await ctxA.close();
+});
+
 test("acompanha o pedido: posição, beep ao ser assumido, prazo e chat", async ({ page }, info) => {
   await instrumentarAudio(page);
   const violacoes = observarCsp(page);
