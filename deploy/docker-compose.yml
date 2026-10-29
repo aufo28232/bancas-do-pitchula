@@ -1,0 +1,49 @@
+# =====================================================================
+# Produção na VPS (modo 3 do README: Docker + Cloudflare Tunnel, D-087).
+# - O app NÃO publica porta nenhuma: só o cloudflared, na rede interna do
+#   Docker, chega nele. Na internet, o servidor fica sem porta de entrada.
+# - Os segredos ficam fora do repositório, em /etc/bancas (permissão 600).
+# Uso: deploy/instalar.sh (primeira vez) e deploy/atualizar.sh (depois).
+# =====================================================================
+name: bancas
+
+services:
+  app:
+    build:
+      context: ..
+    image: bancas:latest
+    restart: unless-stopped
+    env_file: /etc/bancas/bancas.env
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - interna
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  tunel:
+    image: cloudflare/cloudflared:2026.7.3
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    env_file: /etc/bancas/tunel.env
+    depends_on:
+      - app
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - interna
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  interna:

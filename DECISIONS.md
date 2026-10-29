@@ -600,6 +600,14 @@ Testado na integração (sem token, outra origem, cross-site).
 - `PLATFORM_NAME` e `PLATFORM_SIGNUP_URL` viram só o padrão das bancas criadas antes desta mudança. A política de privacidade passa a dizer "na casa indicada na banca".
 - **[ADVOGADO]** D-034 continua valendo para cada casa usada: conferir se a casa é autorizada pela SPA/MF e as regras de publicidade de afiliado.
 
+## D-087 · Produção na VPS da Hostinger com Cloudflare Tunnel
+
+**Status:** Implementada (29/10/2026). Domínio `bigbancas.com` registrado na Cloudflare; VPS KVM 2 (Ubuntu 24.04) na Hostinger.
+- Modo 3 do README: `deploy/docker-compose.yml` sobe o app e o `cloudflared` (versão fixada) numa rede interna do Docker. O app não publica porta; o firewall (ufw) só deixa entrar SSH. O IP do visitante vem do `CF-Connecting-IP` (`DEPLOY_MODE=tunnel`), então "1 pedido por IP" e bans de IP voltam a ser confiáveis.
+- Segredos em `/etc/bancas/bancas.env` e `/etc/bancas/tunel.env` (root, `600`), digitados pelo streamer na própria VPS: não passam pelo chat nem pelo repositório. `deploy/instalar.sh` não imprime nenhum valor.
+- Atualizações: `deploy/atualizar.sh` (git pull + rebuild). Sem atualização automática do código; o sistema recebe atualizações de segurança pelo `unattended-upgrades`.
+- **Não verificado ainda:** o túnel e o build rodando na VPS de verdade (o CI só constrói a imagem).
+
 ---
 
 ## Registro de mudanças
@@ -620,3 +628,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 28/10/2026 | Tela inicial abre a banca atual; vagas restantes ocultas (D-084) |
 | 29/10/2026 | Prazo de resposta de 10 min; tela "Bancas encerradas" por 30 min (D-085) |
 | 29/10/2026 | Casa e link de afiliado por banca (D-086) |
+| 29/10/2026 | Kit de produção: VPS + Cloudflare Tunnel (D-087) |

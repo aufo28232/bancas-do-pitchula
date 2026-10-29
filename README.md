@@ -176,6 +176,13 @@ A imagem roda como usuário sem privilégio (uid 10001), sem npm, e não leva ne
 
 **Modo 3: VPS + Cloudflare Tunnel.** Rode o container como no modo 2 (porta só em `127.0.0.1`) e o `cloudflared` apontando para `http://127.0.0.1:3000`. Não abra nenhuma porta de entrada no servidor.
 
+Kit pronto em `deploy/` (D-087), para Ubuntu 24.04:
+
+1. Cloudflare → Zero Trust → Networks → Tunnels → *Create a tunnel* (Cloudflared). Copie o token. Em *Public hostname*: domínio do site, serviço `HTTP` e URL `app:3000`.
+2. Na VPS, como root: `git clone https://github.com/aufo28232/bancas-do-pitchula.git /opt/bancas && cd /opt/bancas && bash deploy/instalar.sh`. O instalador liga o firewall (só SSH entra), instala o Docker, pede o conteúdo do arquivo de variáveis (abre o `nano`) e o token do túnel (sem mostrar na tela), grava tudo em `/etc/bancas` com permissão `600`, troca `DEPLOY_MODE` para `tunnel` e `SITE_URL` para o domínio, e sobe `app` + `tunel` (`deploy/docker-compose.yml`). O app não publica porta nenhuma.
+3. Atualizar depois: `cd /opt/bancas && bash deploy/atualizar.sh`.
+4. Depois do primeiro deploy: acrescente o domínio no widget do Turnstile, troque o `limpeza_url` do Vault para `https://SEU-DOMINIO/api/interno/limpeza` e confira `/painel/diagnostico`.
+
 **Cloudflare Access (recomendado nos três modos).** Crie uma aplicação *Self-hosted* para `seu-dominio/painel*` e `seu-dominio/api/painel*` com a política de quem pode entrar (e-mails do streamer e dos moderadores). Copie o *Application Audience (AUD) Tag* para `CF_ACCESS_AUD` e o domínio da equipe para `CF_ACCESS_TEAM_DOMAIN`. O servidor confere o JWT do Access em toda requisição do painel; no modo 1 isso fecha o caminho de quem chega direto na origem.
 
 **Vercel (só para testes).** Importe o repositório na Vercel (New Project → GitHub). Em *Settings → Environment Variables*, cadastre as mesmas variáveis do `.env.example` com `DEPLOY_MODE=managed`, `TRUSTED_PROXY_HOPS=1`, `SITE_URL=https://<projeto>.vercel.app` e `ENABLE_EXPERIMENTAL_COREPACK=1` (para usar o pnpm do `package.json`). A região das funções já fica em São Paulo (`vercel.json`). Limitações na Vercel: o plano grátis (Hobby) não permite uso comercial, e o corpo das requisições vai até 4,5 MB (comprovante maior que isso falha). A Vercel roda Node 24; o CI confere build e testes de unidade nessa versão.
