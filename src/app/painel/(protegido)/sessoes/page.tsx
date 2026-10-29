@@ -21,6 +21,7 @@ type Alerta = { id: string; display_name: string; kind: string; created_at: stri
 const TEXTO_ALERTA: Record<string, string> = {
   novo_dispositivo: "entrou de um dispositivo novo",
   encerramento_por_moderador: "· uma banca foi encerrada por um moderador (veja quem na auditoria)",
+  banca_por_moderador: "· um moderador criou ou alterou uma banca (veja quem e o quê na auditoria)",
   retencao_falhou: "· a rotina de limpeza encontrou pedidos que deveriam ter sido apagados",
 };
 

@@ -608,6 +608,12 @@ Testado na integração (sem token, outra origem, cross-site).
 - Atualizações: `deploy/atualizar.sh` (git pull + rebuild). Sem atualização automática do código; o sistema recebe atualizações de segurança pelo `unattended-upgrades`.
 - **Não verificado ainda:** o túnel e o build rodando na VPS de verdade (o CI só constrói a imagem).
 
+## D-088 · Moderadores criam e gerenciam bancas
+
+**Status:** Implementada (29/10/2026, pedido do streamer). Revê a regra "só o streamer cria/edita/pausa" (Etapa 3).
+- Moderadores passam a **criar, editar, pausar e reabrir** bancas (encerrar já podiam, D-044). Equipe, respostas rápidas, auditoria e diagnóstico continuam só do streamer.
+- **Risco (T22):** quem cria a banca escolhe o link de afiliado, então um moderador poderia pôr o próprio link. Mitigação: toda criação ou troca de link/casa feita por moderador gera um alerta para o streamer (`banca_por_moderador`) e fica na auditoria com o papel real (`moderator`). Só convide moderadores de confiança.
+
 ---
 
 ## Registro de mudanças
@@ -629,3 +635,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 29/10/2026 | Prazo de resposta de 10 min; tela "Bancas encerradas" por 30 min (D-085) |
 | 29/10/2026 | Casa e link de afiliado por banca (D-086) |
 | 29/10/2026 | Kit de produção: VPS + Cloudflare Tunnel (D-087) |
+| 29/10/2026 | Moderadores criam e gerenciam bancas (D-088) |

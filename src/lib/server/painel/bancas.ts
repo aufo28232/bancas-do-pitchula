@@ -56,7 +56,8 @@ const corpoCriar = z.object({
 
 export const postCriarBanca = mutacao("painel/bancas/criar", async (ctx) => {
   const d = await lerCorpo(ctx.req, corpoCriar, 2048);
-  const staff = await exigirStaff(ctx.req, { owner: true });
+  // Streamer e moderadores (D-088); o banco confere de novo e alerta o streamer.
+  const staff = await exigirStaff(ctx.req);
   await limitePainel(staff.userId);
   validarValores(d.totalCents, d.vagas);
 
@@ -102,7 +103,8 @@ const corpoEditar = z.object({
 
 export const postEditarBanca = mutacao("painel/bancas/editar", async (ctx) => {
   const d = await lerCorpo(ctx.req, corpoEditar, 2048);
-  const staff = await exigirStaff(ctx.req, { owner: true });
+  // Streamer e moderadores (D-088); o banco confere de novo e alerta o streamer.
+  const staff = await exigirStaff(ctx.req);
   await limitePainel(staff.userId);
   validarValores(d.totalCents, d.vagas);
   try {
@@ -137,7 +139,8 @@ const corpoStatus = z.object({ id: zId, acao: z.enum(["fechar", "reabrir"]) });
 
 export const postStatusBanca = mutacao("painel/bancas/status", async (ctx) => {
   const d = await lerCorpo(ctx.req, corpoStatus, 256);
-  const staff = await exigirStaff(ctx.req, { owner: true });
+  // Streamer e moderadores (D-088); o banco confere de novo e alerta o streamer.
+  const staff = await exigirStaff(ctx.req);
   await limitePainel(staff.userId);
   try {
     const status = await rpc<string>("owner_set_banca_status", { p_id: d.id, p_acao: d.acao }, { token: staff.token });

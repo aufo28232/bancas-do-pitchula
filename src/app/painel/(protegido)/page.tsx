@@ -25,11 +25,10 @@ export default async function InicioPainel() {
     <section className="flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display text-5xl font-black uppercase leading-none">Bancas</h1>
-        {dono ? (
-          <Link href="/painel/bancas/nova" className="bg-accent px-4 py-2.5 font-display text-lg font-extrabold uppercase text-accent-fg">
-            Nova banca
-          </Link>
-        ) : null}
+        {/* Streamer e moderadores criam e gerenciam bancas (D-088). */}
+        <Link href="/painel/bancas/nova" className="bg-accent px-4 py-2.5 font-display text-lg font-extrabold uppercase text-accent-fg">
+          Nova banca
+        </Link>
       </div>
 
       {alertas.length > 0 ? (
@@ -65,7 +64,7 @@ export default async function InicioPainel() {
                   </Link>
                 ) : null}
                 {b.code ? <CopiarTexto texto={`${origem}/${b.code}-banca`} rotulo="Copiar link" /> : null}
-                {dono && b.status !== "encerrada" ? (
+                {b.status !== "encerrada" ? (
                   <>
                     <Link href={`/painel/bancas/${b.id}`} className="border border-line px-3 py-1.5 text-sm hover:border-fg-muted">
                       Editar

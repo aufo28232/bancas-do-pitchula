@@ -9,7 +9,6 @@ export const metadata: Metadata = { title: "Editar banca" };
 export default async function EditarBanca({ params }: { params: Promise<{ id: string }> }) {
   const staff = await staffAtual();
   if (!staff) redirect("/painel/entrar");
-  if (staff.role !== "owner") notFound();
   const { id } = await params;
   const banca = (await listarBancas(staff.token)).find((b) => b.id === id && b.status !== "encerrada");
   if (!banca) notFound();

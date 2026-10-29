@@ -5,7 +5,7 @@
  */
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { postCriarBanca } from "@/lib/server/painel/bancas";
+import { postCriarBanca, postEditarBanca, postStatusBanca } from "@/lib/server/painel/bancas";
 import { postEstadoPedido } from "@/lib/server/publico/espectador";
 import { postCriarPedido } from "@/lib/server/publico/pedido";
 import {
@@ -185,6 +185,20 @@ describe("concorrência real (duas requisições ao mesmo tempo)", () => {
 });
 
 describe("permissões e banimento", () => {
+  it("moderador cria, edita e pausa banca (D-088); o streamer recebe alerta", async () => {
+    const r = await mod1.nav.post(postCriarBanca, {
+      nome: "Banca do Mod", totalCents: 30000, vagas: 3, ipLimit: false, idem: randomUUID(),
+      casa: "Teste", linkAfiliado: "https://teste.com/mod",
+    });
+    expect(r.status).toBe(201);
+    const id = String(r.dados.id);
+    expect((await mod1.nav.post(postEditarBanca, { id, versao: 1, nome: "Banca do Mod 2" })).status).toBe(200);
+    expect((await mod1.nav.post(postStatusBanca, { id, acao: "fechar" })).status).toBe(200);
+    const [a] = await sql<{ n: number }[]>`
+      select count(*)::int as n from app.security_alerts where kind = 'banca_por_moderador' and user_id = ${dono.id}`;
+    expect(a?.n).toBeGreaterThanOrEqual(1);
+  });
+
   it("moderador NÃO força assumir nem edita respostas rápidas (a API recusa)", async () => {
     const banca = await novaBanca(5);
     const p = await novoPedido(banca.codigo);

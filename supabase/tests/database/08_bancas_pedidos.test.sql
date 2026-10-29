@@ -1,7 +1,7 @@
 -- Etapa 3: bancas (painel) e criação de pedido (público).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(28);
 
 -- Isola este arquivo de dados deixados por outros testes (o rollback no fim desfaz tudo).
 set local app.audit_purge = 'on';
@@ -60,9 +60,11 @@ returns text language sql as $$
 $$;
 
 -- 1. Quem pode o quê -------------------------------------------------------------
-do $$ begin perform pg_temp.como('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000005b'); end $$;
+set local role anon;
 select throws_ok($$ select * from api.owner_create_banca('modmodmo-0001', 'X', 1000, 1, true, null) $$, '42501', null,
-  'moderador NÃO cria banca');
+  'visitante NÃO cria banca (moderador pode desde D-088: teste 15)');
+reset role;
+do $$ begin perform pg_temp.como('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000005b'); end $$;
 select throws_ok($$ select pg_temp.pedido('qualquer-0001', '1', '1') $$, '42501', null,
   'staff NÃO chama a criação de pedido direto (só o servidor)');
 reset role;
@@ -85,8 +87,10 @@ select is((select count(*)::int from app.bancas where name = 'Banca da sexta'), 
 
 do $$ begin perform pg_temp.como('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000005b'); end $$;
 select is((select count(*)::int from api.staff_list_bancas()), 1, 'moderador enxerga a lista de bancas');
-select throws_ok($$ select api.owner_set_banca_status((select id from app.bancas where code = 'aaaaaaaa-0001'), 'fechar') $$,
-  '42501', null, 'moderador NÃO fecha banca');
+select is(api.owner_set_banca_status((select id from app.bancas where code = 'aaaaaaaa-0001'), 'fechar')::text, 'fechada',
+  'moderador pausa banca (D-088)');
+select is(api.owner_set_banca_status((select id from app.bancas where code = 'aaaaaaaa-0001'), 'reabrir')::text, 'aberta',
+  'moderador reabre banca (D-088)');
 reset role;
 
 -- 3. Pedidos: duplicidade por CPF e por IP --------------------------------------------
@@ -106,13 +110,13 @@ select ok(
                and (detail::text ~ '[0-9]{11}' or detail ?| array['cpf', 'pix', 'ip'])),
   'auditoria de bloqueio guarda só o motivo, nunca o dado');
 
--- 4. Edição: valor e vagas travam depois do primeiro pedido ------------------------------
+-- 4. Edição (versão 3: o moderador pausou e reabriu acima): valor e vagas travam depois do primeiro pedido ------------------------------
 do $$ begin perform pg_temp.como('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-00000000005a'); end $$;
-select throws_ok($$ select api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 1, 'Banca', 500000, null, null) $$,
+select throws_ok($$ select api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 3, 'Banca', 500000, null, null) $$,
   '55000', null, 'valor NÃO muda depois do primeiro pedido');
-select throws_ok($$ select api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 1, 'Banca', null, 10, null) $$,
+select throws_ok($$ select api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 3, 'Banca', null, 10, null) $$,
   '55000', null, 'vagas NÃO mudam depois do primeiro pedido');
-select is(api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 1, 'Banca de sexta à noite', null, null, false), 2,
+select is(api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 3, 'Banca de sexta à noite', null, null, false), 4,
   'nome e "1 por IP" mudam sempre');
 select throws_ok($$ select api.owner_update_banca((select id from app.bancas where code = 'aaaaaaaa-0001'), 1, 'Velha', null, null, null) $$,
   '40001', null, 'edição com versão desatualizada é recusada (outra aba editou antes)');
