@@ -1,0 +1,4 @@
+run_id=41263847718
+sha=6c092a459f6dffb92199c33d0fa77ec8101ecc58
+status=success
+quando=2026-11-01T02:12:13Z

@@ -1,0 +1,274 @@
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.12 [39m[90m/home/runner/work/bancas-do-pitchula/bancas-do-pitchula[39m
+
+{"ts":"2026-11-01T02:08:50.942Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":403,"motivo":"csrf_token","requestId":"6c0f1785-385c-4b81-b35b-00c64b4139da"}
+{"ts":"2026-11-01T02:08:50.943Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":403,"motivo":"csrf_origem","requestId":"c0e588fa-d184-4710-b45c-cfd2e5f90e98"}
+{"ts":"2026-11-01T02:08:50.944Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":403,"motivo":"csrf_fetch_site","requestId":"adcf5e6e-e9a8-4124-9d58-29d043b09add"}
+{"ts":"2026-11-01T02:08:51.109Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"458ab5d5-cbdf-45d8-a6ee-4318a1a3fec8","duracaoMs":164}
+{"ts":"2026-11-01T02:08:51.230Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"85076b8e-2c77-4fb2-852f-5599d1cefcd7","duracaoMs":98}
+{"ts":"2026-11-01T02:08:51.269Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"3e175fc2-187a-4ba7-8e15-545174df5ff5","duracaoMs":39}
+{"ts":"2026-11-01T02:08:51.294Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"9c52ddf3-b151-458f-acd2-bdd5c63e314d","duracaoMs":23}
+{"ts":"2026-11-01T02:08:51.395Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"90250d6b-1b4b-422b-9172-e9a71953c983","duracaoMs":83}
+{"ts":"2026-11-01T02:08:51.550Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"nao_staff","requestId":"47da251c-a024-44cb-8a44-cd81336ad274"}
+{"ts":"2026-11-01T02:08:51.631Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"credenciais","requestId":"38f5f3de-8157-467a-be3d-60f9bc877458"}
+{"ts":"2026-11-01T02:08:51.777Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"credenciais","requestId":"f8c2d70d-548f-4983-989e-68b0e6307ab0"}
+{"ts":"2026-11-01T02:08:51.856Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"credenciais","requestId":"2ad3dc89-fdba-4dc4-9d73-582b0ac54ae9"}
+{"ts":"2026-11-01T02:08:51.938Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"credenciais","requestId":"3f36a041-7f59-4444-9cc6-282ffd6b51cc"}
+{"ts":"2026-11-01T02:08:52.018Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"credenciais","requestId":"91b86b44-3286-4132-8012-bde4a3981c36"}
+{"ts":"2026-11-01T02:08:52.105Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":401,"motivo":"credenciais","requestId":"8e623aaa-e37e-4cb5-93f7-fd8f694a897f"}
+{"ts":"2026-11-01T02:08:52.109Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":429,"motivo":"bloqueado","requestId":"90311a50-d9b5-4cb0-8186-c3b607e5c813"}
+{"ts":"2026-11-01T02:08:52.112Z","nivel":"warn","evento":"recusada","rota":"painel/entrar","status":429,"motivo":"bloqueado","requestId":"46198c71-627e-42fc-b621-dd3ca2f85b0d"}
+{"ts":"2026-11-01T02:08:52.114Z","nivel":"error","evento":"dependencia_fora","rota":"painel/entrar","dependencia":"redis","requestId":"0fc89827-9991-47b0-83dd-06c8d74ecd94"}
+{"ts":"2026-11-01T02:08:52.123Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"8ef20fcf-f1ff-4488-98ba-8941a566f049","duracaoMs":8}
+{"ts":"2026-11-01T02:08:52.275Z","nivel":"info","evento":"requisicao","rota":"painel/convites/aceitar","status":201,"requestId":"02217b97-9672-4659-8c4b-ed1c2f2eab21","duracaoMs":150}
+{"ts":"2026-11-01T02:08:52.291Z","nivel":"warn","evento":"recusada","rota":"painel/convites/aceitar","status":400,"motivo":"convite_invalido","requestId":"017c7363-c278-43b9-b72a-a1a08b968ffd"}
+{"ts":"2026-11-01T02:08:52.310Z","nivel":"warn","evento":"recusada","rota":"painel/convites/aceitar","status":400,"motivo":"convite_invalido","requestId":"58eaa6ae-6e0e-424c-9f4a-354958ed3d0a"}
+{"ts":"2026-11-01T02:08:52.317Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"05b455a8-d088-44a0-9c2e-77c331ebdc0f","duracaoMs":7}
+{"ts":"2026-11-01T02:08:52.323Z","nivel":"info","evento":"requisicao","rota":"painel/convites/revogar","status":200,"requestId":"71b14dde-a93e-49f2-af4d-92821d60d383","duracaoMs":6}
+{"ts":"2026-11-01T02:08:52.338Z","nivel":"warn","evento":"recusada","rota":"painel/convites/aceitar","status":400,"motivo":"convite_invalido","requestId":"c4362aa2-0b02-4783-a847-0d4c15ad4607"}
+{"ts":"2026-11-01T02:08:52.344Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"e2cd9241-bec6-4479-b892-ca34b0a36e33","duracaoMs":6}
+{"ts":"2026-11-01T02:08:52.391Z","nivel":"warn","evento":"recusada","rota":"painel/convites/aceitar","status":400,"motivo":"senha_vazada","requestId":"de70a744-5c28-4045-8e30-b3b42774b4cf"}
+{"ts":"2026-11-01T02:08:52.406Z","nivel":"warn","evento":"recusada","rota":"painel/convites/aceitar","status":400,"motivo":"senha_curta","requestId":"2d41c709-9a90-4e80-b06c-29a3caa69cff"}
+{"ts":"2026-11-01T02:08:52.425Z","nivel":"warn","evento":"hibp_falhou","motivo":"TypeError","tentativas":1}
+{"ts":"2026-11-01T02:08:52.825Z","nivel":"warn","evento":"hibp_falhou","motivo":"TypeError","tentativas":2}
+{"ts":"2026-11-01T02:08:52.825Z","nivel":"error","evento":"dependencia_fora","rota":"painel/convites/aceitar","dependencia":"hibp","requestId":"fb4d8903-147d-418a-86d6-ad70d44e0aef"}
+{"ts":"2026-11-01T02:08:52.834Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"acf99fbf-1b6e-4f52-8718-0374670e22f8","duracaoMs":7}
+{"ts":"2026-11-01T02:08:52.848Z","nivel":"warn","evento":"recusada","rota":"painel/convites/aceitar","status":400,"motivo":"turnstile","requestId":"8bd4a36f-ac07-4c0f-bbc6-ddd4121d4884"}
+{"ts":"2026-11-01T02:08:52.855Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"171ae7a9-13c5-43a7-92e2-3779982148f3","duracaoMs":6}
+{"ts":"2026-11-01T02:08:52.978Z","nivel":"info","evento":"requisicao","rota":"painel/convites/aceitar","status":201,"requestId":"06c4cd1f-01e6-482b-b91c-bdfcab747eda","duracaoMs":123}
+{"ts":"2026-11-01T02:08:53.063Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"a03f25bc-32af-490e-a9c5-ee9f71e89d1f","duracaoMs":84}
+{"ts":"2026-11-01T02:08:53.097Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"d2585e54-b194-4e32-80d8-4194919b7c24","duracaoMs":34}
+{"ts":"2026-11-01T02:08:53.115Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"8b080913-4ba6-46ce-a640-23ec9548db98","duracaoMs":17}
+{"ts":"2026-11-01T02:08:53.130Z","nivel":"warn","evento":"recusada","rota":"painel/convites/criar","status":403,"motivo":"nao_owner","requestId":"0bf7e993-134c-4b65-8466-9a9ca5d14c68"}
+{"ts":"2026-11-01T02:08:53.132Z","nivel":"warn","evento":"recusada","rota":"painel/equipe/remover","status":403,"motivo":"nao_owner","requestId":"4d6331a0-a5a4-4e27-99dc-578e6404ec3f"}
+{"ts":"2026-11-01T02:08:53.134Z","nivel":"warn","evento":"recusada","rota":"painel/equipe/resetar-mfa","status":403,"motivo":"nao_owner","requestId":"094e4882-27bb-421c-be0c-2012f01bab08"}
+{"ts":"2026-11-01T02:08:53.217Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"6965ac5f-f7b3-42bf-b8f7-cb3d0d119bff","duracaoMs":83}
+{"ts":"2026-11-01T02:08:53.246Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"f063c254-3d20-4732-825a-4c552133fb83","duracaoMs":26}
+{"ts":"2026-11-01T02:08:53.254Z","nivel":"info","evento":"requisicao","rota":"painel/sessoes/revogar","status":200,"requestId":"4d86ce18-3685-46d7-a2b1-6338eb91f3e9","duracaoMs":8}
+{"ts":"2026-11-01T02:08:53.274Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"9e277c2c-efb1-4bb5-894d-aab2973aeff1","duracaoMs":6}
+{"ts":"2026-11-01T02:08:53.381Z","nivel":"info","evento":"requisicao","rota":"painel/convites/aceitar","status":201,"requestId":"bc1d36ae-f9af-4ef3-b1a4-96ce31b79120","duracaoMs":107}
+{"ts":"2026-11-01T02:08:53.463Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"b5c91621-31bc-4594-b4b7-cf4fbc52e95a","duracaoMs":81}
+{"ts":"2026-11-01T02:08:53.498Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"74702f93-c270-4151-b7fe-1350285d374e","duracaoMs":34}
+{"ts":"2026-11-01T02:08:53.516Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"5b203d5e-7099-4988-9e07-fc2f5d3ef844","duracaoMs":17}
+{"ts":"2026-11-01T02:08:53.527Z","nivel":"info","evento":"requisicao","rota":"painel/equipe/resetar-mfa","status":200,"requestId":"e7a76341-878d-4206-9e97-2270351be748","duracaoMs":11}
+{"ts":"2026-11-01T02:08:53.549Z","nivel":"info","evento":"requisicao","rota":"painel/equipe/remover","status":200,"requestId":"86c346cc-a32c-4e80-b733-5f82e6be426e","duracaoMs":7}
+{"ts":"2026-11-01T02:08:53.552Z","nivel":"warn","evento":"recusada","rota":"painel/sessoes/revogar","status":401,"motivo":"sessao_invalida","requestId":"e43cc992-b262-4773-82b2-c3e9965f9a87"}
+{"ts":"2026-11-01T02:08:53.633Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"a8ce9fdd-0ee1-4188-8010-30817fdc50c8","duracaoMs":80}
+{"ts":"2026-11-01T02:08:53.662Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"096e9ebf-e0ec-4e43-a20c-deb8380fcf0e","duracaoMs":26}
+{"ts":"2026-11-01T02:08:53.679Z","nivel":"info","evento":"requisicao","rota":"painel/sair","status":200,"requestId":"2c254239-adf2-436f-84fa-abaa91ecf6f7","duracaoMs":17}
+ [32m✓[39m src/lib/server/painel/painel.int.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 3230[2mms[22m[39m
+     [33m[2m✓[22m[39m bloqueio progressivo: 5 senhas erradas bloqueiam até a senha certa [33m 479[2mms[22m[39m
+     [33m[2m✓[22m[39m senha vazada (HIBP) é recusada; HIBP fora do ar também recusa (falha fechada) [33m 488[2mms[22m[39m
+{"ts":"2026-11-01T02:08:54.373Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"54662e6a-111f-4fe3-8422-0ae943be2f63","duracaoMs":96}
+{"ts":"2026-11-01T02:08:54.410Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"ce3522e7-b4cb-4eda-a761-3622358f498e","duracaoMs":36}
+{"ts":"2026-11-01T02:08:54.429Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"47eceb48-3114-47c4-9fca-f0604a0f7f19","duracaoMs":18}
+{"ts":"2026-11-01T02:08:54.452Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"6b2472c5-399e-4a9d-b13a-1f39855303c6","duracaoMs":21}
+{"ts":"2026-11-01T02:08:54.458Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"237c8a32-b43c-4737-8c47-749fc33b6b11","duracaoMs":6}
+{"ts":"2026-11-01T02:08:54.462Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/criar","status":400,"motivo":"teto","requestId":"4d94a674-0fe8-4c59-86f3-8e86199dbb65"}
+{"ts":"2026-11-01T02:08:54.466Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/criar","status":400,"motivo":"por_pessoa_zero","requestId":"144d37da-430d-4426-b3db-a834a563d03e"}
+{"ts":"2026-11-01T02:08:54.473Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"8c021632-7b4d-4a75-8649-9b30d66d21fc","duracaoMs":6}
+{"ts":"2026-11-01T02:08:54.508Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"3368fe0f-1549-48d3-9f3b-661d08a2427a","duracaoMs":34}
+{"ts":"2026-11-01T02:08:55.642Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"ce2c5699-06d2-4707-96d3-856c45e04237","duracaoMs":32}
+{"ts":"2026-11-01T02:08:56.795Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"c2419ef0-df14-481a-89f5-849d238a8625"}
+{"ts":"2026-11-01T02:08:56.796Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/criar","status":400,"motivo":"validacao","requestId":"6609adb4-0a6f-4364-adfc-a75111b836c5"}
+{"ts":"2026-11-01T02:08:56.797Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/criar","status":400,"motivo":"validacao","requestId":"88a4b247-9bc1-4afe-8e99-ef90a9a240f5"}
+{"ts":"2026-11-01T02:08:56.797Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/criar","status":400,"motivo":"validacao","requestId":"6f7848d5-0780-4c0b-ac36-2c8010aee21c"}
+{"ts":"2026-11-01T02:08:56.804Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"9d3ff8f0-d3e6-402c-a932-75e72740aac1","duracaoMs":7}
+{"ts":"2026-11-01T02:08:56.813Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"69153aaf-6224-43ef-ac37-807d48819e39","duracaoMs":6}
+{"ts":"2026-11-01T02:08:56.842Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"1f64d24d-bba3-446e-934b-40334e72ad13","duracaoMs":29}
+{"ts":"2026-11-01T02:08:56.879Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"c307fc87-224e-44f7-9397-a1f8ecbb3dc7"}
+{"ts":"2026-11-01T02:08:58.007Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"d7ded014-cb40-4447-baf7-258450f7eb56"}
+{"ts":"2026-11-01T02:08:59.138Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"1a5ac7c9-b095-4800-a423-79aa8b24a0b6"}
+{"ts":"2026-11-01T02:08:59.166Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"4f560be9-a5a7-4cf1-9eca-4feac895b0da"}
+{"ts":"2026-11-01T02:08:59.174Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/editar","status":409,"motivo":"travado","requestId":"61f4e63b-9891-429d-903c-fc599ffa63d3"}
+{"ts":"2026-11-01T02:08:59.181Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/editar","status":200,"requestId":"efae74d8-2699-45e9-89ca-da904e7893b0","duracaoMs":6}
+{"ts":"2026-11-01T02:08:59.183Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":400,"motivo":"validacao","requestId":"ae734568-c059-451c-b5b4-8b7b92ef96a8"}
+{"ts":"2026-11-01T02:08:59.184Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":403,"motivo":"csrf_token","requestId":"529a8b9c-54d4-4a5b-a463-073e9aa1b174"}
+{"ts":"2026-11-01T02:08:59.187Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":400,"motivo":"validacao","requestId":"75c7ea0a-1053-427e-abc4-788ec9e043c1"}
+{"ts":"2026-11-01T02:08:59.189Z","nivel":"error","evento":"dependencia_fora","rota":"bancas/pedido","dependencia":"redis","requestId":"69e0a4b0-1353-41df-9ebd-c433a28d425b"}
+{"ts":"2026-11-01T02:08:59.249Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"1adbb1c6-0f30-448e-9a62-21f05d091050","duracaoMs":6}
+{"ts":"2026-11-01T02:08:59.282Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"2e484e1f-164b-4827-b001-199de2e10ccb","duracaoMs":32}
+{"ts":"2026-11-01T02:09:00.414Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"bbc749c6-1ade-4381-83aa-6e50881f624c","duracaoMs":30}
+{"ts":"2026-11-01T02:09:00.421Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"9a791488-abba-494f-8651-47f961d45e1e","duracaoMs":6}
+{"ts":"2026-11-01T02:09:00.427Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/status","status":200,"requestId":"a4ca0025-7914-455a-9af1-5676ace2a32a","duracaoMs":6}
+{"ts":"2026-11-01T02:09:00.452Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"indisponivel","requestId":"21708d52-9f9c-4ef2-866b-1b977e75a7eb"}
+{"ts":"2026-11-01T02:09:00.458Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/status","status":200,"requestId":"7027a9c8-b97b-424f-8e6c-44d70abd804b","duracaoMs":5}
+{"ts":"2026-11-01T02:09:00.484Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"94a3c351-98ff-429d-9d59-11ad77713c91","duracaoMs":26}
+{"ts":"2026-11-01T02:09:00.490Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"a567da92-f490-409d-8b6a-7b26cd57f6a4","duracaoMs":6}
+{"ts":"2026-11-01T02:09:00.521Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"dd4e20cc-d09a-4d66-bb8d-31fbeefd1315","duracaoMs":31}
+{"ts":"2026-11-01T02:09:01.647Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"d34ebda9-7e98-4480-94c0-d4616217ecfd","duracaoMs":26}
+{"ts":"2026-11-01T02:09:02.751Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":429,"motivo":"rate_limit","requestId":"c32d52b3-32a7-4d1c-b03e-d57f073b0c2f"}
+ [32m✓[39m src/lib/server/publico/pedido.int.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 8658[2mms[22m[39m
+     [33m[2m✓[22m[39m mesma chave + mesmo CPF: abre o pedido que já entrou; outra chave: bloqueado [33m 2329[2mms[22m[39m
+     [33m[2m✓[22m[39m mesma chave Pix com outro CPF, na mesma banca: recusado com a MESMA mensagem (D-090) [33m 1128[2mms[22m[39m
+     [33m[2m✓[22m[39m mesmo IP com outro CPF (regra ligada): recusado com a MESMA mensagem [33m 1131[2mms[22m[39m
+     [33m[2m✓[22m[39m com a regra de IP desligada, o mesmo IP faz pedidos com CPFs diferentes [33m 1171[2mms[22m[39m
+     [33m[2m✓[22m[39m limite por IP: passou do limite, 429 [33m 2267[2mms[22m[39m
+{"ts":"2026-11-01T02:09:03.267Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"65eb4d75-ddab-4caa-9fe0-c6ff743b7e42","duracaoMs":107}
+{"ts":"2026-11-01T02:09:03.313Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"97037ca4-e122-42f5-a29b-21fe2edd0a81","duracaoMs":45}
+{"ts":"2026-11-01T02:09:03.334Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"d218e801-7213-475b-9df2-c2e8ebc51832","duracaoMs":19}
+{"ts":"2026-11-01T02:09:03.357Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"d2bc428a-997f-432b-b38a-1a1f58540177","duracaoMs":23}
+{"ts":"2026-11-01T02:09:03.392Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"210eeb44-5a6a-42fa-9828-ce8f42e15654","duracaoMs":33}
+{"ts":"2026-11-01T02:09:03.401Z","nivel":"info","evento":"requisicao","rota":"pedido/estado","status":200,"requestId":"defe2bbb-8c96-4531-b6d8-f4d3e907feba","duracaoMs":6}
+{"ts":"2026-11-01T02:09:03.430Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"76e68886-5f7a-4595-aa56-4660b2118100","duracaoMs":26}
+{"ts":"2026-11-01T02:09:03.455Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"31d6e915-2ebf-43e0-8450-4164a1a6802e"}
+{"ts":"2026-11-01T02:09:03.456Z","nivel":"warn","evento":"recusada","rota":"pedido/estado","status":401,"motivo":"sem_sessao_pedido","requestId":"662ff416-95a9-41ea-a827-40611fcc16a3"}
+{"ts":"2026-11-01T02:09:03.482Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"6c4c77e1-1495-438d-b9b0-9de8d82d2d5b","duracaoMs":25}
+{"ts":"2026-11-01T02:09:03.487Z","nivel":"info","evento":"requisicao","rota":"pedido/estado","status":200,"requestId":"b5567ebd-f143-458a-a006-85af4e15afc0","duracaoMs":4}
+{"ts":"2026-11-01T02:09:03.514Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"f32df391-179a-4c42-9c68-95705af05f74","duracaoMs":26}
+{"ts":"2026-11-01T02:09:03.518Z","nivel":"warn","evento":"recusada","rota":"pedido/mensagem","status":400,"motivo":"validacao","requestId":"9eb3a344-cdf7-45d5-bb28-52ad88a3cdb8"}
+{"ts":"2026-11-01T02:09:03.521Z","nivel":"warn","evento":"recusada","rota":"pedido/mensagem","status":429,"motivo":"rate_limit","requestId":"88a7fc29-e322-4210-98cd-5e3b242b1c87"}
+{"ts":"2026-11-01T02:09:05.629Z","nivel":"info","evento":"requisicao","rota":"pedido/mensagem","status":201,"requestId":"8f98ec3f-81dc-49b5-80de-da8334d0cf60","duracaoMs":7}
+{"ts":"2026-11-01T02:09:05.633Z","nivel":"info","evento":"requisicao","rota":"pedido/estado","status":200,"requestId":"fc63e10e-945d-424e-b46a-2e0821766303","duracaoMs":4}
+{"ts":"2026-11-01T02:09:05.660Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"b6c02a01-677d-44ad-bb80-978e7d2dead3","duracaoMs":26}
+{"ts":"2026-11-01T02:09:05.670Z","nivel":"info","evento":"requisicao","rota":"pedido/mensagem","status":201,"requestId":"1dc71c70-9dce-4520-a978-4051c6d51554","duracaoMs":6}
+{"ts":"2026-11-01T02:09:07.779Z","nivel":"warn","evento":"recusada","rota":"pedido/mensagem","status":409,"motivo":"finalizado","requestId":"39e758d1-d064-42f7-add1-5fe06a6fd7ba"}
+{"ts":"2026-11-01T02:09:07.783Z","nivel":"info","evento":"requisicao","rota":"pedido/estado","status":200,"requestId":"e545eeaa-50c5-4edd-b71a-997d62217afb","duracaoMs":3}
+{"ts":"2026-11-01T02:09:07.811Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"d8ecd0e0-81ae-410f-a9f4-4c3c88688086","duracaoMs":27}
+{"ts":"2026-11-01T02:09:07.840Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"1b4e59e9-6d94-4a3f-93f2-ddf83a91d3e4","duracaoMs":28}
+{"ts":"2026-11-01T02:09:07.852Z","nivel":"info","evento":"requisicao","rota":"pedido/realtime","status":200,"requestId":"6573266c-3aad-4551-9daa-0e6ca85876fc","duracaoMs":11}
+{"ts":"2026-11-01T02:09:25.716Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"d73f66a1-bcbc-48de-a1a6-44a2ad4ff93f","duracaoMs":41}
+ [32m✓[39m src/lib/server/publico/espectador.int.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 22751[2mms[22m[39m
+     [33m[2m✓[22m[39m mensagem do espectador entra no chat; texto vazio é recusado [33m 2145[2mms[22m[39m
+     [33m[2m✓[22m[39m prazo de 5 min: resposta no prazo zera o relógio; depois do prazo o pedido é encerrado [33m 2150[2mms[22m[39m
+     [33m[2m✓[22m[39m espectador ouve SÓ o próprio pedido; não ouve outro pedido nem o painel; não consegue emitir [33m 12768[2mms[22m[39m
+     [33m[2m✓[22m[39m moderador com MFA ouve o canal do painel; visitante (anon) ouve as vagas ao vivo [33m 5166[2mms[22m[39m
+{"ts":"2026-11-01T02:09:26.288Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"193920a6-be27-4916-9073-6afa7e227f10","duracaoMs":92}
+{"ts":"2026-11-01T02:09:26.325Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"fa8b2d7c-14b3-4e3a-9483-1790ad646a0d","duracaoMs":36}
+{"ts":"2026-11-01T02:09:26.344Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"0ba71051-5d95-4e64-8e99-5d1823163249","duracaoMs":17}
+{"ts":"2026-11-01T02:09:26.363Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"0bbda756-a4ec-4f91-a6e5-534438b67bb2","duracaoMs":18}
+{"ts":"2026-11-01T02:09:26.503Z","nivel":"info","evento":"requisicao","rota":"painel/convites/aceitar","status":201,"requestId":"42dc3a26-63cd-4627-aae4-36c660224063","duracaoMs":140}
+{"ts":"2026-11-01T02:09:26.587Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"a28b255f-2dd2-4e2b-ae62-e8eba3f660ff","duracaoMs":82}
+{"ts":"2026-11-01T02:09:26.621Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"5f15a557-ba9a-421e-9dec-a8f1874fc0bc","duracaoMs":33}
+{"ts":"2026-11-01T02:09:26.639Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"1927fd4e-b793-46f7-b48b-7cfaf854956f","duracaoMs":16}
+{"ts":"2026-11-01T02:09:26.646Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"de2032c1-fb5f-402f-b17b-bdaa1c030675","duracaoMs":7}
+{"ts":"2026-11-01T02:09:26.793Z","nivel":"info","evento":"requisicao","rota":"painel/convites/aceitar","status":201,"requestId":"543ae1bd-5e30-4124-ba0c-4b28f8a9a9c3","duracaoMs":147}
+{"ts":"2026-11-01T02:09:26.877Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"3536ea35-dade-4df6-b9c0-7c0d96bbc9b6","duracaoMs":83}
+{"ts":"2026-11-01T02:09:26.910Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"37e1e6a3-b5e0-4f98-b2c3-36d3bda0ded6","duracaoMs":33}
+{"ts":"2026-11-01T02:09:26.928Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"2ccb1ac4-7475-4594-b054-d6933d503a1b","duracaoMs":17}
+{"ts":"2026-11-01T02:09:26.938Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"150c70b8-de9b-4fdd-ba2f-a58c8b9bcc21","duracaoMs":9}
+{"ts":"2026-11-01T02:09:26.971Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"b0b194a3-8e13-43dc-ad35-51df79950da1","duracaoMs":32}
+{"ts":"2026-11-01T02:09:26.989Z","nivel":"info","evento":"requisicao","rota":"painel/fila","status":200,"requestId":"087fff48-b034-4e0a-9d48-03a85d970110","duracaoMs":17}
+{"ts":"2026-11-01T02:09:26.995Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/detalhe","status":200,"requestId":"f8ff4778-fede-4918-9b2b-89bb6fafafb6","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.002Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"1987b9d5-8574-454d-869b-e6e90e704656","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.028Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"2ab3c5c6-8b98-48bb-a29f-87c610617fd6","duracaoMs":26}
+{"ts":"2026-11-01T02:09:27.036Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/assumir","status":200,"requestId":"3af2477d-bddc-4cf9-938e-7a76c7a5a419","duracaoMs":7}
+{"ts":"2026-11-01T02:09:27.044Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/revelar","status":200,"requestId":"79b25b4c-6b56-4877-8ec3-75c2a2bc1fcf","duracaoMs":8}
+{"ts":"2026-11-01T02:09:27.051Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/copiar-pix","status":200,"requestId":"8778e0ee-bf98-43cd-9b07-2a8c235c2cc2","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.058Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"54638deb-bd00-469b-9ae2-112dd0c5671b","duracaoMs":5}
+{"ts":"2026-11-01T02:09:27.085Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"8a16b0ae-9fcc-4308-aad1-ed037cba843b","duracaoMs":26}
+{"ts":"2026-11-01T02:09:27.101Z","nivel":"info","evento":"requisicao","rota":"painel/modo-live","status":200,"requestId":"e9b04b91-d285-4868-b8e3-bcb584736b2a","duracaoMs":16}
+{"ts":"2026-11-01T02:09:27.107Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/detalhe","status":200,"requestId":"5ab1d885-0ee9-4289-8456-eda9372af915","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.111Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/detalhe","status":200,"requestId":"a4682b78-fcb3-41c5-a3d5-0c2a79d50cb7","duracaoMs":4}
+{"ts":"2026-11-01T02:09:27.116Z","nivel":"info","evento":"requisicao","rota":"painel/modo-live","status":200,"requestId":"267ee872-c8c1-45ba-9b05-0fb3655c13f6","duracaoMs":4}
+{"ts":"2026-11-01T02:09:27.123Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"d7809c27-9f1b-461f-9106-6459a30e2e75","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.149Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"c229f91e-6e4c-40dc-a59e-c979ba3655bb","duracaoMs":26}
+{"ts":"2026-11-01T02:09:27.158Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/assumir","status":200,"requestId":"754a445a-2af1-4fd9-8995-47c2a2a5a676","duracaoMs":9}
+{"ts":"2026-11-01T02:09:27.167Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/assumir","status":409,"motivo":"rpc_BP001","requestId":"f15e40ce-9938-40ff-a316-4de29e6603c2"}
+{"ts":"2026-11-01T02:09:27.175Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"608f1c41-cccc-4d19-add4-4f85e268ad33","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.209Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"e07029f4-f518-49fc-ba6b-99bc7ffac558","duracaoMs":34}
+{"ts":"2026-11-01T02:09:27.236Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"c7c9cbe1-05ec-4c74-b8bf-6a9648aae349","duracaoMs":26}
+{"ts":"2026-11-01T02:09:27.267Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"76898d6a-47fe-4d5e-b5e0-ce8d0ea223f6","duracaoMs":30}
+{"ts":"2026-11-01T02:09:27.275Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/assumir","status":200,"requestId":"3be4ded1-ac29-4bb3-acf6-a47259304ba9","duracaoMs":8}
+{"ts":"2026-11-01T02:09:27.284Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/pagar","status":200,"requestId":"cc143d54-865c-43a3-bff1-02bd0a363fd3","duracaoMs":8}
+{"ts":"2026-11-01T02:09:27.293Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/assumir","status":200,"requestId":"47c0b5d2-4950-400b-8bdd-9584234842a8","duracaoMs":9}
+{"ts":"2026-11-01T02:09:27.299Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/assumir","status":200,"requestId":"d2e526bf-6ae4-4e19-8c73-63f15bdf315d","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.310Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/pagar","status":200,"requestId":"371dec79-b088-4c03-9976-752e1dcbc597","duracaoMs":10}
+{"ts":"2026-11-01T02:09:27.310Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/pagar","status":409,"motivo":"rpc_BP002","requestId":"3b138a86-1143-4a04-87cd-c5512f2fd515"}
+{"ts":"2026-11-01T02:09:27.318Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"1a5b26c0-b41e-4ca2-a03e-86389eba9489","duracaoMs":5}
+{"ts":"2026-11-01T02:09:27.345Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"ac4efb81-4eab-47e5-9eac-bcf73f0234cc","duracaoMs":27}
+{"ts":"2026-11-01T02:09:27.351Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/assumir","status":200,"requestId":"f874aa45-1719-413f-9e3e-d5026a6e2380","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.359Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/pagar","status":200,"requestId":"04e61a69-8a3b-4f3c-b5f8-f766765c7a46","duracaoMs":8}
+{"ts":"2026-11-01T02:09:27.359Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/pagar","status":409,"motivo":"rpc_BP002","requestId":"09a7afee-2131-46f4-9079-0188631ebf90"}
+{"ts":"2026-11-01T02:09:27.364Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/pagar","status":200,"requestId":"dee8f5fc-76a9-4d98-a2f0-c588e2fdbd55","duracaoMs":4}
+{"ts":"2026-11-01T02:09:27.369Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/pagar","status":409,"motivo":"rpc_BP002","requestId":"9f0fa78c-6715-4041-b278-d5e990a58345"}
+{"ts":"2026-11-01T02:09:27.377Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"f3c60250-8eee-4f2a-83db-a1bb876fd4d8","duracaoMs":7}
+{"ts":"2026-11-01T02:09:27.384Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/editar","status":200,"requestId":"edf08bfd-2ef3-4c3c-985f-df76c04e7adb","duracaoMs":7}
+{"ts":"2026-11-01T02:09:27.390Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/status","status":200,"requestId":"18c72765-9cd8-4a66-8149-6b12a06bb87c","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.396Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"7373ffe2-2361-4f19-89fb-b1fdb10232e6","duracaoMs":5}
+{"ts":"2026-11-01T02:09:27.423Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"84f36306-f8a3-412d-87e6-d7eb24c0b47e","duracaoMs":26}
+{"ts":"2026-11-01T02:09:27.425Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/forcar","status":403,"motivo":"nao_owner","requestId":"a5656ccb-2f60-493d-973a-ef1e69ef3d50"}
+{"ts":"2026-11-01T02:09:27.428Z","nivel":"warn","evento":"recusada","rota":"painel/respostas/salvar","status":403,"motivo":"nao_owner","requestId":"24aeeb18-e2a0-48c7-8d66-33377c5eaffb"}
+{"ts":"2026-11-01T02:09:27.434Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"eca58e88-dfc0-4bcd-975c-f7c45da2d11e","duracaoMs":6}
+{"ts":"2026-11-01T02:09:27.459Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"02eedcd6-d2bf-478a-a6e6-9e7a17abc167","duracaoMs":25}
+{"ts":"2026-11-01T02:09:27.464Z","nivel":"info","evento":"requisicao","rota":"pedido/estado","status":200,"requestId":"db7d6699-0de5-4d0b-bbe9-cd0d374b173e","duracaoMs":4}
+{"ts":"2026-11-01T02:09:27.471Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/banir","status":200,"requestId":"d20132c0-e06d-4951-bcae-fac22a405b44","duracaoMs":7}
+{"ts":"2026-11-01T02:09:27.474Z","nivel":"warn","evento":"recusada","rota":"pedido/estado","status":401,"motivo":"sessao_pedido_invalida","requestId":"49956c90-ee45-475f-b100-4d10f3a7713e"}
+{"ts":"2026-11-01T02:09:27.480Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"2c4aa8ea-ac08-4d2f-8c4a-12fcea015257","duracaoMs":5}
+{"ts":"2026-11-01T02:09:27.506Z","nivel":"warn","evento":"recusada","rota":"bancas/pedido","status":409,"motivo":"bloqueado","requestId":"de490bfb-603e-4b5f-aa81-078caa3efab1"}
+{"ts":"2026-11-01T02:09:27.535Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"15c92f8e-2396-4f39-a0f5-5e8262c9abdb","duracaoMs":29}
+{"ts":"2026-11-01T02:09:27.536Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/banir","status":400,"motivo":"validacao","requestId":"ce6f86df-94a8-4949-bc88-f60af076e06a"}
+{"ts":"2026-11-01T02:09:27.536Z","nivel":"warn","evento":"recusada","rota":"painel/pedidos/banir","status":400,"motivo":"validacao","requestId":"5462ff8a-460a-4e82-a5ea-00abf4ebc771"}
+ [32m✓[39m src/lib/server/painel/atendimento.int.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 1553[2mms[22m[39m
+{"ts":"2026-11-01T02:09:28.139Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"dcde7d5e-e993-41f6-bf4a-f100ce4d9c05","duracaoMs":101}
+{"ts":"2026-11-01T02:09:28.176Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"6a18290d-a723-4984-8e08-96952df5a4e3","duracaoMs":36}
+{"ts":"2026-11-01T02:09:28.194Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"808fb111-7f8c-4c1d-9f0d-10937fea97c5","duracaoMs":16}
+{"ts":"2026-11-01T02:09:28.214Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"d646ec28-8f35-4499-b636-39f78bf94a82","duracaoMs":18}
+{"ts":"2026-11-01T02:09:28.246Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"3d359f1f-1a69-40c3-af65-fb1172409d48","duracaoMs":31}
+{"ts":"2026-11-01T02:09:28.312Z","nivel":"info","evento":"requisicao","rota":"pedido/comprovante","status":201,"requestId":"dda63b86-eeaf-4430-8ba7-9355dccad268","duracaoMs":54}
+{"ts":"2026-11-01T02:09:28.331Z","nivel":"info","evento":"requisicao","rota":"pedido/comprovante/ver","status":200,"requestId":"0d8013ca-68ac-4023-87f1-dcd1bddbba76","duracaoMs":11}
+{"ts":"2026-11-01T02:09:28.365Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"5c31a52d-a8c6-47f8-bbfd-156e32dbaa2c","duracaoMs":29}
+{"ts":"2026-11-01T02:09:28.370Z","nivel":"warn","evento":"recusada","rota":"pedido/comprovante/ver","status":404,"motivo":"anexo","requestId":"7c962c43-7185-4f5c-8c86-3ad431524247"}
+{"ts":"2026-11-01T02:09:28.381Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/comprovante","status":200,"requestId":"3f4358fe-428d-4187-afd1-45d17c63e848","duracaoMs":11}
+{"ts":"2026-11-01T02:09:28.387Z","nivel":"info","evento":"requisicao","rota":"pedido/estado","status":200,"requestId":"6174baa1-038b-4853-8bae-f86372a284ef","duracaoMs":5}
+{"ts":"2026-11-01T02:09:28.394Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"b66b64e6-52e7-4dda-a4dc-6352ac982ae8","duracaoMs":6}
+{"ts":"2026-11-01T02:09:28.423Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"f6eba0df-e2dd-4ae2-af24-4211d40b1762","duracaoMs":28}
+{"ts":"2026-11-01T02:09:28.426Z","nivel":"warn","evento":"recusada","rota":"pedido/comprovante","status":400,"motivo":"imagem_tipo","requestId":"b5e1fbbe-ed53-443f-9904-0888a26c7459"}
+{"ts":"2026-11-01T02:09:29.061Z","nivel":"warn","evento":"recusada","rota":"pedido/comprovante","status":413,"motivo":"imagem_grande","requestId":"77916fc1-8a0b-4f98-88c0-d73ffb1688a6"}
+{"ts":"2026-11-01T02:09:29.070Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"1f9c64dc-5860-4c68-9d38-ef482a492257","duracaoMs":7}
+{"ts":"2026-11-01T02:09:29.096Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"2b143153-72c9-4f74-8838-dad518997d67","duracaoMs":26}
+{"ts":"2026-11-01T02:09:29.138Z","nivel":"info","evento":"requisicao","rota":"pedido/comprovante","status":201,"requestId":"4b6f92ef-ee45-4cb5-a7ef-658c897eec1c","duracaoMs":34}
+{"ts":"2026-11-01T02:09:29.150Z","nivel":"warn","evento":"recusada","rota":"painel/bancas/encerrar","status":400,"motivo":"nome_confirmacao","requestId":"5b2d9606-95fd-4848-a898-ec219dcd9f20"}
+{"ts":"2026-11-01T02:09:29.159Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/encerrar","status":200,"requestId":"bd34fc9a-a039-4986-92fd-790caee0fdbe","duracaoMs":9}
+{"ts":"2026-11-01T02:09:29.165Z","nivel":"warn","evento":"recusada","rota":"pedido/estado","status":401,"motivo":"sessao_pedido_invalida","requestId":"3d974f63-526c-4c6b-8266-64f519e72d8e"}
+{"ts":"2026-11-01T02:09:29.204Z","nivel":"info","evento":"limpeza","quantidade":2,"tentativas":0}
+{"ts":"2026-11-01T02:09:29.227Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"1f599545-3d91-44b5-b2bd-63b24b9af053","duracaoMs":7}
+{"ts":"2026-11-01T02:09:29.254Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"3aed4963-1a7a-4cbc-aacb-ab72ed2175fe","duracaoMs":27}
+{"ts":"2026-11-01T02:09:29.298Z","nivel":"info","evento":"requisicao","rota":"pedido/comprovante","status":201,"requestId":"c0358762-4b5b-4d81-b661-e0d208fbaac3","duracaoMs":36}
+{"ts":"2026-11-01T02:09:29.307Z","nivel":"info","evento":"requisicao","rota":"painel/pedidos/apagar-dados","status":200,"requestId":"661e6e13-4efb-4d0c-83ee-8afca14fd6c4","duracaoMs":8}
+{"ts":"2026-11-01T02:09:29.311Z","nivel":"warn","evento":"recusada","rota":"pedido/estado","status":401,"motivo":"sessao_pedido_invalida","requestId":"b7f91ca2-0265-46c9-8208-7c95b5fd60e8"}
+{"ts":"2026-11-01T02:09:29.328Z","nivel":"info","evento":"limpeza","quantidade":2,"tentativas":0}
+{"ts":"2026-11-01T02:09:29.339Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"98a8b6c2-f14f-4163-b635-6c6201a1c973","duracaoMs":6}
+{"ts":"2026-11-01T02:09:29.345Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"73fec926-98ca-4330-997c-af484de8baa2","duracaoMs":5}
+{"ts":"2026-11-01T02:09:29.352Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/encerrar","status":200,"requestId":"5a690637-e7f3-48e6-b69c-b653df302cff","duracaoMs":7}
+{"ts":"2026-11-01T02:09:29.354Z","nivel":"info","evento":"limpeza","quantidade":0,"tentativas":0}
+{"ts":"2026-11-01T02:09:29.358Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/apagar-historico","status":200,"requestId":"77a6210a-cbd8-4843-be3f-785f022c12ef","duracaoMs":6}
+{"ts":"2026-11-01T02:09:29.360Z","nivel":"warn","evento":"recusada","rota":"interno/limpeza","status":401,"requestId":"53117ec8-9e3d-49e8-a7df-5eb6563cdc49"}
+{"ts":"2026-11-01T02:09:29.360Z","nivel":"warn","evento":"recusada","rota":"interno/limpeza","status":401,"requestId":"46f87271-4bd7-4a13-880d-6f4c2066f005"}
+{"ts":"2026-11-01T02:09:29.365Z","nivel":"info","evento":"limpeza","rota":"interno/limpeza","status":200,"requestId":"b0a1267d-07f4-457b-84be-9ee221dec52b"}
+ [32m✓[39m src/lib/server/encerramento.int.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 1583[2mms[22m[39m
+     [33m[2m✓[22m[39m texto com cara de imagem e arquivo acima de 5 MB são recusados, e nada vai para o Storage [33m 675[2mms[22m[39m
+ [32m✓[39m src/lib/server/seguranca.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/lib/validacao/pedido.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m src/lib/server/imagem.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 133[2mms[22m[39m
+{"ts":"2026-11-01T02:09:30.586Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"0f144bee-db90-40cf-af4c-58f3cade2228","duracaoMs":98}
+{"ts":"2026-11-01T02:09:30.622Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"58896340-a25d-4cf7-b1d0-29a20619efd6","duracaoMs":35}
+{"ts":"2026-11-01T02:09:30.642Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"9f41344e-22aa-41c9-ae0a-fbaabb4f3311","duracaoMs":18}
+{"ts":"2026-11-01T02:09:30.661Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"ad53d5dd-5521-4272-8f06-8a277c893278","duracaoMs":19}
+{"ts":"2026-11-01T02:09:30.669Z","nivel":"info","evento":"requisicao","rota":"painel/convites/criar","status":201,"requestId":"d1f0e3f1-c581-44da-af10-5bab01d7a911","duracaoMs":7}
+{"ts":"2026-11-01T02:09:30.672Z","nivel":"error","evento":"dependencia_fora","rota":"painel/convites/aceitar","dependencia":"turnstile","requestId":"0d0ab94a-fb1b-41b6-99ea-1c1c2ced748e"}
+{"ts":"2026-11-01T02:09:30.677Z","nivel":"error","evento":"dependencia_fora","rota":"painel/entrar","dependencia":"supabase","requestId":"b4166e1f-1850-4ad2-967b-397796f6ec5f"}
+{"ts":"2026-11-01T02:09:30.679Z","nivel":"error","evento":"dependencia_fora","rota":"pedido/estado","dependencia":"supabase","requestId":"cbbedd9e-2644-494a-ab32-f8005931edd1"}
+{"ts":"2026-11-01T02:09:30.687Z","nivel":"error","evento":"dependencia_fora","rota":"bancas/pedido","dependencia":"supabase","requestId":"2827b5e0-d9c5-45c6-91dc-5ddef8531cca"}
+ [32m✓[39m src/lib/server/falhas.int.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 453[2mms[22m[39m
+ [32m✓[39m src/lib/server/cripto.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/server/cf-access.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+{"ts":"2026-11-01T02:09:31.610Z","nivel":"info","evento":"requisicao","rota":"painel/entrar","status":200,"requestId":"c5791256-bd22-4d5b-adba-68155ea7b7f0","duracaoMs":91}
+{"ts":"2026-11-01T02:09:31.647Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/inscrever","status":200,"requestId":"ac2ab47d-d545-4242-abe0-28ea587803cb","duracaoMs":36}
+{"ts":"2026-11-01T02:09:31.666Z","nivel":"info","evento":"requisicao","rota":"painel/mfa/verificar","status":200,"requestId":"33414756-d742-4212-9968-ead61aa6d57b","duracaoMs":17}
+{"ts":"2026-11-01T02:09:31.685Z","nivel":"info","evento":"requisicao","rota":"painel/bancas/criar","status":201,"requestId":"11959f96-9876-42a9-be0f-6e1ae1493114","duracaoMs":19}
+{"ts":"2026-11-01T02:09:31.718Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"31e5e183-c26d-4bbe-ab9a-6e097fbdadc2","duracaoMs":33}
+{"ts":"2026-11-01T02:09:31.751Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"200ffc16-f751-49be-b202-85be715ae677","duracaoMs":33}
+{"ts":"2026-11-01T02:09:31.781Z","nivel":"info","evento":"requisicao","rota":"bancas/pedido","status":201,"requestId":"1846f1f8-de04-4df8-a7f3-25e3292f7251","duracaoMs":29}
+ [32m✓[39m src/lib/server/rotacao.int.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 546[2mms[22m[39m
+ [32m✓[39m src/lib/mascara.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/lib/env.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/theme/contrast.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/test/util.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[32m157 passed[39m[22m[90m (157)[39m
+[2m   Start at [22m 02:08:50
+[2m   Duration [22m 42.00s[2m (transform 247ms, setup 0ms, import 1.46s, tests 39.02s, environment 1ms)[22m
+

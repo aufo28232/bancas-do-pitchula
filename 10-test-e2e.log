@@ -1,0 +1,46 @@
+$ playwright test
+
+Running 39 tests using 1 worker
+
+  ✓   1 [preparar] › e2e/preparar.spec.ts:13:1 › streamer entra com MFA pela tela e cria uma banca (3.6s)
+  ✓   2 [desktop] › e2e/banca.spec.ts:19:1 › mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genérica (5.3s)
+  ✓   3 [desktop] › e2e/banca.spec.ts:79:1 › enviar com erros foca o primeiro campo inválido e anuncia o erro (280ms)
+  ✓   4 [desktop] › e2e/banca.spec.ts:90:1 › dá para preencher e enviar só com o teclado (2.2s)
+  ✓   5 [desktop] › e2e/banca.spec.ts:120:1 › link de banca inexistente sai do link (vai para a banca atual ou para a espera) (218ms)
+  ✓   6 [desktop] › e2e/banca.spec.ts:128:1 › política de privacidade acessível e sem violações graves (605ms)
+  ✓   7 [desktop] › e2e/painel.spec.ts:55:1 › streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pagar e pânico (12.5s)
+  -   8 [desktop] › e2e/painel.spec.ts:139:1 › painel no celular: fila e pedido em telas separadas, sem rolagem horizontal
+  ✓   9 [desktop] › e2e/painel.spec.ts:160:1 › comprovante no chat e encerramento: tudo é apagado e todos voltam para o início (5.8s)
+  ✓  10 [desktop] › e2e/pedido.spec.ts:57:1 › a fila anda: quando o pedido da frente sai, a posição desce sem recarregar (20.5s)
+  ✓  11 [desktop] › e2e/pedido.spec.ts:84:1 › acompanha o pedido: posição, beep ao ser assumido, prazo e chat (3.1s)
+  ✓  12 [desktop] › e2e/pedido.spec.ts:142:1 › sem pedido neste navegador, /pedido mostra aviso e não vaza nada (239ms)
+  ✓  13 [desktop] › e2e/pedido.spec.ts:147:1 › tela inicial abre a banca mais recente e o link encerrado deixa de valer (568ms)
+  ✓  14 [desktop] › e2e/seguranca.spec.ts:11:1 › toda página sai com CSP de nonce e os cabeçalhos de base (58ms)
+  ✓  15 [desktop] › e2e/seguranca.spec.ts:31:1 › nonce muda a cada requisição (35ms)
+  ✓  16 [desktop] › e2e/seguranca.spec.ts:36:1 › páginas com token ou dados pessoais: sem Referer e sem indexação (25ms)
+  ✓  17 [desktop] › e2e/seguranca.spec.ts:46:1 › cookie de CSRF com __Host-, Secure e SameSite=Strict (9ms)
+  ✓  18 [desktop] › e2e/seguranca.spec.ts:56:1 › API: sem token CSRF, de outra origem ou cross-site: 403; respostas sem cache (9ms)
+  ✓  19 [desktop] › e2e/seguranca.spec.ts:69:1 › rota interna de limpeza exige o segredo (9ms)
+  ✓  20 [desktop] › e2e/seguranca.spec.ts:76:1 › arquivos internos não são servidos (48ms)
+  ✓  21 [celular] › e2e/banca.spec.ts:19:1 › mostra a banca, aceita o pedido e recusa o mesmo CPF com mensagem genérica (5.9s)
+  ✓  22 [celular] › e2e/banca.spec.ts:79:1 › enviar com erros foca o primeiro campo inválido e anuncia o erro (279ms)
+  -  23 [celular] › e2e/banca.spec.ts:90:1 › dá para preencher e enviar só com o teclado
+  ✓  24 [celular] › e2e/banca.spec.ts:120:1 › link de banca inexistente sai do link (vai para a banca atual ou para a espera) (213ms)
+  ✓  25 [celular] › e2e/banca.spec.ts:128:1 › política de privacidade acessível e sem violações graves (578ms)
+  -  26 [celular] › e2e/painel.spec.ts:55:1 › streamer atende um pedido ao vivo: modo live, chat com prazo, revelar, pagar e pânico
+  ✓  27 [celular] › e2e/painel.spec.ts:139:1 › painel no celular: fila e pedido em telas separadas, sem rolagem horizontal (3.1s)
+  -  28 [celular] › e2e/painel.spec.ts:160:1 › comprovante no chat e encerramento: tudo é apagado e todos voltam para o início
+  ✓  29 [celular] › e2e/pedido.spec.ts:57:1 › a fila anda: quando o pedido da frente sai, a posição desce sem recarregar (20.5s)
+  ✓  30 [celular] › e2e/pedido.spec.ts:84:1 › acompanha o pedido: posição, beep ao ser assumido, prazo e chat (3.7s)
+  ✓  31 [celular] › e2e/pedido.spec.ts:142:1 › sem pedido neste navegador, /pedido mostra aviso e não vaza nada (217ms)
+  ✓  32 [celular] › e2e/pedido.spec.ts:147:1 › tela inicial abre a banca mais recente e o link encerrado deixa de valer (634ms)
+  -  33 [celular] › e2e/seguranca.spec.ts:11:1 › toda página sai com CSP de nonce e os cabeçalhos de base
+  -  34 [celular] › e2e/seguranca.spec.ts:31:1 › nonce muda a cada requisição
+  -  35 [celular] › e2e/seguranca.spec.ts:36:1 › páginas com token ou dados pessoais: sem Referer e sem indexação
+  -  36 [celular] › e2e/seguranca.spec.ts:46:1 › cookie de CSRF com __Host-, Secure e SameSite=Strict
+  -  37 [celular] › e2e/seguranca.spec.ts:56:1 › API: sem token CSRF, de outra origem ou cross-site: 403; respostas sem cache
+  -  38 [celular] › e2e/seguranca.spec.ts:69:1 › rota interna de limpeza exige o segredo
+  -  39 [celular] › e2e/seguranca.spec.ts:76:1 › arquivos internos não são servidos
+
+  11 skipped
+  28 passed (1.6m)

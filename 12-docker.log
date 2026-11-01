@@ -1,0 +1,252 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.75kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 ...
+
+#3 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.8s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#4 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e done
+#4 sha256:9d2b4f57f9e20f33279375ce25c6ff14f30f64270ed5c7b613b2b30256754f62 7.34MB / 14.28MB 0.2s
+#4 sha256:9d2b4f57f9e20f33279375ce25c6ff14f30f64270ed5c7b613b2b30256754f62 14.28MB / 14.28MB 0.2s done
+#4 extracting sha256:9d2b4f57f9e20f33279375ce25c6ff14f30f64270ed5c7b613b2b30256754f62 0.1s done
+#4 DONE 0.4s
+
+#5 [internal] load metadata for docker.io/library/node:26.12.1-bookworm-slim
+#5 ...
+
+#6 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/node:26.12.1-bookworm-slim
+#5 DONE 0.8s
+
+#7 [internal] load .dockerignore
+#7 transferring context: 243B done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 2.28MB 0.0s done
+#8 DONE 0.0s
+
+#9 [deps 1/5] FROM docker.io/library/node:26.12.1-bookworm-slim@sha256:88e480776c6149ff1d098cd304f44bf18057fb5d284a3329b78162d29821e28c
+#9 resolve docker.io/library/node:26.12.1-bookworm-slim@sha256:88e480776c6149ff1d098cd304f44bf18057fb5d284a3329b78162d29821e28c done
+#9 sha256:2e537d67d8ec2eb5ae62e715dd6398b238dc802de9d03c6ff93500f28a5d6790 449B / 449B 0.1s done
+#9 sha256:cda6f71c9f5031e5a92ae8b69ebfc15d5192d3faddc7e07e1819cd40576b5cc8 3.31kB / 3.31kB 0.2s done
+#9 sha256:dd40b3a1a7f769425648354dd97ae090711b48200a0cd33d2f9cc4e80dee3d59 0B / 55.85MB 0.2s
+#9 sha256:3c5439d0ae62993af4cc4e21b8c777297e81bc40e200d4633c85a3e0f977a3bc 0B / 28.25MB 0.2s
+#9 sha256:dd40b3a1a7f769425648354dd97ae090711b48200a0cd33d2f9cc4e80dee3d59 42.99MB / 55.85MB 0.5s
+#9 sha256:3c5439d0ae62993af4cc4e21b8c777297e81bc40e200d4633c85a3e0f977a3bc 10.49MB / 28.25MB 0.3s
+#9 sha256:dd40b3a1a7f769425648354dd97ae090711b48200a0cd33d2f9cc4e80dee3d59 55.85MB / 55.85MB 0.6s
+#9 sha256:3c5439d0ae62993af4cc4e21b8c777297e81bc40e200d4633c85a3e0f977a3bc 28.25MB / 28.25MB 0.5s
+#9 sha256:3c5439d0ae62993af4cc4e21b8c777297e81bc40e200d4633c85a3e0f977a3bc 28.25MB / 28.25MB 0.7s done
+#9 sha256:dd40b3a1a7f769425648354dd97ae090711b48200a0cd33d2f9cc4e80dee3d59 55.85MB / 55.85MB 0.8s done
+#9 extracting sha256:3c5439d0ae62993af4cc4e21b8c777297e81bc40e200d4633c85a3e0f977a3bc
+#9 extracting sha256:3c5439d0ae62993af4cc4e21b8c777297e81bc40e200d4633c85a3e0f977a3bc 0.6s done
+#9 DONE 1.4s
+
+#9 [deps 1/5] FROM docker.io/library/node:26.12.1-bookworm-slim@sha256:88e480776c6149ff1d098cd304f44bf18057fb5d284a3329b78162d29821e28c
+#9 extracting sha256:cda6f71c9f5031e5a92ae8b69ebfc15d5192d3faddc7e07e1819cd40576b5cc8 done
+#9 extracting sha256:dd40b3a1a7f769425648354dd97ae090711b48200a0cd33d2f9cc4e80dee3d59
+#9 extracting sha256:dd40b3a1a7f769425648354dd97ae090711b48200a0cd33d2f9cc4e80dee3d59 0.8s done
+#9 DONE 2.2s
+
+#9 [deps 1/5] FROM docker.io/library/node:26.12.1-bookworm-slim@sha256:88e480776c6149ff1d098cd304f44bf18057fb5d284a3329b78162d29821e28c
+#9 extracting sha256:2e537d67d8ec2eb5ae62e715dd6398b238dc802de9d03c6ff93500f28a5d6790 0.0s done
+#9 DONE 2.2s
+
+#10 [deps 2/5] WORKDIR /app
+#10 DONE 1.4s
+
+#11 [runtime 3/5] RUN groupadd --system --gid 10001 app  && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+#11 0.180 useradd warning: app's uid 10001 is greater than SYS_UID_MAX 999
+#11 DONE 0.3s
+
+#12 [deps 3/5] RUN npm install -g pnpm@12.15.0 && npm cache clean --force
+#12 1.768 
+#12 1.768 added 2 packages in 2s
+#12 1.769 npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+#12 1.769 npm warn install-scripts   pnpm@12.15.0 (preinstall: node install.js; postinstall: node install.js)
+#12 1.769 npm warn install-scripts
+#12 1.769 npm warn install-scripts Run `npm install -g --allow-scripts=pnpm` to allow these scripts once, or `npm config set allow-scripts=pnpm --location=user` to allow them for all global installs.
+#12 1.770 npm notice
+#12 1.770 npm notice New major version of npm available! 11.20.0 -> 12.2.1
+#12 1.770 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#12 1.770 npm notice To update run: npm install -g npm@12.2.1
+#12 1.770 npm notice
+#12 1.890 npm warn using --force Recommended protections disabled.
+#12 DONE 2.1s
+
+#13 [deps 4/5] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+#13 DONE 0.0s
+
+#14 [deps 5/5] RUN pnpm install --frozen-lockfile
+#14 0.152 ? Verifying lockfile against supply-chain policies (525 entries)...
+#14 0.289 Update available! 12.15.0 → 12.16.1.
+#14 0.289 Changelog: https://pnpm.io/v/12.16.1
+#14 0.289 To update, run: pnpm self-update
+#14 0.328 Packages are hard linked from the content-addressable store to the virtual store.
+#14 0.328   Content-addressable store is at: /pnpm/store/v11
+#14 0.328   Virtual store is at:             node_modules/.pnpm
+#14 0.686 Downloading @img/sharp-libvips-linux-x64@1.3.4: 0.00 B/8.21 MB
+#14 0.924 Downloading next@16.4.3: 0.00 B/43.60 MB
+#14 1.030 Downloading @rolldown/binding-linux-x64-gnu@1.2.15: 0.00 B/8.30 MB
+#14 1.102 Downloading @next/swc-linux-x64-gnu@16.4.3: 0.00 B/35.23 MB
+#14 2.133 Downloading next@16.4.3: 4.29 MB/43.60 MB
+#14 2.153 ✓ Lockfile passes supply-chain policies (525 entries in 2s)
+#14 2.153 Lockfile is up to date, resolution step is skipped
+#14 3.301 Downloading next@16.4.3: 43.60 MB/43.60 MB, done
+#14 3.395 Packages: +396
+#14 3.395 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#14 3.415 Progress: resolved 396, reused 0, downloaded 396, added 396, done
+#14 3.548 
+#14 3.548 dependencies:
+#14 3.548 + @supabase/realtime-js 2.118.0
+#14 3.548 + next 16.4.3
+#14 3.548 + react 19.2.9
+#14 3.548 + react-dom 19.2.9
+#14 3.548 + sharp 0.35.5
+#14 3.548 + zod 4.6.7
+#14 3.548 
+#14 3.548 devDependencies:
+#14 3.548 + @axe-core/playwright 4.14.0
+#14 3.548 + @playwright/test 1.64.1
+#14 3.548 + @tailwindcss/postcss 4.3.3
+#14 3.548 + @types/node 26.6.5
+#14 3.548 + @types/react 19.3.0
+#14 3.548 + @types/react-dom 19.3.0
+#14 3.548 + eslint 9.39.5
+#14 3.548 + eslint-config-next 16.4.3
+#14 3.548 + postgres 3.4.9
+#14 3.548 + tailwindcss 4.3.3
+#14 3.548 + tsx 4.23.15
+#14 3.548 + typescript 6.0.3
+#14 3.548 + vitest 4.1.12
+#14 3.548 
+#14 3.585 Done in 3.5s using pnpm v12.15.0
+#14 DONE 7.5s
+
+#15 [build 1/2] COPY . .
+#15 DONE 0.3s
+
+#16 [build 2/2] RUN pnpm build
+#16 0.131 $ next build && node scripts/standalone.mjs
+#16 0.427 ▲ Next.js 16.4.3 (Turbopack)
+#16 0.451 ✓ Running next.config.ts took 23ms
+#16 0.460 
+#16 0.486   Creating an optimized production build ...
+#16 6.839 ✓ Compiled successfully in 6.4s
+#16 6.844   Running TypeScript ...
+#16 11.12   Finished TypeScript in 4.3s ...
+#16 11.12   Collecting page data using 3 workers ...
+#16 11.81   Generating static pages using 3 workers (0/61) ...
+#16 11.85   Generating static pages using 3 workers (15/61) 
+#16 11.90   Generating static pages using 3 workers (30/61) 
+#16 11.93   Generating static pages using 3 workers (45/61) 
+#16 11.98 ✓ Generating static pages using 3 workers (61/61) in 164ms
+#16 11.98   Finalizing page optimization ...
+#16 12.37 
+#16 12.37 Route (app)
+#16 12.37 ┌ ƒ /
+#16 12.37 ├ ƒ /_not-found
+#16 12.37 ├ ƒ /[slug]
+#16 12.37 ├ ƒ /api/bancas/pedido
+#16 12.37 ├ ƒ /api/interno/limpeza
+#16 12.37 ├ ƒ /api/painel/alertas/ciente
+#16 12.37 ├ ƒ /api/painel/auth/entrar
+#16 12.37 ├ ƒ /api/painel/auth/mfa/inscrever
+#16 12.37 ├ ƒ /api/painel/auth/mfa/verificar
+#16 12.37 ├ ƒ /api/painel/auth/sair
+#16 12.37 ├ ƒ /api/painel/bancas/apagar-historico
+#16 12.37 ├ ƒ /api/painel/bancas/criar
+#16 12.37 ├ ƒ /api/painel/bancas/editar
+#16 12.37 ├ ƒ /api/painel/bancas/encerrar
+#16 12.37 ├ ƒ /api/painel/bancas/status
+#16 12.37 ├ ƒ /api/painel/banidos/desbanir
+#16 12.37 ├ ƒ /api/painel/convites/aceitar
+#16 12.37 ├ ƒ /api/painel/convites/criar
+#16 12.37 ├ ƒ /api/painel/convites/revogar
+#16 12.37 ├ ƒ /api/painel/equipe/remover
+#16 12.37 ├ ƒ /api/painel/equipe/resetar-mfa
+#16 12.37 ├ ƒ /api/painel/fila
+#16 12.37 ├ ƒ /api/painel/modo-live
+#16 12.37 ├ ƒ /api/painel/pedidos/apagar-dados
+#16 12.37 ├ ƒ /api/painel/pedidos/assumir
+#16 12.37 ├ ƒ /api/painel/pedidos/banir
+#16 12.37 ├ ƒ /api/painel/pedidos/comprovante
+#16 12.37 ├ ƒ /api/painel/pedidos/copiar-pix
+#16 12.37 ├ ƒ /api/painel/pedidos/detalhe
+#16 12.37 ├ ƒ /api/painel/pedidos/forcar
+#16 12.37 ├ ƒ /api/painel/pedidos/liberar
+#16 12.37 ├ ƒ /api/painel/pedidos/mensagem
+#16 12.37 ├ ƒ /api/painel/pedidos/pagar
+#16 12.37 ├ ƒ /api/painel/pedidos/recusar
+#16 12.37 ├ ƒ /api/painel/pedidos/revelar
+#16 12.37 ├ ƒ /api/painel/realtime
+#16 12.37 ├ ƒ /api/painel/respostas
+#16 12.37 ├ ƒ /api/painel/respostas/remover
+#16 12.37 ├ ƒ /api/painel/respostas/salvar
+#16 12.37 ├ ƒ /api/painel/sessoes/revogar
+#16 12.37 ├ ƒ /api/pedido/comprovante
+#16 12.37 ├ ƒ /api/pedido/comprovante/ver
+#16 12.37 ├ ƒ /api/pedido/estado
+#16 12.37 ├ ƒ /api/pedido/mensagem
+#16 12.37 ├ ƒ /api/pedido/realtime
+#16 12.37 ├ ○ /apple-icon.png
+#16 12.37 ├ ○ /icon.png
+#16 12.37 ├ ƒ /painel
+#16 12.37 ├ ƒ /painel/auditoria
+#16 12.37 ├ ƒ /painel/bancas/[id]
+#16 12.37 ├ ƒ /painel/bancas/[id]/atendimento
+#16 12.37 ├ ƒ /painel/bancas/nova
+#16 12.37 ├ ƒ /painel/banidos
+#16 12.37 ├ ƒ /painel/convite
+#16 12.37 ├ ƒ /painel/diagnostico
+#16 12.37 ├ ƒ /painel/entrar
+#16 12.37 ├ ƒ /painel/equipe
+#16 12.37 ├ ƒ /painel/mfa
+#16 12.37 ├ ƒ /painel/respostas
+#16 12.37 ├ ƒ /painel/sessoes
+#16 12.37 ├ ƒ /pedido
+#16 12.37 └ ƒ /privacidade
+#16 12.37 
+#16 12.37 
+#16 12.37 ƒ Proxy (Middleware)
+#16 12.37 
+#16 12.37 ○  (Static)   prerendered as static content
+#16 12.37 ƒ  (Dynamic)  server-rendered on demand
+#16 12.37 
+#16 12.44 standalone pronto: .next/standalone (public e .next/static copiados)
+#16 DONE 12.6s
+
+#17 [runtime 4/5] COPY --from=build --chown=root:root /app/.next/standalone ./
+#17 DONE 0.5s
+
+#18 [runtime 5/5] RUN mkdir -p .next/cache && chown app:app .next/cache
+#18 DONE 0.1s
+
+#19 exporting to image
+#19 exporting layers
+#19 exporting layers 1.3s done
+#19 exporting manifest sha256:99fe219fd3a833fc2eb41b3a23ffa2879e20ce2a3fd79cf46f5b749edc1b2b77 done
+#19 exporting config sha256:8fe20c60cbea2e43fdf834751173d33ae4f91653dd652a1a8918ec23530e3601 done
+#19 exporting attestation manifest sha256:77353f351b603349a4aa4f9b20f6be922064e1d30fdad48f1d01cfb59e6fa6cf done
+#19 exporting manifest list sha256:275a126a7add400e9e4ad2b831bf7569d74c0dc4ef047d2f1e5658f6b7ceeb7e done
+#19 naming to docker.io/library/bancas:ci done
+#19 unpacking to docker.io/library/bancas:ci
+#19 unpacking to docker.io/library/bancas:ci 0.4s done
+#19 DONE 1.7s
+usuário na imagem: 10001
+e027453ddddb8754930fe9a6563450ddea16ff3cdadac89d20f0695f87396a05
+curl: (7) Failed to connect to 127.0.0.1 port 3100 after 0 ms: Could not connect to server
+Strict-Transport-Security: max-age=63072000; includeSubDomains
+X-Frame-Options: DENY
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-7T7yFYYE0F
+bancas-ci
+tamanho da imagem: 413MB
