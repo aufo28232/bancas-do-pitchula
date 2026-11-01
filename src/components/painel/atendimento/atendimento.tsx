@@ -107,10 +107,11 @@ export function Atendimento({ inicial, respostas, dono }: Props) {
 
     const agendar = () => {
       if (agendado) return;
+      // D-091: no máximo uma busca a cada 1,5 s, mesmo com muitos pedidos chegando.
       agendado = setTimeout(() => {
         agendado = undefined;
         void atualizar();
-      }, 250);
+      }, 1500);
     };
 
     async function conectar() {

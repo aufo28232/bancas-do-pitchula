@@ -7,7 +7,7 @@ import { RetomarPedido } from "@/components/pedido/retomar-pedido";
 import { SiteFooter } from "@/components/site-footer";
 import { site } from "@/config/site";
 import { formatarReais } from "@/lib/dinheiro";
-import { getSecurityEnv, getServerEnv, getSupabaseEnv } from "@/lib/env";
+import { getSecurityEnv, getServerEnv } from "@/lib/env";
 import { codigoDoSlug } from "@/lib/server/codigo-banca";
 import { bancaPublica } from "@/lib/server/publico/banca";
 import { theme } from "@/theme/theme";
@@ -69,8 +69,6 @@ export default async function PaginaBanca({ params }: Props) {
   const casa = banca.platform_name ?? env.PLATFORM_NAME;
   const linkCadastro = banca.platform_name ? (banca.signup_url ?? "") : env.PLATFORM_SIGNUP_URL;
   const { TURNSTILE_SITE_KEY } = getSecurityEnv();
-  // Chave PÚBLICA (anon): só abre o canal de leitura do estado da banca.
-  const { SUPABASE_URL, SUPABASE_ANON_KEY } = getSupabaseEnv();
 
   return (
     <main className="relative z-[1] min-h-svh lg:grid lg:grid-cols-[45fr_55fr]">
@@ -107,12 +105,7 @@ export default async function PaginaBanca({ params }: Props) {
             <span className="mt-2 block text-base font-extrabold uppercase tracking-[0.2em] text-fg-muted">por pessoa</span>
           </p>
 
-          <EstadoAoVivo
-            codigo={codigo}
-            statusInicial={banca.status}
-            url={SUPABASE_URL}
-            chavePublica={SUPABASE_ANON_KEY}
-          />
+          <EstadoAoVivo />
 
           {banca.status === "aberta" ? (
             <div className="mt-10">

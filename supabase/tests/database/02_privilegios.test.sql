@@ -95,7 +95,7 @@ select set_eq(
     'api.public_get_banca', 'api.public_create_order', 'api.public_home',
     'api.srv_open_order_session', 'api.srv_bind_viewer', 'api.srv_viewer_state', 'api.srv_viewer_post_message',
     'api.srv_viewer_add_attachment', 'api.srv_viewer_attachment_path', 'api.srv_viewer_delete',
-    'api.srv_maintenance', 'api.srv_purge_batch', 'api.srv_purge_done'
+    'api.srv_maintenance', 'api.srv_purge_batch', 'api.srv_purge_done', 'api.srv_reclaim_order'
   ],
   'service_role só executa as funções srv_ e public_ (nada de app.* direto)'
 );

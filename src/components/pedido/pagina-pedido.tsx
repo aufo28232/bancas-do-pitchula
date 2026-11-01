@@ -176,10 +176,8 @@ export function PaginaPedido() {
           },
           (ok) => setConectado(ok),
         );
-        if (d.topicos.vagas) {
-          // Banca encerrada: tudo é apagado e todos voltam para "Aguardando banca..." (D-044).
-          rt.ouvir(d.topicos.vagas, { banca_encerrada: () => router.replace("/") }, () => undefined);
-        }
+        // D-091: não ouve mais o canal público da banca (cada pagamento chegava a todos os
+        // pedidos abertos). O encerramento chega pelo canal do próprio pedido e pelo polling.
       } else {
         await rt.definirToken(d.token);
       }
@@ -202,11 +200,11 @@ export function PaginaPedido() {
     return () => document.removeEventListener("pointerdown", liberar);
   }, [pronto]);
 
-  // 3. Polling de reserva: rápido sem tempo real; com ele, a cada 20 s, para a posição
-  //    nunca ficar parada se algum aviso ao vivo se perder (D-090).
+  // 3. A posição na fila vem daqui (D-091: o banco não avisa mais pedido a pedido):
+  //    a cada 15 s com o tempo real ligado (status e chat chegam ao vivo), 10 s sem ele.
   useEffect(() => {
     if (!pronto) return;
-    const id = setInterval(() => void carregar(false), conectado ? 20_000 : 8_000);
+    const id = setInterval(() => void carregar(false), conectado ? 15_000 : 10_000);
     return () => clearInterval(id);
   }, [pronto, conectado, carregar]);
 

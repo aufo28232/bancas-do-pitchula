@@ -120,6 +120,8 @@ export const pedidoSchema = z
     privacidade: z.literal(true, MENSAGENS.privacidade),
     maioridade: z.literal(true, MENSAGENS.maioridade),
     turnstile: z.string().min(1, MENSAGENS.turnstile).max(2048),
+    /** Chave aleatória da tentativa, guardada no navegador até dar certo (D-091). */
+    tentativa: z.guid().optional(),
   })
   .superRefine((d, ctx) => {
     if (!normalizarPix(d.pixTipo, d.pixChave)) {

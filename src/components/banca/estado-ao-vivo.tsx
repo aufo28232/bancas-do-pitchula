@@ -1,50 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { TempoReal } from "@/lib/client/tempo-real";
-
-type Props = {
-  codigo: string;
-  statusInicial: string;
-  url: string;
-  chavePublica: string;
-};
+import { useEffect } from "react";
 
 /**
- * Acompanha a banca ao vivo (canal público SÓ DE LEITURA `vagas:{código}`) sem
- * mostrar a contagem de vagas (D-084). Mudou o estado (pausada, esgotada,
- * reaberta): recarrega os dados do servidor. Encerrada: volta para o início (D-044).
+ * Mantém a página da banca em dia (pausada, esgotada, encerrada) sem tempo real (D-091):
+ * com centenas de pessoas na página, cada pagamento virava uma mensagem para cada uma,
+ * e o plano grátis do Supabase aceita ~100 mensagens/s e 200 conexões. Aqui a página
+ * só pergunta ao servidor a cada 30 s, e só com a aba visível. Banca encerrada: o
+ * servidor já manda para o início (D-044).
  */
-export function EstadoAoVivo({ codigo, statusInicial, url, chavePublica }: Props) {
+export function EstadoAoVivo() {
   const router = useRouter();
-  const [conectado, setConectado] = useState(false);
-
   useEffect(() => {
-    let status = statusInicial;
-    const rt = new TempoReal(url, chavePublica);
-    rt.ouvir(
-      `vagas:${codigo}`,
-      {
-        vagas: (p) => {
-          if (typeof p.status === "string" && p.status !== status) {
-            status = p.status;
-            router.refresh();
-          }
-        },
-        banca_encerrada: () => router.replace("/"),
-      },
-      setConectado,
-    );
-    return () => rt.encerrar();
-  }, [codigo, url, chavePublica, statusInicial, router]);
-
-  // Sem tempo real: atualiza pelo servidor de tempos em tempos.
-  useEffect(() => {
-    if (conectado) return;
-    const id = setInterval(() => router.refresh(), 30_000);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh();
+    }, 30_000);
     return () => clearInterval(id);
-  }, [conectado, router]);
-
-  return <span hidden data-ao-vivo={conectado ? "sim" : "nao"} />;
+  }, [router]);
+  return null;
 }

@@ -54,7 +54,7 @@ async function fazerPedido(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/pedido$/);
 }
 
-test("a fila anda ao vivo: quando o pedido da frente sai, a posição desce", async ({ browser, page }) => {
+test("a fila anda: quando o pedido da frente sai, a posição desce sem recarregar", async ({ browser, page }) => {
   // Pedido A (da frente), num navegador separado.
   const ctxA = await browser.newContext({ baseURL: "http://localhost:3000", locale: "pt-BR" });
   const frente = await ctxA.newPage();
@@ -70,11 +70,14 @@ test("a fila anda ao vivo: quando o pedido da frente sai, a posição desce", as
   const antes = Number(await posicao.getAttribute("data-posicao"));
   expect(antes).toBeGreaterThanOrEqual(2);
 
-  // A sai da fila (recusado): B desce sem recarregar a página, pelo tempo real.
+  // A sai da fila (recusado): B desce sem recarregar a página (consulta a cada 15 s, D-091).
   const [staff] = await sql<{ user_id: string }[]>`select user_id from app.staff where active and role = 'owner' limit 1`;
   await sql`update app.orders set status = 'recusado', refused_at = now(), refused_by = ${staff?.user_id ?? ""},
               refusal_reason = 'outro' where id = ${a?.id ?? ""}`;
-  await expect.poll(async () => Number(await posicao.getAttribute("data-posicao")), { timeout: 10_000 }).toBeLessThan(antes);
+  await expect.poll(async () => Number(await posicao.getAttribute("data-posicao")), { timeout: 25_000 }).toBeLessThan(antes);
+  // E o banco não mandou aviso de posição pedido a pedido.
+  const [n] = await sql<{ n: number }[]>`select count(*)::int as n from realtime.messages where event = 'posicao'`;
+  expect(n?.n).toBe(0);
   await ctxA.close();
 });
 
@@ -157,11 +160,12 @@ test("tela inicial abre a banca mais recente e o link encerrado deixa de valer",
   await page.goto("/");
   await expect(page).toHaveURL(new RegExp(`/${codigo}-banca$`));
   await expect(page.getByRole("heading", { name: "Banca relâmpago" })).toBeVisible();
-  await expect(page.locator("[data-ao-vivo]")).toHaveAttribute("data-ao-vivo", "sim");
   await expect(page.getByText(/vagas restantes/)).toHaveCount(0);
 
-  // Encerrada: o código some e quem está na página sai do link (D-044).
+  // Encerrada: o código some e quem está na página sai do link (D-044). A página da banca
+  // confere a cada 30 s (D-091); aqui o teste recarrega para não esperar.
   await sql`update app.bancas set status = 'encerrada', ended_at = now(), code = null where id = ${b?.id ?? ""}`;
+  await page.reload();
   await expect(page).not.toHaveURL(new RegExp(`/${codigo}-banca$`));
   expect(violacoes).toEqual([]);
 });

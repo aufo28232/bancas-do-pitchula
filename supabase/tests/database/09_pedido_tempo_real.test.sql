@@ -109,8 +109,8 @@ select is(api.srv_viewer_state(pg_temp.h('s:nenhuma')), null, 'sessão inexisten
 reset role;
 
 -- 3. Broadcast gerado pelo banco ------------------------------------------------------
-select ok(exists (select 1 from realtime.messages where topic = 'pedido:00000000-0000-0000-0000-0000000000b3'
-                   and event = 'posicao' and payload ->> 'posicao' = '3'), 'posição é transmitida no tópico do pedido');
+select ok(not exists (select 1 from realtime.messages where event = 'posicao'),
+  'posição NÃO é transmitida pedido a pedido (D-091): a página consulta o servidor');
 select ok(not exists (select 1 from realtime.messages where topic like 'staff:%'
                        and payload::text ~ 'v1:|nome|cpf|pix'), 'tópico do painel não leva dados pessoais');
 
@@ -142,8 +142,8 @@ select is((select refused from app.banca_stats s join app.bancas b on b.id = s.b
 select ok(exists (select 1 from app.audit_log where action = 'pedido_expirado' and actor_role = 'sistema'),
   'expiração vai para a auditoria');
 select is((api.srv_viewer_state(pg_temp.h('s:3')) -> 'pedido' ->> 'posicao')::int, 2, 'quem estava atrás sobe na fila');
-select ok(exists (select 1 from realtime.messages where topic = 'pedido:00000000-0000-0000-0000-0000000000b3'
-                   and event = 'posicao' and payload ->> 'posicao' = '2'), 'a nova posição é transmitida para quem subiu');
+select ok(not exists (select 1 from realtime.messages where topic = 'pedido:00000000-0000-0000-0000-0000000000b3' and event = 'posicao'),
+  'quem subiu não recebe aviso pelo banco (D-091): um pedido saindo gera só os avisos dele');
 
 update app.orders set locked_by = '00000000-0000-0000-0000-0000000000a2', locked_at = now(), lock_activity_at = now(),
                       reply_deadline_at = now() - interval '1 second'

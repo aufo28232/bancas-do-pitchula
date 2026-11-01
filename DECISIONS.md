@@ -629,6 +629,19 @@ Testado na integração (sem token, outra origem, cross-site).
 - **Pix repetido:** a mesma chave Pix não entra duas vezes na mesma banca, mesmo com CPF diferente. Mesma regra e mesma mensagem genérica do CPF repetido (não diz qual dado repetiu); auditoria `pedido_bloqueado` com motivo `pix_repetido`. A linha da banca já é travada na criação do pedido, então dois envios simultâneos não passam juntos. Em outra banca, o mesmo Pix entra normalmente.
 - **Fila andando:** a posição já descia ao vivo (broadcast `posicao` quando um pedido da frente sai, D-043/Etapa 4); agora há um teste E2E disso. Como reserva, a página do pedido também consulta o servidor a cada 20 s mesmo com o tempo real ligado (antes 60 s), para a posição nunca ficar parada se um aviso ao vivo se perder.
 
+## D-091 · Desempenho com a fila cheia (correção depois da primeira live)
+
+**Status:** Implementada (31/10/2026). Revê parte de D-043/Etapa 4 (tempo real) e D-030 (limites).
+- **O que aconteceu na live:** inscrição girando, pedidos que entravam no banco mas não abriam no navegador (a pessoa tentava de novo e recebia "não foi possível"), pagamentos com ~10 s de atraso.
+- **Causa:** a cada pedido pago ou recusado, o banco mandava um aviso de posição para **cada** pessoa da fila (400 na fila = 401 mensagens), com a linha da banca travada; quem tentava se inscrever esperava a trava. O plano grátis do Supabase Realtime aceita ~100 mensagens/s e 200 conexões, então os avisos ainda formavam fila. O servidor desistia em 8 s e respondia erro, mas o pedido terminava de gravar depois.
+- **Correção:**
+  - Sem aviso de posição pedido a pedido (medido: 401 → 2 mensagens por pagamento com 400 na fila). A página do pedido consulta a posição a cada 15 s (10 s sem tempo real); status, chat e "assumido" continuam ao vivo no canal do próprio pedido.
+  - A página da banca não usa mais tempo real: confere o estado a cada 30 s, só com a aba visível. A página do pedido deixa de ouvir o canal público da banca.
+  - Recusa em massa por esgotar não manda um aviso por pedido para o painel.
+  - Fila do painel calculada numa passada (janela) e o painel busca no máximo a cada 1,5 s.
+  - **Tentar de novo é seguro:** o navegador manda uma chave por tentativa (vira o id do pedido). Se o pedido daquela chave já entrou, é recente (15 min), está pendente e tem o mesmo CPF, o servidor abre o chat dele (`srv_reclaim_order`, auditado como `pedido_recuperado`).
+  - Limites por IP: 20 pedidos a cada 10 min e 1 a cada 5 s (antes 5 e 30 s). Na live, muita gente de celular sai pelo mesmo IP da operadora (CGNAT).
+
 ---
 
 ## Registro de mudanças
@@ -653,3 +666,4 @@ Testado na integração (sem token, outra origem, cross-site).
 | 29/10/2026 | Moderadores criam e gerenciam bancas (D-088) |
 | 29/10/2026 | Foto por banca, sem ID, Enter no chat, número por banca, apagar histórico (D-089) |
 | 29/10/2026 | Pix único por banca; fila andando com reserva de 20 s (D-090) |
+| 31/10/2026 | Desempenho com fila cheia; tentar de novo recupera o pedido (D-091) |

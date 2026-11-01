@@ -28,6 +28,32 @@ const PLACEHOLDER_PIX: Record<TipoPix, string> = {
 
 const ORDEM_CAMPOS = ["nome", "pixChave", "cpf", "privacidade", "maioridade"] as const;
 
+/**
+ * Chave da tentativa (D-091): a mesma até o pedido dar certo, guardada só nesta aba.
+ * Se a resposta demorar e a pessoa tentar de novo, o servidor reconhece o pedido que
+ * já entrou e abre o chat dele, em vez de dizer que o CPF já foi usado.
+ */
+function chaveTentativa(codigo: string): string {
+  const nome = `bp_tentativa_${codigo}`;
+  try {
+    const salva = sessionStorage.getItem(nome);
+    if (salva) return salva;
+    const nova = crypto.randomUUID();
+    sessionStorage.setItem(nome, nova);
+    return nova;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+function esquecerTentativa(codigo: string): void {
+  try {
+    sessionStorage.removeItem(`bp_tentativa_${codigo}`);
+  } catch {
+    // nada a fazer
+  }
+}
+
 export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; siteKey: string; plataforma: string }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [tipoPix, setTipoPix] = useState<TipoPix>("cpf");
@@ -62,6 +88,7 @@ export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; si
       privacidade: f.get("privacidade") === "on",
       maioridade: f.get("maioridade") === "on",
       turnstile,
+      tentativa: chaveTentativa(codigo),
     };
 
     // Validação no navegador com o MESMO schema do servidor (feedback imediato).
@@ -85,12 +112,19 @@ export function FormPedido({ codigo, siteKey, plataforma }: { codigo: string; si
     const resposta = await enviar<{ proximo: string }>("/api/bancas/pedido", dados);
     if (resposta.ok) {
       // O navegador já está ligado ao pedido (cookie): vai direto para o chat (D-082).
+      esquecerTentativa(codigo);
       marcarPedidoAberto();
       router.push("/pedido");
       return;
     }
     setEnviando(false);
-    setErroGeral(resposta.erro);
+    // Sem resposta ou servidor sobrecarregado: o pedido pode ter entrado. Tentar de novo
+    // é seguro (mesma chave): se ele já existe, a pessoa vai direto para o chat.
+    setErroGeral(
+      resposta.status === 0 || resposta.status >= 500
+        ? "Demorou para responder. Toque em Enviar de novo: se o seu pedido já entrou, você vai direto para ele."
+        : resposta.erro,
+    );
     setTurnstile("");
     setChaveTurnstile((k) => k + 1); // token do Turnstile é de uso único
   }

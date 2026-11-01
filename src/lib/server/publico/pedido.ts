@@ -20,11 +20,13 @@ import { abrirSessaoPedido } from "./espectador";
  */
 /** Limites ajustáveis por variável de ambiente (D-030), com padrões seguros. */
 export function limitesPedido(): { porJanela: number; rajadaSeg: number } {
-  const porJanela = Number(process.env.RL_PEDIDO_POR_10MIN ?? "5");
-  const rajadaSeg = Number(process.env.RL_PEDIDO_RAJADA_SEG ?? "30");
+  // D-091: padrões maiores que os de D-030 (5 e 30 s). Na live, muita gente de celular
+  // sai pelo MESMO IP da operadora (CGNAT) e quem tentava de novo era barrado.
+  const porJanela = Number(process.env.RL_PEDIDO_POR_10MIN ?? "20");
+  const rajadaSeg = Number(process.env.RL_PEDIDO_RAJADA_SEG ?? "5");
   return {
-    porJanela: Number.isInteger(porJanela) && porJanela >= 1 && porJanela <= 100 ? porJanela : 5,
-    rajadaSeg: Number.isInteger(rajadaSeg) && rajadaSeg >= 1 && rajadaSeg <= 300 ? rajadaSeg : 30,
+    porJanela: Number.isInteger(porJanela) && porJanela >= 1 && porJanela <= 100 ? porJanela : 20,
+    rajadaSeg: Number.isInteger(rajadaSeg) && rajadaSeg >= 1 && rajadaSeg <= 300 ? rajadaSeg : 5,
   };
 }
 
@@ -38,7 +40,7 @@ export const postCriarPedido = mutacao("bancas/pedido", async (ctx) => {
   const ip = ipDoCliente(ctx.req.headers, env.DEPLOY_MODE);
   const idIp = hmac(anel, "rl-ip", ip).toString("hex");
 
-  // 1. Limites por IP (padrão: 5 a cada 10 min e 1 a cada 30 s). Redis fora = 503.
+  // 1. Limites por IP (padrão: 20 a cada 10 min e 1 a cada 5 s). Redis fora = 503.
   const lim = limitesPedido();
   const [janela, rajada] = await Promise.all([
     contarOuFalhar("pedido-ip", idIp, lim.porJanela, 600),
@@ -61,7 +63,10 @@ export const postCriarPedido = mutacao("bancas/pedido", async (ctx) => {
   const cpf = soDigitos(d.cpf);
 
   const cifras = getChavesDeCifra();
-  const id = randomUUID();
+  // A chave da tentativa vira o id do pedido: se uma tentativa anterior do mesmo
+  // navegador já gravou o pedido (resposta demorou e a pessoa tentou de novo), dá
+  // para recuperá-lo em vez de responder "já existe" (D-091).
+  const id = d.tentativa ?? randomUUID();
   const hCpf = hmacsDeDado(anel, "cpf", cpf);
   const hPix = hmacsDeDado(anel, "pix", `${d.pixTipo}:${pix}`);
   const hIp = hmacsDeDado(anel, "ip", ip);
@@ -109,6 +114,16 @@ export const postCriarPedido = mutacao("bancas/pedido", async (ctx) => {
   } catch (e) {
     await descartarAnon();
     throw e;
+  }
+
+  if (resultado === "bloqueado" && d.tentativa) {
+    // Mesmo navegador (mesma chave) e mesmo CPF: é o próprio pedido de antes.
+    const recuperado = await rpc<boolean>(
+      "srv_reclaim_order",
+      { p_id: d.tentativa, p_cpf_hmacs: hCpf.todos.map(toPgBytea), p_token_hash: toPgBytea(hashToken) },
+      "servico",
+    ).catch(() => false);
+    if (recuperado) resultado = "ok";
   }
 
   if (resultado !== "ok") await descartarAnon();
