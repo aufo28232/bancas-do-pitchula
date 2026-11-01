@@ -85,6 +85,29 @@ describe("bancas no painel", () => {
   });
 });
 
+describe("tentar de novo recupera o pedido (D-091)", () => {
+  it("mesma chave + mesmo CPF: abre o pedido que já entrou; outra chave: bloqueado", async () => {
+    const banca = await criarBanca({ ipLimit: false });
+    const cpf = gerarCpf();
+    const tentativa = randomUUID();
+    const primeira = await new Navegador().post(postCriarPedido, pedido(banca.codigo, cpf, { tentativa }));
+    expect(primeira.status).toBe(201);
+
+    // A resposta "se perdeu": o navegador tenta de novo com a MESMA chave (sem cookie).
+    await esperar(1100);
+    const nav = new Navegador();
+    const segunda = await nav.post(postCriarPedido, pedido(banca.codigo, cpf, { tentativa }));
+    expect(segunda.status).toBe(201);
+    expect(nav.cookies.has(COOKIE_PEDIDO)).toBe(true);
+    expect(await pedidosDaBanca(banca.id)).toBe(1);
+
+    // Outra chave com o mesmo CPF continua bloqueada (não dá para "pegar" o pedido de outro).
+    await esperar(1100);
+    const outra = await new Navegador().post(postCriarPedido, pedido(banca.codigo, cpf, { tentativa: randomUUID() }));
+    expect(outra.status).toBe(409);
+  });
+});
+
 describe("casa e link de afiliado por banca (D-086)", () => {
   it("guarda casa e link da banca; link que não é https é recusado", async () => {
     const base = { nome: "Banca Casa", totalCents: 30000, vagas: 3, ipLimit: false };
